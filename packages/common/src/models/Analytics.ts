@@ -592,11 +592,14 @@ export enum Name {
   ANDROID_APP_RESTART_FORCE_QUIT = 'Android App: Restart Due to Force Quit',
 
   // Artist Coin Launchpad
-  LAUNCHPAD_PAGE_VIEW = 'Launchpad: Page View',
-  LAUNCHPAD_SPLASH_CONTINUE = 'Launchpad: Splash Continue',
-  LAUNCHPAD_WALLET_CONNECTED = 'Launchpad: Wallet Connected',
+  LAUNCHPAD_SPLASH_GET_STARTED = 'Launchpad: Get Started Clicked',
+  LAUNCHPAD_SPLASH_LEARN_MORE_CLICKED = 'Launchpad: Learn More Clicked',
+  LAUNCHPAD_WALLET_CONNECT_SUCCESS = 'Launchpad: Wallet Connect Success',
+  LAUNCHPAD_WALLET_CONNECT_ERROR = 'Launchpad: Wallet Connect Error',
   LAUNCHPAD_WALLET_INSUFFICIENT_BALANCE = 'Launchpad: Wallet Insufficient Balance',
   LAUNCHPAD_SETUP_CONTINUE = 'Launchpad: Setup Continue',
+  LAUNCHPAD_FORM_BACK = 'Launchpad: Back To Previous Step',
+  LAUNCHPAD_FORM_INPUT_CHANGE = 'Launchpad: Form Input Change',
   LAUNCHPAD_REVIEW_CONTINUE = 'Launchpad: Review Continue',
   LAUNCHPAD_COIN_CREATION_STARTED = 'Launchpad: Coin Creation Started',
   LAUNCHPAD_COIN_CREATION_SUCCESS = 'Launchpad: Coin Creation Success',
@@ -604,7 +607,11 @@ export enum Name {
   LAUNCHPAD_FIRST_BUY_STARTED = 'Launchpad: First Buy Started',
   LAUNCHPAD_FIRST_BUY_SUCCESS = 'Launchpad: First Buy Success',
   LAUNCHPAD_FIRST_BUY_FAILURE = 'Launchpad: First Buy Failure',
-  LAUNCHPAD_FIRST_BUY_RETRY = 'Launchpad: First Buy Retry'
+  LAUNCHPAD_FIRST_BUY_RETRY = 'Launchpad: First Buy Retry',
+  LAUNCHPAD_FIRST_BUY_MAX_BUTTON = 'Launchpad: First Buy Max Button Clicked',
+  LAUNCHPAD_FIRST_BUY_QUOTE_RECEIVED = 'Launchpad: First Buy Quote Received',
+  LAUNCHPAD_BUY_MODAL_OPEN = 'Launchpad: Buy Audio Modal Open',
+  LAUNCHPAD_BUY_MODAL_CLOSE = 'Launchpad: Buy Audio Modal Close'
 }
 
 type PageView = {
@@ -2867,21 +2874,39 @@ export type AndroidAppRestartForceQuit = {
 }
 
 // Artist Coin Launchpad
-export type LaunchpadSplashContinue = {
-  eventName: Name.LAUNCHPD_SPLASH_GET_STARTED
+export type LaunchpadSplashGetStarted = {
+  eventName: Name.LAUNCHPAD_SPLASH_GET_STARTED
 }
 
-export type LaunchpadWalletConnected = {
-  eventName: Name.LAUNCHPAD_WALLET_CONNECTED
+export type LaunchpadSplashLearnMoreClicked = {
+  eventName: Name.LAUNCHPAD_SPLASH_LEARN_MORE_CLICKED
+}
+
+export type LaunchpadFormBack = {
+  eventName: Name.LAUNCHPAD_FORM_BACK
+}
+
+export type LaunchpadFormInputChange = {
+  eventName: Name.LAUNCHPAD_FORM_INPUT_CHANGE
+  input: string
+  newValue: string
+}
+
+export type LaunchpadWalletConnectSuccess = {
+  eventName: Name.LAUNCHPAD_WALLET_CONNECT_SUCCESS
   walletAddress: string
-  walletBalance: number
+  walletSolBalance: number
+}
+
+export type LaunchpadWalletConnectError = {
+  eventName: Name.LAUNCHPAD_WALLET_CONNECT_ERROR
+  error: string
 }
 
 export type LaunchpadWalletInsufficientBalance = {
   eventName: Name.LAUNCHPAD_WALLET_INSUFFICIENT_BALANCE
   walletAddress: string
-  walletBalance: number
-  requiredBalance: number
+  walletSolBalance: number
 }
 
 export type LaunchpadSetupContinue = {
@@ -2922,7 +2947,6 @@ export type LaunchpadCoinCreationFailure = {
   coinName: string
   coinSymbol: string
   error: string
-  stage: 'pool_creation' | 'coin_metadata' | 'first_buy'
 }
 
 export type LaunchpadFirstBuyStarted = {
@@ -2954,6 +2978,26 @@ export type LaunchpadFirstBuyRetry = {
   coinSymbol: string
   mintAddress: string
   payAmount: string
+}
+
+export type LaunchpadFirstBuyMaxButton = {
+  eventName: Name.LAUNCHPAD_FIRST_BUY_MAX_BUTTON
+  maxValue: string
+}
+
+export type LaunchpadFirstBuyQuoteReceived = {
+  eventName: Name.LAUNCHPAD_FIRST_BUY_QUOTE_RECEIVED
+  payAmount: string
+  receiveAmount: string
+  usdcValue: string
+}
+
+export type LaunchpadBuyModalOpen = {
+  eventName: Name.LAUNCHPAD_BUY_MODAL_OPEN
+}
+
+export type LaunchpadBuyModalClose = {
+  eventName: Name.LAUNCHPAD_BUY_MODAL_CLOSE
 }
 
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
@@ -3339,9 +3383,9 @@ export type AllTrackingEvents =
   | AndroidAppRestartHeartbeat
   | AndroidAppRestartStale
   | AndroidAppRestartForceQuit
-  | LaunchpadPageView
-  | LaunchpadSplashContinue
-  | LaunchpadWalletConnected
+  | LaunchpadSplashGetStarted
+  | LaunchpadSplashLearnMoreClicked
+  | LaunchpadWalletConnectSuccess
   | LaunchpadWalletInsufficientBalance
   | LaunchpadSetupContinue
   | LaunchpadReviewContinue
@@ -3352,3 +3396,10 @@ export type AllTrackingEvents =
   | LaunchpadFirstBuySuccess
   | LaunchpadFirstBuyFailure
   | LaunchpadFirstBuyRetry
+  | LaunchpadFormInputChange
+  | LaunchpadFormBack
+  | LaunchpadWalletConnectError
+  | LaunchpadFirstBuyMaxButton
+  | LaunchpadFirstBuyQuoteReceived
+  | LaunchpadBuyModalOpen
+  | LaunchpadBuyModalClose

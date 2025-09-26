@@ -20,7 +20,7 @@ import { AddressTile } from 'components/address-tile'
 import { LaunchCoinErrorMetadata } from 'hooks/useLaunchCoin'
 import { env } from 'services/env'
 
-import { SetupFormValues } from './types'
+import { LaunchpadFormValues } from './types'
 
 const messages = {
   awaitingConfirmation: 'Awaiting Confirmation',
@@ -183,7 +183,7 @@ export const LaunchpadSubmitModal = ({
   mintAddress: string | undefined
   errorMetadata?: LaunchCoinErrorMetadata
 }) => {
-  const { values } = useFormikContext<SetupFormValues>()
+  const { values } = useFormikContext<LaunchpadFormValues>()
   const { payAmount } = values
   const payAmountNumber = Number(wAUDIO(payAmount).value)
 

@@ -14,7 +14,7 @@ import { useFormImageUrl } from 'hooks/useFormImageUrl'
 import { ArtistCoinsSubmitRow } from '../components/ArtistCoinsSubmitRow'
 import { StepHeader } from '../components/StepHeader'
 import { TokenInfoRow } from '../components/TokenInfoRow'
-import type { PhasePageProps, SetupFormValues } from '../components/types'
+import type { PhasePageProps, LaunchpadFormValues } from '../components/types'
 import { AMOUNT_OF_STEPS } from '../constants'
 
 const messages = {
@@ -96,7 +96,7 @@ const useStyles = makeResponsiveStyles(({ theme }) => ({
 }))
 
 export const ReviewPage = ({ onContinue, onBack }: PhasePageProps) => {
-  const { values } = useFormikContext<SetupFormValues>()
+  const { values } = useFormikContext<LaunchpadFormValues>()
   const imageUrl = useFormImageUrl(values.coinImage)
   const styles = useStyles()
 

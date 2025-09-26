@@ -1,13 +1,15 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { ConnectedWallet } from '@audius/common/api'
 import { useAnalytics } from '@audius/common/hooks'
 import { Chain, Name } from '@audius/common/models'
 import { useFormikContext } from 'formik'
+import { omit } from 'lodash'
 
+import { LaunchCoinResponse } from 'hooks/useLaunchCoin'
 import { make } from 'services/analytics'
 
-import type { SetupFormValues } from './components/types'
+import type { LaunchpadFormValues } from './components/types'
 import { MIN_SOL_BALANCE } from './constants'
 
 /**
@@ -21,27 +23,59 @@ export const getLatestConnectedWallet = (
   )?.[0]
 }
 
-export const useLaunchpadAnalytics = () => {
+export const useLaunchpadAnalytics = (params?: {
+  externalWalletAddress?: string
+}) => {
+  const { externalWalletAddress } = params ?? {}
   const { track } = useAnalytics()
-  const { values: formValues } = useFormikContext<SetupFormValues>()
+  const { values: formValues, errors } =
+    useFormikContext<LaunchpadFormValues>() ?? {}
+  const formValuesForAnalytics = useMemo(() => {
+    return {
+      ...omit(formValues, 'coinImage'), // dont want to upload the entire blob
+      hasImage: !!formValues?.coinImage,
+      formErrors: errors,
+      externalWalletAddress
+    }
+  }, [formValues, errors, externalWalletAddress])
 
   // Splash page events
-  const trackSplashContinue = useCallback(() => {
+  const trackSplashGetStarted = useCallback(() => {
     track(
       make({
-        eventName: Name.LAUNCHPAD_SPLASH_CONTINUE
+        eventName: Name.LAUNCHPAD_SPLASH_GET_STARTED
+      })
+    )
+  }, [track])
+
+  const trackSplashLearnMoreClicked = useCallback(() => {
+    track(
+      make({
+        eventName: Name.LAUNCHPAD_SPLASH_LEARN_MORE_CLICKED
       })
     )
   }, [track])
 
   // Wallet connection events
-  const trackWalletConnected = useCallback(
-    (walletAddress: string, walletBalance: number) => {
+  const trackWalletConnectSuccess = useCallback(
+    (walletAddress: string, walletBalance: bigint) => {
       track(
         make({
-          eventName: Name.LAUNCHPAD_WALLET_CONNECTED,
+          eventName: Name.LAUNCHPAD_WALLET_CONNECT_SUCCESS,
           walletAddress,
-          walletBalance
+          walletSolBalance: Number(walletBalance)
+        })
+      )
+    },
+    [track]
+  )
+
+  const trackWalletConnectError = useCallback(
+    (error: any) => {
+      track(
+        make({
+          eventName: Name.LAUNCHPAD_WALLET_CONNECT_ERROR,
+          error
         })
       )
     },
@@ -49,13 +83,12 @@ export const useLaunchpadAnalytics = () => {
   )
 
   const trackWalletInsufficientBalance = useCallback(
-    (walletAddress: string, walletBalance: number) => {
+    (walletAddress: string, walletBalance: bigint) => {
       track(
         make({
           eventName: Name.LAUNCHPAD_WALLET_INSUFFICIENT_BALANCE,
           walletAddress,
-          walletBalance,
-          requiredBalance: MIN_SOL_BALANCE
+          walletSolBalance: Number(walletBalance)
         })
       )
     },
@@ -63,164 +96,174 @@ export const useLaunchpadAnalytics = () => {
   )
 
   // Form progression events
-  const trackSetupContinue = useCallback(
-    (formData?: Partial<SetupFormValues>) => {
-      const values = formData || formValues
+  const trackFormInputChange = useCallback(
+    (input: keyof LaunchpadFormValues, newValue: string) => {
       track(
         make({
-          eventName: Name.LAUNCHPAD_SETUP_CONTINUE,
-          coinName: values.coinName || '',
-          coinSymbol: values.coinSymbol || '',
-          hasImage: !!values.coinImage,
-          wantsToBuy: values.wantsToBuy || 'no',
-          payAmount: values.payAmount || undefined
+          eventName: Name.LAUNCHPAD_FORM_INPUT_CHANGE,
+          ...formValuesForAnalytics,
+          input,
+          newValue
         })
       )
     },
-    [track, formValues]
+    [track, formValuesForAnalytics]
+  )
+  const trackFirstBuyQuoteReceived = useCallback(
+    ({
+      payAmount,
+      receiveAmount,
+      usdcValue
+    }: {
+      payAmount: string
+      receiveAmount: string
+      usdcValue: string
+    }) => {
+      track(
+        make({
+          eventName: Name.LAUNCHPAD_FIRST_BUY_QUOTE_RECEIVED,
+          ...formValuesForAnalytics,
+          payAmount,
+          receiveAmount,
+          usdcValue
+        })
+      )
+    },
+    [track, formValuesForAnalytics]
   )
 
-  const trackReviewContinue = useCallback(
-    (formData?: Partial<SetupFormValues>) => {
-      const values = formData || formValues
-      track(
-        make({
-          eventName: Name.LAUNCHPAD_REVIEW_CONTINUE,
-          coinName: values.coinName || '',
-          coinSymbol: values.coinSymbol || '',
-          payAmount: values.payAmount || undefined,
-          receiveAmount: values.receiveAmount || undefined
-        })
-      )
-    },
-    [track, formValues]
-  )
+  const trackSetupContinue = useCallback(() => {
+    track(
+      make({
+        eventName: Name.LAUNCHPAD_SETUP_CONTINUE,
+        ...formValuesForAnalytics
+      })
+    )
+  }, [track, formValuesForAnalytics])
+
+  const trackFormBack = useCallback(() => {
+    track(
+      make({
+        eventName: Name.LAUNCHPAD_FORM_BACK,
+        ...formValuesForAnalytics
+      })
+    )
+  }, [track, formValuesForAnalytics])
+
+  const trackReviewContinue = useCallback(() => {
+    track(
+      make({
+        eventName: Name.LAUNCHPAD_REVIEW_CONTINUE,
+        ...formValuesForAnalytics
+      })
+    )
+  }, [formValuesForAnalytics, track])
 
   // Coin creation events
   const trackCoinCreationStarted = useCallback(
-    (walletAddress: string, initialBuyAmount?: string) => {
+    (walletAddress: string, formValues: LaunchpadFormValues) => {
       track(
         make({
           eventName: Name.LAUNCHPAD_COIN_CREATION_STARTED,
-          coinName: formValues.coinName || '',
-          coinSymbol: formValues.coinSymbol || '',
-          walletAddress,
-          initialBuyAmount
+          ...formValues,
+          walletAddress
         })
       )
     },
-    [track, formValues]
+    [track]
   )
 
   const trackCoinCreationSuccess = useCallback(
-    (mintAddress: string, initialBuyAmount?: string) => {
+    (
+      launchCoinResponse: LaunchCoinResponse,
+      formValues: LaunchpadFormValues
+    ) => {
       track(
         make({
           eventName: Name.LAUNCHPAD_COIN_CREATION_SUCCESS,
-          coinName: formValues.coinName || '',
-          coinSymbol: formValues.coinSymbol || '',
-          mintAddress,
-          initialBuyAmount
+          ...formValues,
+          launchCoinResponse
         })
       )
     },
-    [track, formValues]
+    [track]
   )
 
   const trackCoinCreationFailure = useCallback(
-    (error: string, stage: 'pool_creation' | 'coin_metadata' | 'first_buy') => {
+    (launchCoinResponse: LaunchCoinResponse) => {
       track(
         make({
           eventName: Name.LAUNCHPAD_COIN_CREATION_FAILURE,
-          coinName: formValues.coinName || '',
-          coinSymbol: formValues.coinSymbol || '',
-          error,
-          stage
+          launchCoinResponse
         })
       )
     },
-    [track, formValues]
-  )
-
-  // First buy transaction events
-  const trackFirstBuyStarted = useCallback(
-    (mintAddress: string, payAmount: string, receiveAmount: string) => {
-      track(
-        make({
-          eventName: Name.LAUNCHPAD_FIRST_BUY_STARTED,
-          coinSymbol: formValues.coinSymbol || '',
-          mintAddress,
-          payAmount,
-          receiveAmount
-        })
-      )
-    },
-    [track, formValues]
-  )
-
-  const trackFirstBuySuccess = useCallback(
-    (mintAddress: string, payAmount: string, receiveAmount: string) => {
-      track(
-        make({
-          eventName: Name.LAUNCHPAD_FIRST_BUY_SUCCESS,
-          coinSymbol: formValues.coinSymbol || '',
-          mintAddress,
-          payAmount,
-          receiveAmount
-        })
-      )
-    },
-    [track, formValues]
-  )
-
-  const trackFirstBuyFailure = useCallback(
-    (mintAddress: string, payAmount: string, error: string) => {
-      track(
-        make({
-          eventName: Name.LAUNCHPAD_FIRST_BUY_FAILURE,
-          coinSymbol: formValues.coinSymbol || '',
-          mintAddress,
-          payAmount,
-          error
-        })
-      )
-    },
-    [track, formValues]
+    [track]
   )
 
   const trackFirstBuyRetry = useCallback(
-    (mintAddress: string, payAmount: string) => {
+    (launchCoinResponse: LaunchCoinResponse) => {
       track(
         make({
           eventName: Name.LAUNCHPAD_FIRST_BUY_RETRY,
-          coinSymbol: formValues.coinSymbol || '',
-          mintAddress,
-          payAmount
+          ...formValuesForAnalytics,
+          launchCoinResponse
         })
       )
     },
-    [track, formValues]
+    [track, formValuesForAnalytics]
+  )
+
+  const trackBuyModalOpen = useCallback(() => {
+    track(
+      make({
+        eventName: Name.LAUNCHPAD_BUY_MODAL_OPEN
+      })
+    )
+  }, [track])
+
+  const trackBuyModalClose = useCallback(() => {
+    track(
+      make({
+        eventName: Name.LAUNCHPAD_BUY_MODAL_CLOSE
+      })
+    )
+  }, [track])
+  const trackFirstBuyMaxButton = useCallback(
+    (maxValue: string) => {
+      track(
+        make({
+          eventName: Name.LAUNCHPAD_FIRST_BUY_MAX_BUTTON,
+          ...formValuesForAnalytics,
+          maxValue
+        })
+      )
+    },
+    [track, formValuesForAnalytics]
   )
 
   return {
-    // Page view
-    trackPageView,
     // Splash page
-    trackSplashContinue,
-    // Wallet connection
-    trackWalletConnected,
+    trackSplashGetStarted,
+    trackSplashLearnMoreClicked,
+    // Wallet connection events
+    trackWalletConnectSuccess,
+    trackWalletConnectError,
     trackWalletInsufficientBalance,
-    // Form progression
+    // Page progression events
     trackSetupContinue,
+    trackFormInputChange,
+    trackFormBack,
     trackReviewContinue,
-    // Coin creation
+    // Coin creation flow
     trackCoinCreationStarted,
     trackCoinCreationSuccess,
     trackCoinCreationFailure,
-    // First buy transaction
-    trackFirstBuyStarted,
-    trackFirstBuySuccess,
-    trackFirstBuyFailure,
-    trackFirstBuyRetry
+    // First buy flow
+    trackFirstBuyRetry,
+    trackFirstBuyMaxButton,
+    trackBuyModalOpen,
+    trackBuyModalClose,
+    trackFirstBuyQuoteReceived
   }
 }

@@ -1,4 +1,4 @@
-export type SetupFormValues = {
+export type LaunchpadFormValues = {
   coinName: string
   coinSymbol: string
   coinImage: File | null

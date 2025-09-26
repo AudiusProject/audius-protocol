@@ -1,9 +1,11 @@
 import { useRef, useState } from 'react'
 
+import { ErrorLevel, Feature } from '@audius/common/models'
 import { Flex, Paper } from '@audius/harmony'
 import { useFormikContext } from 'formik'
 
 import { useFormImageUrl } from 'hooks/useFormImageUrl'
+import { reportToSentry } from 'store/errors/reportToSentry'
 import {
   resizeImage,
   ALLOWED_IMAGE_FILE_TYPES
@@ -13,8 +15,9 @@ import { ArtistCoinsSubmitRow } from '../components/ArtistCoinsSubmitRow'
 import { CoinFormFields } from '../components/CoinFormFields'
 import { ImageUploadArea } from '../components/ImageUploadArea'
 import { StepHeader } from '../components/StepHeader'
-import type { SetupFormValues, PhasePageProps } from '../components/types'
+import type { LaunchpadFormValues, PhasePageProps } from '../components/types'
 import { AMOUNT_OF_STEPS, MAX_IMAGE_SIZE } from '../constants'
+import { useLaunchpadAnalytics } from '../utils'
 
 const messages = {
   stepInfo: `STEP 1 of ${AMOUNT_OF_STEPS}`,
@@ -33,7 +36,9 @@ export const SetupPage = ({ onContinue, onBack }: PhasePageProps) => {
   const [isProcessingImage, setIsProcessingImage] = useState(false)
   const [imageError, setImageError] = useState<string | null>(null)
   const { handleSubmit, setFieldValue, values, errors, touched } =
-    useFormikContext<SetupFormValues>()
+    useFormikContext<LaunchpadFormValues>()
+
+  const { trackFormInputChange } = useLaunchpadAnalytics()
 
   const imageUrl = useFormImageUrl(values.coinImage)
 
@@ -55,6 +60,7 @@ export const SetupPage = ({ onContinue, onBack }: PhasePageProps) => {
     const file = event.target.files?.[0]
     if (file) {
       await processFile(file)
+      trackFormInputChange('coinImage', file.name)
     }
   }
 
@@ -62,6 +68,7 @@ export const SetupPage = ({ onContinue, onBack }: PhasePageProps) => {
     const file = files[0]
     if (file) {
       await processFile(file)
+      trackFormInputChange('coinImage', file.name)
     }
   }
 
@@ -101,7 +108,12 @@ export const SetupPage = ({ onContinue, onBack }: PhasePageProps) => {
       setFieldValue('coinImage', processedFile)
       // Hook will automatically create blob URL from processed file
     } catch (error) {
-      console.error('Error processing image:', error)
+      reportToSentry({
+        error: error instanceof Error ? error : new Error(error as string),
+        name: 'Launchpad Image Upload Processing Error',
+        feature: Feature.ArtistCoins,
+        level: ErrorLevel.Warning // not worth alerting on here
+      })
       setImageError(messages.errors.processingError)
     } finally {
       setIsProcessingImage(false)
