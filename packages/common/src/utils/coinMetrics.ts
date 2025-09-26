@@ -76,7 +76,7 @@ export const createCoinMetrics = (coin: Coin): MetricData[] => {
       messages.graduationProgress
     ),
     createMetric(
-      formatCount(coin.v24hUSD, 2),
+      `$${formatCount(coin.v24hUSD, 2)}`,
       messages.volume24hr,
       coin.v24hChangePercent
     ),
