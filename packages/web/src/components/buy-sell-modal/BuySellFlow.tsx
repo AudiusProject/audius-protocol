@@ -1,11 +1,18 @@
-import { useState, useEffect, useContext, useMemo, useCallback } from 'react'
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 
 import {
+  useArtistCoin,
   useCurrentAccountUser,
-  useUserCoins,
-  useTokens,
   useTokenPair,
-  useArtistCoin
+  useTokens,
+  useUserCoins
 } from '@audius/common/api'
 import { useBuySellAnalytics } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
@@ -13,18 +20,18 @@ import { FeatureFlags } from '@audius/common/services'
 import { SwapStatus } from '@audius/common/src/api/tan-query/jupiter/types'
 import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import {
+  BuySellTab,
+  Screen,
   useBuySellScreen,
   useBuySellSwap,
   useBuySellTabs,
-  useBuySellTransactionData,
-  useSwapDisplayData,
-  BuySellTab,
-  Screen,
-  useTokenStates,
-  useCurrentTokenPair,
+  useBuySellTabsArray,
   useBuySellTokenFilters,
+  useBuySellTransactionData,
+  useCurrentTokenPair,
   useSafeTokenPair,
-  useBuySellTabsArray
+  useSwapDisplayData,
+  useTokenStates
 } from '@audius/common/store'
 import { formatTickerFromUrl } from '@audius/common/utils'
 import { Button, Flex, Hint, SegmentedControl, TextLink } from '@audius/harmony'
@@ -107,6 +114,9 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
 
   // Track if user has attempted to submit the form
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
+
+  // Track the last handled error to prevent duplicate toast messages
+  const lastHandledErrorRef = useRef<string | null>(null)
 
   const location = useLocation()
   const pathname = getPathname(location)
@@ -228,9 +238,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     isConfirmButtonLoading,
     swapStatus,
     swapResult,
-    swapError,
-    swapData,
-    isRetrying
+    swapData
   } = useBuySellSwap({
     transactionData,
     currentScreen,
@@ -250,43 +258,46 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
   }, [isConfirmButtonLoading, onLoadingStateChange])
 
   useEffect(() => {
-    // Handle swap data errors (returned error status) - only show toast after retries are exhausted
-    if (
-      swapData?.status === SwapStatus.ERROR &&
-      swapData?.error &&
-      !isRetrying
-    ) {
-      trackSwapFailure(
-        {
-          activeTab,
-          inputToken: swapTokens.inputToken,
-          outputToken: swapTokens.outputToken,
-          inputAmount: transactionData?.inputAmount,
-          outputAmount: transactionData?.outputAmount,
-          exchangeRate: currentExchangeRate
-        },
-        {
-          errorType: 'swap_error',
-          errorStage: 'transaction',
-          errorMessage: swapData.error.message
-            ? swapData.error.message.substring(0, 500)
-            : 'Unknown error'
-        }
-      )
+    // Handle swap data errors (returned error status) - show toast when swap fails
+    if (swapData?.status === SwapStatus.ERROR && swapData?.error) {
+      // Create a stable identifier for this error to prevent duplicate handling
+      const errorId = `${swapData.error.message || 'unknown'}_${swapData.errorStage || 'unknown'}`
 
-      toast(messages.transactionFailed, 5000)
+      // Only handle if this is a new error
+      if (lastHandledErrorRef.current !== errorId) {
+        lastHandledErrorRef.current = errorId
+        trackSwapFailure(
+          {
+            activeTab,
+            inputToken: swapTokens.inputToken,
+            outputToken: swapTokens.outputToken,
+            inputAmount: transactionData?.inputAmount,
+            outputAmount: transactionData?.outputAmount,
+            exchangeRate: currentExchangeRate
+          },
+          {
+            errorType: 'swap_error',
+            errorStage: 'transaction',
+            errorMessage: swapData.error.message
+              ? swapData.error.message.substring(0, 500)
+              : 'Unknown error'
+          }
+        )
+
+        toast(messages.transactionFailed, 5000)
+      }
+    } else if (swapData?.status === SwapStatus.SUCCESS) {
+      // Clear error ref when swap succeeds to allow handling of future errors
+      lastHandledErrorRef.current = null
     }
   }, [
-    swapStatus,
-    swapError,
     swapData,
-    isRetrying,
-    toast,
     activeTab,
-    transactionData,
     swapTokens,
+    transactionData,
     currentExchangeRate,
-    trackSwapFailure
+    trackSwapFailure,
+    toast
   ])
 
   const {
