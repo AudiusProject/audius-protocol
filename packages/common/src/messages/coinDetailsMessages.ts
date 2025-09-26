@@ -76,7 +76,6 @@ export const coinDetailsMessages = {
     onChainDescription: 'On-Chain Description',
     totalSupply: 'Total Supply',
     marketCap: 'Market Cap',
-    fdv: 'Fully Diluted Valuation',
     price: 'Current Price',
     liquidity: 'Liquidity',
     circulatingSupply: 'Circulating Supply',
@@ -87,7 +86,6 @@ export const coinDetailsMessages = {
         'The total number of your artist coins that will ever exist. This amount is fixed and never changes.',
       marketCap:
         'The current total value of all your artist coins in circulation, calculated by multiplying the current price by the total supply.',
-      fdv: 'The theoretical market cap if all tokens were in circulation, calculated by multiplying the current price by the total supply.',
       price: 'The current price of a single artist coin in USD.',
       liquidity:
         'The amount of funds available for trading your artist coin, which affects how easily it can be bought or sold.',
