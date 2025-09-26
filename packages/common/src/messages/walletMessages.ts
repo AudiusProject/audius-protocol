@@ -84,8 +84,6 @@ export const walletMessages = {
     unableToLoadBalance: 'Unable to load balance information'
   },
 
-  // YourCoins messages
-  yourCoins: 'Your Coins',
   buySell: 'Buy/Sell',
   buy: 'Buy',
   send: 'Send',

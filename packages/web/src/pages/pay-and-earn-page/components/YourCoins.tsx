@@ -176,7 +176,7 @@ const YourCoinsHeader = ({ isLoading }: { isLoading: boolean }) => {
       borderBottom='default'
     >
       <Text variant='heading' size='m' color='heading'>
-        {messages.yourCoins}
+        {messages.coins}
       </Text>
       {isWalletUIBuySellEnabled && !isLoading ? (
         <Tooltip

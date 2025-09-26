@@ -5,10 +5,10 @@ import {
   useQueryContext,
   useUserCoins
 } from '@audius/common/api'
-import { useFeatureFlag } from '@audius/common/hooks'
+import { useFeatureFlag, useIsManagedAccount } from '@audius/common/hooks'
 import { buySellMessages, walletMessages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
-import { AUDIO_TICKER } from '@audius/common/store'
+import { useBuySellModal } from '@audius/common/store'
 import { ownedCoinsFilter } from '@audius/common/utils'
 import { TouchableOpacity } from 'react-native'
 
@@ -18,7 +18,8 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { CoinCard, CoinCardSkeleton, HexagonalSkeleton } from './CoinCard'
 
 const messages = {
-  ...buySellMessages
+  ...buySellMessages,
+  managedAccount: "You can't do that as a managed user"
 }
 
 const YourCoinsSkeleton = () => {
@@ -32,7 +33,18 @@ const YourCoinsSkeleton = () => {
   )
 }
 
-const TokensHeader = () => {
+const YourCoinsHeader = ({ isLoading }: { isLoading: boolean }) => {
+  const { onOpen: openBuySellModal } = useBuySellModal()
+  const isManagedAccount = useIsManagedAccount()
+
+  const handleBuySellClick = useCallback(() => {
+    if (isManagedAccount) {
+      // TODO: Add toast for mobile
+    } else {
+      openBuySellModal()
+    }
+  }, [isManagedAccount, openBuySellModal])
+
   return (
     <Flex
       row
@@ -42,9 +54,12 @@ const TokensHeader = () => {
       pb='s'
       borderBottom='default'
     >
-      <Text variant='heading' color='heading'>
-        {messages.yourCoins}
+      <Text variant='heading' size='s' color='heading'>
+        {messages.coins}
       </Text>
+      <Button variant='secondary' size='small' onPress={handleBuySellClick}>
+        {messages.buySell}
+      </Button>
     </Flex>
   )
 }
@@ -72,9 +87,6 @@ export const YourCoins = () => {
   const { data: currentUserId } = useCurrentUserId()
   const navigation = useNavigation()
   const { env } = useQueryContext()
-  const { isEnabled: isWalletUIBuySellEnabled } = useFeatureFlag(
-    FeatureFlags.WALLET_UI_BUY_SELL
-  )
   const { isEnabled: isArtistCoinsEnabled } = useFeatureFlag(
     FeatureFlags.ARTIST_COINS
   )
@@ -97,20 +109,13 @@ export const YourCoins = () => {
     ? [...baseCards, 'discover-artist-coins' as const]
     : baseCards
 
-  const handleBuySell = useCallback(() => {
-    navigation.navigate('BuySell', {
-      initialTab: 'buy',
-      coinTicker: AUDIO_TICKER
-    })
-  }, [navigation])
-
   const handleDiscoverArtistCoins = useCallback(() => {
     navigation.navigate('ArtistCoinsExplore')
   }, [navigation])
 
   return (
     <Paper>
-      <TokensHeader />
+      <YourCoinsHeader isLoading={isLoadingCoins} />
       <Flex column>
         {isLoadingCoins || !currentUserId ? (
           <YourCoinsSkeleton />
@@ -129,13 +134,6 @@ export const YourCoins = () => {
           ))
         )}
       </Flex>
-      {isWalletUIBuySellEnabled ? (
-        <Flex p='l'>
-          <Button variant='secondary' size='small' onPress={handleBuySell}>
-            {messages.buySell}
-          </Button>
-        </Flex>
-      ) : null}
     </Paper>
   )
 }
