@@ -16,10 +16,11 @@ type UserBadgesProps = {
   userId: ID
   badgeSize?: IconSize
   mint?: string
+  hideArtistCoinBadge?: boolean
 }
 
 export const UserBadges = (props: UserBadgesProps) => {
-  const { userId, badgeSize = 's', mint } = props
+  const { userId, badgeSize = 's', mint, hideArtistCoinBadge } = props
   const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
     FeatureFlags.ARTIST_COINS
   )
@@ -44,7 +45,8 @@ export const UserBadges = (props: UserBadgesProps) => {
   const shouldShowArtistCoinBadge =
     isArtistCoinEnabled &&
     !!displayMint &&
-    displayMint !== env.WAUDIO_MINT_ADDRESS
+    displayMint !== env.WAUDIO_MINT_ADDRESS &&
+    !hideArtistCoinBadge
 
   return (
     <Flex row gap='xs' alignItems='center'>

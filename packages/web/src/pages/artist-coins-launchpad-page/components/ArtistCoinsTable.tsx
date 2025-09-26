@@ -120,6 +120,8 @@ const renderTokenNameCell = (cellInfo: CoinCell) => {
             badgeSize='xs'
             ellipses
             fullWidth
+            hideArtistCoinBadge
+            popover
           />
         ) : (
           <Skeleton h='24px' w='100px' />

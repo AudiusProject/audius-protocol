@@ -55,7 +55,12 @@ const CoinRow = ({ coin, onPress }: CoinRowProps) => {
             </Text>
           </Flex>
 
-          <UserLink userId={ownerId} size='xs' badgeSize='2xs' />
+          <UserLink
+            userId={ownerId}
+            size='xs'
+            badgeSize='2xs'
+            hideArtistCoinBadge
+          />
         </Flex>
       </Flex>
     </TouchableOpacity>
