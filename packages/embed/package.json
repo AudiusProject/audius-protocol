@@ -21,7 +21,7 @@
   "devDependencies": {
     "@audius/dotenv-linter": "*",
     "@cloudflare/kv-asset-handler": "^0.3.0",
-    "@cloudflare/wrangler": "3.30.1",
+    "wrangler": "3.30.1",
     "@vitejs/plugin-react": "4.1.0",
     "env-cmd": "10.1.0",
     "esbuild-plugin-react-virtualized": "^1.0.4",
