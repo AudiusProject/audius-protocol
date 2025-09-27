@@ -68,9 +68,6 @@ const SendTokensInput = ({
     includeStaked: false
   })
   const tokenInfo = coin ? transformArtistCoinToTokenInfo(coin) : undefined
-  const currentBalance = tokenBalance?.balance
-    ? tokenBalance.balance.value
-    : BigInt(0)
 
   const handleAmountChange = useCallback((value: string, weiAmount: bigint) => {
     setAmount(value)
@@ -93,7 +90,10 @@ const SendTokensInput = ({
       setAmountError('AMOUNT_REQUIRED')
       isValid = false
     } else {
-      const amountWei = new FixedDecimal(amount, tokenInfo?.decimals).value
+      const currentBalance = tokenBalance?.balance
+        ? tokenBalance.balance.value
+        : BigInt(0)
+      const amountWei = new FixedDecimal(amount, tokenBalance?.decimals).value
       if (amountWei > currentBalance) {
         setAmountError('INSUFFICIENT_BALANCE')
         isValid = false
@@ -159,7 +159,7 @@ const SendTokensInput = ({
   }
 
   // Use the pre-formatted balance from the tokenBalance hook
-  const formattedBalance = tokenBalance?.balanceLocaleString ?? '0.00'
+  const formattedBalance = tokenBalance?.balanceLocaleString ?? ''
 
   return (
     <Flex direction='column' gap='xl' p='xl'>
