@@ -37,7 +37,7 @@ const badgeTiers = [
 ]
 
 const getTierIcon = (balance) => {
-  const balanceWei = AUDIO(balance).value
+  const balanceWei = BigInt(balance)
   const index = badgeTiers.findIndex((t) => t.amount <= balanceWei)
   const tier = index === -1 ? null : badgeTiers[index]
   return tier ? tier.icon : null
