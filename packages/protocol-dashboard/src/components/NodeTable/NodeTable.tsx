@@ -5,7 +5,11 @@ import { useContentNodes } from 'store/cache/contentNode/hooks'
 import { useDiscoveryProviders } from 'store/cache/discoveryProvider/hooks'
 import { Address, NodeService, ServiceType, Status } from 'types'
 import { usePushRoute } from 'utils/effects'
-import { NODES_CONTENT, contentNodePage, discoveryNodePage } from 'utils/routes'
+import {
+  NODES_VALIDATORS,
+  contentNodePage,
+  discoveryNodePage
+} from 'utils/routes'
 
 const messages = {
   title: 'Nodes',
@@ -20,7 +24,7 @@ type OwnProps = {
 }
 
 type NodeTableProps = OwnProps
-const ContentTable: React.FC<NodeTableProps> = ({
+const NodeTable: React.FC<NodeTableProps> = ({
   className,
   limit,
   owner,
@@ -32,7 +36,7 @@ const ContentTable: React.FC<NodeTableProps> = ({
   const allNodes = [...cnNodes, ...dpNodes]
 
   const onClickMore = useCallback(() => {
-    pushRoute(NODES_CONTENT)
+    pushRoute(NODES_VALIDATORS)
   }, [pushRoute])
 
   const onRowClick = useCallback(
@@ -62,4 +66,4 @@ const ContentTable: React.FC<NodeTableProps> = ({
   )
 }
 
-export default ContentTable
+export default NodeTable
