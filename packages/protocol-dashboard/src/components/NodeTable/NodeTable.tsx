@@ -24,7 +24,7 @@ type OwnProps = {
 }
 
 type NodeTableProps = OwnProps
-const ContentTable: React.FC<NodeTableProps> = ({
+const NodeTable: React.FC<NodeTableProps> = ({
   className,
   limit,
   owner,
@@ -66,4 +66,4 @@ const ContentTable: React.FC<NodeTableProps> = ({
   )
 }
 
-export default ContentTable
+export default NodeTable
