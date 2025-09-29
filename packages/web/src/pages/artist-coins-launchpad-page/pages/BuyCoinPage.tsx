@@ -6,7 +6,7 @@ import {
   useWalletAudioBalance
 } from '@audius/common/api'
 import { useDebouncedCallback } from '@audius/common/hooks'
-import { Chain } from '@audius/common/models'
+import { Chain, LaunchpadFormValues } from '@audius/common/models'
 import { AUDIO } from '@audius/fixed-decimal'
 import {
   Artwork,
@@ -32,9 +32,9 @@ import { useLaunchpadConfig } from 'hooks/useLaunchpadConfig'
 
 import { ArtistCoinsSubmitRow } from '../components/ArtistCoinsSubmitRow'
 import { LaunchpadBuyModal } from '../components/LaunchpadBuyModal'
-import type { PhasePageProps, SetupFormValues } from '../components/types'
+import type { PhasePageProps } from '../components/types'
 import { AMOUNT_OF_STEPS } from '../constants'
-import { getLatestConnectedWallet } from '../utils'
+import { getLatestConnectedWallet, useLaunchpadAnalytics } from '../utils'
 import { FIELDS } from '../validation'
 
 const messages = {
@@ -82,7 +82,7 @@ export const BuyCoinPage = ({
 }) => {
   // Use Formik context to manage form state, including payAmount and receiveAmount
   const { values, setFieldValue, errors, touched, validateForm } =
-    useFormikContext<SetupFormValues>()
+    useFormikContext<LaunchpadFormValues>()
   const { data: launchpadConfig } = useLaunchpadConfig()
   const { maxTokenOutputAmount, maxAudioInputAmount } = launchpadConfig ?? {
     maxTokenOutputAmount: Infinity,
@@ -95,7 +95,25 @@ export const BuyCoinPage = ({
     () => getLatestConnectedWallet(connectedWallets),
     [connectedWallets]
   )
+
+  const {
+    trackBuyModalOpen,
+    trackBuyModalClose,
+    trackFirstBuyQuoteReceived,
+    trackFormInputChange,
+    trackFirstBuyMaxButton
+  } = useLaunchpadAnalytics({
+    externalWalletAddress: connectedWallet?.address
+  })
   const [isBuyModalOpen, setIsBuyModalOpen] = useState(false)
+  const handleBuyModalOpen = () => {
+    trackBuyModalOpen()
+    setIsBuyModalOpen(true)
+  }
+  const handleBuyModalClose = () => {
+    trackBuyModalClose()
+    setIsBuyModalOpen(false)
+  }
   const { data: audioBalance } = useWalletAudioBalance({
     address: connectedWallet?.address ?? '',
     chain: connectedWallet?.chain ?? Chain.Sol
@@ -139,15 +157,27 @@ export const BuyCoinPage = ({
         FIELDS.usdcValue,
         firstBuyQuoteData.usdcAmountUiString ?? '0.00'
       )
+
       if (isReceiveAmountChanging) {
         setFieldValue(
           FIELDS.receiveAmount,
           firstBuyQuoteData.tokenAmountUiString
         )
+        trackFirstBuyQuoteReceived({
+          payAmount: firstBuyQuoteData.audioAmountUiString,
+          receiveAmount: firstBuyQuoteData.tokenAmountUiString,
+          usdcValue: firstBuyQuoteData.usdcAmountUiString ?? '0.00'
+        })
+
         validateForm()
       }
       if (isPayAmountChanging) {
         setFieldValue(FIELDS.payAmount, firstBuyQuoteData.audioAmountUiString)
+        trackFirstBuyQuoteReceived({
+          payAmount: firstBuyQuoteData.audioAmountUiString,
+          receiveAmount: firstBuyQuoteData.tokenAmountUiString,
+          usdcValue: firstBuyQuoteData.usdcAmountUiString ?? '0.00'
+        })
         validateForm()
       }
     }
@@ -157,7 +187,9 @@ export const BuyCoinPage = ({
     isReceiveAmountChanging,
     isPayAmountChanging,
     prevFirstBuyQuoteData,
-    validateForm
+    validateForm,
+    trackFormInputChange,
+    trackFirstBuyQuoteReceived
   ])
 
   const handleBack = () => {
@@ -173,6 +205,7 @@ export const BuyCoinPage = ({
   ) => {
     const newValue = event.target.value
     setFieldValue(FIELDS.wantsToBuy, newValue)
+    trackFormInputChange('wantsToBuy', newValue)
 
     // If user selects "no", reset the first buy form fields and their errors
     if (newValue === 'no') {
@@ -184,6 +217,7 @@ export const BuyCoinPage = ({
   }
 
   const handleMaxClick = () => {
+    trackFirstBuyMaxButton(audioBalanceString)
     setFieldValue(FIELDS.payAmount, audioBalanceString)
     debouncedPayAmountChange(audioBalanceString)
   }
@@ -253,7 +287,7 @@ export const BuyCoinPage = ({
       {isBuyModalOpen ? (
         <LaunchpadBuyModal
           isOpen={isBuyModalOpen}
-          onClose={() => setIsBuyModalOpen(false)}
+          onClose={handleBuyModalClose}
         />
       ) : null}
       <Flex
@@ -322,10 +356,7 @@ export const BuyCoinPage = ({
                     {messages.youPay}
                   </Text>
                   <Flex gap='s'>
-                    <TextLink
-                      variant='visible'
-                      onClick={() => setIsBuyModalOpen(true)}
-                    >
+                    <TextLink variant='visible' onClick={handleBuyModalOpen}>
                       {messages.buyAudio}
                     </TextLink>
                     <Flex gap='xs'>

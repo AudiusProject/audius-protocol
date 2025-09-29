@@ -11,6 +11,7 @@ import {
 } from '@audius/common/api'
 import { launchpadMessages } from '@audius/common/messages'
 import { Feature } from '@audius/common/models'
+import type { LaunchpadFormValues } from '@audius/common/models'
 import { TOKEN_LISTING_MAP, useCoinSuccessModal } from '@audius/common/store'
 import { shortenSPLAddress, route } from '@audius/common/utils'
 import { FixedDecimal, wAUDIO } from '@audius/fixed-decimal'
@@ -38,10 +39,9 @@ import {
   InsufficientBalanceModal,
   LaunchpadSubmitModal
 } from './components/LaunchpadModals'
-import type { SetupFormValues } from './components/types'
 import { LAUNCHPAD_COIN_DESCRIPTION, MIN_SOL_BALANCE, Phase } from './constants'
 import { BuyCoinPage, ReviewPage, SetupPage, SplashPage } from './pages'
-import { getLatestConnectedWallet } from './utils'
+import { getLatestConnectedWallet, useLaunchpadAnalytics } from './utils'
 import { useLaunchpadFormSchema } from './validation'
 
 const messages = {
@@ -74,6 +74,17 @@ const LaunchpadPageContent = ({
     () => getLatestConnectedWallet(connectedWallets),
     [connectedWallets]
   )
+  const {
+    trackSplashGetStarted,
+    trackSetupContinue,
+    trackFormBack,
+    trackReviewContinue,
+    trackWalletConnectSuccess,
+    trackWalletConnectError,
+    trackWalletInsufficientBalance
+  } = useLaunchpadAnalytics({
+    externalWalletAddress: connectedWallet?.address
+  })
   const [isInsufficientBalanceModalOpen, setIsInsufficientBalanceModalOpen] =
     useState(false)
 
@@ -105,7 +116,10 @@ const LaunchpadPageContent = ({
       })
 
       const walletBalanceLamports = balanceData.balanceLamports
-      return walletBalanceLamports >= MIN_SOL_BALANCE
+      return {
+        isValid: walletBalanceLamports >= MIN_SOL_BALANCE,
+        walletBalanceLamports
+      }
     },
     [queryClient, queryContext]
   )
@@ -129,9 +143,13 @@ const LaunchpadPageContent = ({
     async (wallets: ConnectedWallet[]) => {
       const newWallet = wallets[0]
 
-      const isValidWalletBalance = await getIsValidWalletBalance(
-        newWallet.address
-      )
+      const { isValid: isValidWalletBalance, walletBalanceLamports } =
+        await getIsValidWalletBalance(newWallet.address)
+      if (isValidWalletBalance) {
+        trackWalletConnectSuccess(newWallet.address, walletBalanceLamports)
+      } else {
+        trackWalletInsufficientBalance(newWallet.address, walletBalanceLamports)
+      }
       try {
         if (isValidWalletBalance) {
           handleWalletAddSuccess(newWallet)
@@ -145,32 +163,46 @@ const LaunchpadPageContent = ({
     [
       getIsValidWalletBalance,
       handleWalletAddSuccess,
-      setIsInsufficientBalanceModalOpen
+      setIsInsufficientBalanceModalOpen,
+      trackWalletConnectSuccess,
+      trackWalletInsufficientBalance
     ]
   )
 
+  // NOTE: an error here can also mean that a wallet has already been added recently
   const handleWalletConnectError = useCallback(
     async (error: unknown) => {
       // If wallet is already linked, continue with the flow
       if (error instanceof AlreadyAssociatedError) {
         const lastConnectedWallet = getLatestConnectedWallet(connectedWallets)
         if (lastConnectedWallet) {
-          const isValidWalletBalance = await getIsValidWalletBalance(
-            lastConnectedWallet?.address
-          )
+          const { isValid: isValidWalletBalance, walletBalanceLamports } =
+            await getIsValidWalletBalance(lastConnectedWallet?.address)
           if (isValidWalletBalance) {
+            trackWalletConnectSuccess(
+              lastConnectedWallet.address,
+              walletBalanceLamports
+            )
             handleWalletAddSuccess(lastConnectedWallet)
           } else {
+            trackWalletInsufficientBalance(
+              lastConnectedWallet.address,
+              walletBalanceLamports
+            )
             setIsInsufficientBalanceModalOpen(true)
           }
         }
+      } else {
+        trackWalletConnectError(error)
       }
     },
     [
       connectedWallets,
       getIsValidWalletBalance,
       handleWalletAddSuccess,
-      setIsInsufficientBalanceModalOpen
+      trackWalletConnectError,
+      trackWalletInsufficientBalance,
+      trackWalletConnectSuccess
     ]
   )
 
@@ -183,30 +215,36 @@ const LaunchpadPageContent = ({
   const handleSplashContinue = useCallback(async () => {
     // Switch to Solana network to prioritize SOL wallets
     await appkitModal.switchNetwork(solana)
+    trackSplashGetStarted()
     openAppKitModal('solana')
-  }, [openAppKitModal])
+  }, [openAppKitModal, trackSplashGetStarted])
 
   const handleSetupContinue = useCallback(() => {
     setPhase(Phase.REVIEW)
-  }, [])
+    trackSetupContinue()
+  }, [trackSetupContinue])
 
   const handleSetupBack = useCallback(async () => {
     resetForm()
     await validateForm()
     setPhase(Phase.SPLASH)
-  }, [resetForm, validateForm])
+    trackFormBack()
+  }, [resetForm, validateForm, trackFormBack])
 
   const handleReviewContinue = useCallback(() => {
     setPhase(Phase.BUY_COIN)
-  }, [])
+    trackReviewContinue()
+  }, [trackReviewContinue])
 
   const handleReviewBack = useCallback(() => {
     setPhase(Phase.SETUP)
-  }, [])
+    trackFormBack()
+  }, [trackFormBack])
 
   const handleBuyCoinBack = useCallback(() => {
     setPhase(Phase.REVIEW)
-  }, [])
+    trackFormBack()
+  }, [trackFormBack])
 
   const renderCurrentPage = () => {
     switch (phase) {
@@ -282,10 +320,23 @@ export const LaunchpadPage = () => {
   const { data: user } = useCurrentAccountUser()
   const { data: connectedWallets } = useConnectedWallets()
   const { validationSchema } = useLaunchpadFormSchema()
-  const [formValues, setFormValues] = useState<SetupFormValues | null>(null)
+  const [formValues, setFormValues] = useState<LaunchpadFormValues | null>(null)
 
   const { onOpen: openCoinSuccessModal } = useCoinSuccessModal()
   const navigate = useNavigate()
+
+  const connectedWallet = useMemo(
+    () => getLatestConnectedWallet(connectedWallets),
+    [connectedWallets]
+  )
+  const {
+    trackCoinCreationStarted,
+    trackCoinCreationFailure,
+    trackCoinCreationSuccess,
+    trackFirstBuyRetry
+  } = useLaunchpadAnalytics({
+    externalWalletAddress: connectedWallet?.address
+  })
 
   // Launch coin mutation hook - this handles pool creation, sdk coin creation, and first buy transaction
   const {
@@ -302,6 +353,10 @@ export const LaunchpadPage = () => {
   const isLaunchCoinError = launchCoinResponse?.isError
   const isPoolCreateError =
     isLaunchCoinError && !errorMetadata?.poolCreateConfirmed
+  const isSdkCreateError =
+    isLaunchCoinError &&
+    errorMetadata?.poolCreateConfirmed &&
+    !errorMetadata?.sdkCoinAdded
   const isFirstBuyError =
     isLaunchCoinError &&
     errorMetadata?.poolCreateConfirmed &&
@@ -327,6 +382,27 @@ export const LaunchpadPage = () => {
   const isError =
     uncaughtLaunchCoinError || isLaunchCoinError || isSwapRetryError
 
+  useEffect(() => {
+    if (isLaunchCoinError) {
+      const errorState = isPoolCreateError
+        ? 'poolCreateFailed'
+        : isFirstBuyError
+          ? 'firstBuyFailed'
+          : isSdkCreateError
+            ? 'sdkCoinFailed'
+            : 'unknownError'
+      trackCoinCreationFailure(launchCoinResponse, errorState)
+    }
+  }, [
+    isLaunchCoinError,
+    launchCoinResponse,
+    formValues,
+    trackCoinCreationFailure,
+    isPoolCreateError,
+    isFirstBuyError,
+    isSdkCreateError
+  ])
+
   // If an error occurs after the pool is created, we close the modal to let the user resubmit via the swap retry flow
   useEffect(() => {
     if (isPoolCreateError) {
@@ -337,6 +413,7 @@ export const LaunchpadPage = () => {
   // Handle successful coin creation
   useEffect(() => {
     if (isSuccess && launchCoinResponse && formValues) {
+      trackCoinCreationSuccess(launchCoinResponse, formValues)
       // Show toast notification
       toast(
         <Flex gap='xs'>
@@ -366,6 +443,7 @@ export const LaunchpadPage = () => {
     openCoinSuccessModal,
     navigate,
     formValues,
+    trackCoinCreationSuccess,
     isError,
     isSuccess,
     toast
@@ -396,7 +474,7 @@ export const LaunchpadPage = () => {
   }, [isSwapRetryError, toast])
 
   const handleSubmit = useCallback(
-    (formValues: SetupFormValues) => {
+    (formValues: LaunchpadFormValues) => {
       // Store form values for success modal
       setFormValues(formValues)
 
@@ -436,6 +514,7 @@ export const LaunchpadPage = () => {
         const mintAddress =
           launchCoinResponse.newMint || errorMetadata?.coinMetadata?.mint
         if (formValues.payAmount && mintAddress) {
+          trackFirstBuyRetry(launchCoinResponse)
           // Retry the first buy transaction with a new swap TX
           swapTokens({
             inputToken: TOKEN_LISTING_MAP.AUDIO,
@@ -463,6 +542,7 @@ export const LaunchpadPage = () => {
           })
         }
       } else {
+        trackCoinCreationStarted(connectedWallet.address, formValues)
         launchCoin({
           userId: user.user_id,
           name: formValues.coinName,
@@ -481,10 +561,12 @@ export const LaunchpadPage = () => {
       connectedWallets,
       user,
       isFirstBuyError,
-      launchCoinResponse?.newMint,
-      errorMetadata,
-      swapTokens,
       toast,
+      launchCoinResponse,
+      errorMetadata,
+      trackFirstBuyRetry,
+      swapTokens,
+      trackCoinCreationStarted,
       launchCoin
     ]
   )
@@ -495,7 +577,7 @@ export const LaunchpadPage = () => {
   }
 
   return (
-    <Formik<SetupFormValues>
+    <Formik<LaunchpadFormValues>
       initialValues={{
         coinName: '',
         coinSymbol: '',
