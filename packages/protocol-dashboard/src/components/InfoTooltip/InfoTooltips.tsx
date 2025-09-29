@@ -41,6 +41,9 @@ const messages = {
   topContributorsTooltipTitle: 'Who are Top Contributors?',
   topContributorsTooltipBody:
     "'Top Contributors' is a ranked list of wallet addresses based on their Voting Weight, which reflects the amount of $AUDIO tokens they have staked or delegated.",
+  nodesTooltipTitle: 'What are Validator Nodes?',
+  nodesTooltipBody:
+    'Validator Nodes are vital for storing and maintaining the availability of all of the media on the Audius network as well as validating all transactions that happen on the network.',
   discoveryNodesTooltipTitle: 'What are Discovery Nodes?',
   discoveryNodesTooltipBody:
     'Discovery Nodes are services in the Audius network responsible for indexing metadata and making data available for queries. They store and update information such as user, track, and playlist details, along with social features, facilitating efficient data access for users.',
@@ -229,6 +232,17 @@ export const TopContributorsInfoTooltip = ({
       size={size}
       title={messages.topContributorsTooltipTitle}
       body={messages.topContributorsTooltipBody}
+    />
+  )
+}
+
+export const NodesInfoTooltip = ({ color, size }: AppliedInfoTooltipProps) => {
+  return (
+    <InfoTooltip
+      color={color}
+      size={size}
+      title={messages.nodesTooltipTitle}
+      body={messages.nodesTooltipBody}
     />
   )
 }
