@@ -108,6 +108,6 @@ func recoverPubkeyFromCoreTx(em *core_proto.ManageEntityLegacy) (string, *ecdsa.
 }
 
 func toBytes(str string) []byte {
-	v, _ := hex.DecodeString(strings.TrimLeft(str, "0x"))
+	v, _ := hex.DecodeString(strings.TrimPrefix(str, "0x"))
 	return v
 }
