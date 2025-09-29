@@ -4,6 +4,7 @@ import {
   useCurrentUserId,
   useUserCoins,
   useQueryContext,
+  useUSDCBalance,
   UserCoin
 } from '~/api'
 import { useFeatureFlag } from '~/hooks'
@@ -18,6 +19,7 @@ import { ownedCoinsFilter } from '~/utils'
 export const useOwnedTokens = (allTokens: TokenInfo[]) => {
   const { data: currentUserId } = useCurrentUserId()
   const { data: userCoins } = useUserCoins({ userId: currentUserId })
+  const { data: usdcBalance } = useUSDCBalance()
   const { env } = useQueryContext()
   const { isEnabled: isArtistCoinsEnabled } = useFeatureFlag(
     FeatureFlags.ARTIST_COINS
@@ -37,13 +39,25 @@ export const useOwnedTokens = (allTokens: TokenInfo[]) => {
       filteredUserCoins.map((coin: UserCoin) => coin.mint)
     )
 
+    // Add USDC to owned tokens if user has USDC balance
+    if (usdcBalance && usdcBalance > BigInt(0)) {
+      userOwnedMints.add(env.USDC_MINT_ADDRESS)
+    }
+
     // Filter available tokens to only include ones the user owns
     const ownedTokensList = allTokens.filter((token) =>
       userOwnedMints.has(token.address)
     )
 
     return ownedTokensList
-  }, [userCoins, allTokens, isArtistCoinsEnabled, env.WAUDIO_MINT_ADDRESS])
+  }, [
+    userCoins,
+    usdcBalance,
+    allTokens,
+    isArtistCoinsEnabled,
+    env.WAUDIO_MINT_ADDRESS,
+    env.USDC_MINT_ADDRESS
+  ])
 
   return {
     ownedTokens,

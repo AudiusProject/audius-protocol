@@ -265,12 +265,12 @@ export const useTokenSwapForm = ({
   const handleMaxClick = useCallback(() => {
     const balance = tokenData.balance
     if (balance !== undefined) {
-      const finalAmount = Math.min(balance, max)
+      const finalAmount = balance
       const finalAmountString = finalAmount.toString()
       swapCalculations.handleInputChange(finalAmountString)
       setFieldTouched('inputAmount', true, false)
     }
-  }, [tokenData.balance, max, swapCalculations, setFieldTouched])
+  }, [tokenData.balance, swapCalculations, setFieldTouched])
 
   return {
     inputAmount: swapCalculations.inputAmount, // Raw string input for display

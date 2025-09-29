@@ -57,6 +57,9 @@ export const BuySellModal = () => {
       <ModalHeader
         onClose={onClose}
         showDismissButton={!isFlowLoading && modalScreen !== 'success'}
+        style={{
+          borderBottom: !isFlowLoading ? undefined : 'none'
+        }}
       >
         <ModalTitle title={title} />
         {modalScreen === 'input' && !isFlowLoading && (
