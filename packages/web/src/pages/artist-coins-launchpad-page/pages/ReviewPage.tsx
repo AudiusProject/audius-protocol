@@ -55,15 +55,15 @@ const tooltipContent = {
   totalSupply:
     'The total number of your artist coins that will ever exist. This amount is fixed and never changes.',
   initialMarketCap:
-    'The starting value of your coin at launch, based on the initial supply made available for trading.',
+    'The starting value of your coin at launch, based on the initial price and supply. These values are the same for all artist coins.',
   graduationMarketCap:
-    'The market cap your coin will reach once all vesting and distribution milestones are complete.',
+    'The market cap your coin will reach when it graduates from the bonding curve and into the open market.',
   allocation:
-    "The percentage of your total coin supply reserved for you as the creator. You'll receive this gradually through vesting.",
+    'The percentage of your total coin supply reserved for you as the creator. You’ll receive this gradually through vesting.',
   vesting:
-    'Your reserved coins are unlocked over time, following this schedule.',
+    'Once your coin graduates into the open market, your reserved coins are unlocked daily over a 5-year period. You can claim your unlocked coins every day, or let them accumulate as long as you’d like.',
   tradingFees:
-    "The percentage of every trade that you'll earn as revenue. Fees are automatically deposited to your connected wallet."
+    'You earn half of all trading fees for all trades of your coin. Trading fees are 1%.'
 }
 
 const useStyles = makeResponsiveStyles(({ theme }) => ({
