@@ -18,7 +18,6 @@ export const useAnalytics = () => {
    */
   const track = useCallback(
     async (event: AnalyticsEvent, callback?: () => void) => {
-      console.log('track', event)
       return analytics.track(event, callback)
     },
     [analytics]
