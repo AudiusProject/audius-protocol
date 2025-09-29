@@ -74,20 +74,26 @@ export const ArtistCoinDetailsModal = ({
 
         {/* Coin Address */}
         {artistCoin?.mint ? (
-          <TokenInfoRow
-            label={artistCoinDetails.coinAddress}
-            value={artistCoin.mint}
-            variant='block'
-          />
+          <Flex direction='column' gap='xs' w='100%'>
+            <Text variant='body' size='m' strength='strong' color='subdued'>
+              {artistCoinDetails.coinAddress}
+            </Text>
+            <Text variant='body' size='m' userSelect='text'>
+              {artistCoin.mint}
+            </Text>
+          </Flex>
         ) : null}
 
         {/* On-Chain Description */}
         {artistCoin?.description ? (
-          <TokenInfoRow
-            label={artistCoinDetails.onChainDescription}
-            value={artistCoin.description}
-            variant='block'
-          />
+          <Flex direction='column' gap='xs' w='100%'>
+            <Text variant='body' size='m' strength='strong' color='subdued'>
+              {artistCoinDetails.onChainDescription}
+            </Text>
+            <Text variant='body' size='m' userSelect='text'>
+              {artistCoin.description}
+            </Text>
+          </Flex>
         ) : null}
 
         <Divider />

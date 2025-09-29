@@ -28,9 +28,7 @@ export const TokenInfoRow = ({
         <Tooltip text={tooltipContent} mount='body'>
           <IconInfo size='s' color='subdued' />
         </Tooltip>
-      ) : (
-        <IconInfo size='s' color='subdued' />
-      )}
+      ) : null}
     </Flex>
   )
 
