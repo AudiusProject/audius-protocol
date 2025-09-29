@@ -41,13 +41,12 @@ export const calculateTokenLimits = (
  * Allows for manual override of calculated limits
  */
 export const resolveTokenLimits = (input: TokenLimitInput): TokenLimits => {
-  const { tokenPrice, isStablecoin, providedMin, providedMax } = input
+  const { providedMin, providedMax } = input
 
-  // Otherwise, calculate based on USD limits and price
-  const { min, max } = calculateTokenLimits(tokenPrice, isStablecoin)
+  // Remove enforced min/max limits - allow any amount
   return {
-    min: providedMin ?? min,
-    max: providedMax ?? max
+    min: providedMin ?? 0,
+    max: providedMax ?? Number.MAX_SAFE_INTEGER
   }
 }
 

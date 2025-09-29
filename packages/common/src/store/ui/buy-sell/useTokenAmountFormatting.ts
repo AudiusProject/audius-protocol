@@ -2,7 +2,6 @@ import { useCallback, useMemo } from 'react'
 
 import { FixedDecimal } from '@audius/fixed-decimal'
 
-import { formatUSDCValue } from '~/api'
 import { getTokenDecimalPlaces, getCurrencyDecimalPlaces } from '~/utils'
 
 export type UseTokenAmountFormattingProps = {
@@ -52,7 +51,15 @@ export const useTokenAmountFormatting = ({
     if (availableBalance == null || isNaN(availableBalance)) return null
 
     if (isStablecoin) {
-      return formatUSDCValue(availableBalance, { useFixed: false })
+      // Show 2 decimals for amounts >= 0.10, more decimals for smaller amounts
+      const absAmount = Math.abs(availableBalance)
+      const maxFractionDigits =
+        absAmount >= 0.1 ? 2 : getTokenDecimalPlaces(availableBalance)
+
+      return availableBalance.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: maxFractionDigits
+      })
     }
 
     const tokenAmount = new FixedDecimal(availableBalance, decimals)
@@ -72,7 +79,15 @@ export const useTokenAmountFormatting = ({
     if (safeNumericAmount === 0) return placeholder
 
     if (isStablecoin) {
-      return formatUSDCValue(safeNumericAmount, { useFixed: false })
+      // Show 2 decimals for amounts >= 0.10, more decimals for smaller amounts
+      const absAmount = Math.abs(safeNumericAmount)
+      const maxFractionDigits =
+        absAmount >= 0.1 ? 2 : getTokenDecimalPlaces(safeNumericAmount)
+
+      return safeNumericAmount.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: maxFractionDigits
+      })
     }
 
     const tokenAmount = new FixedDecimal(safeNumericAmount, decimals)

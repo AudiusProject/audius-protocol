@@ -7,14 +7,8 @@ import {
   useState
 } from 'react'
 
-import {
-  useArtistCoin,
-  useCurrentAccountUser,
-  useTokenPair,
-  useTokens,
-  useUserCoins
-} from '@audius/common/api'
-import { useBuySellAnalytics } from '@audius/common/hooks'
+import { useArtistCoin, useTokenPair, useTokens } from '@audius/common/api'
+import { useBuySellAnalytics, useOwnedTokens } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
 import { SwapStatus } from '@audius/common/src/api/tan-query/jupiter/types'
@@ -164,20 +158,15 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     return tokensLoading ? [] : Object.values(tokens)
   }, [tokens, tokensLoading])
 
-  // Get current user and their coin balances
-  const { data: currentUser } = useCurrentAccountUser()
-  const { data: userCoins } = useUserCoins({
-    userId: currentUser?.user_id ?? null
-  })
+  // Get tokens that user owns (includes USDC if user has balance)
+  const { ownedTokens } = useOwnedTokens(availableTokens)
 
   // Create a helper to check if user has positive balance for a token
   const hasPositiveBalance = useCallback(
     (tokenAddress: string): boolean => {
-      if (!userCoins) return false
-      const userCoin = userCoins.find((coin) => coin.mint === tokenAddress)
-      return userCoin ? userCoin.balance > 0 : false
+      return ownedTokens.some((token) => token.address === tokenAddress)
     },
-    [userCoins]
+    [ownedTokens]
   )
 
   // Create current token pair based on selected base and quote tokens
