@@ -245,10 +245,13 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
   }, [trackId, contentType, openPremiumContentPurchaseModal, onClose])
 
   const handleTokenPress = useCallback(() => {
-    if (token?.mint) {
-      navigation.navigate('CoinDetailsScreen', { mint: token.mint })
+    if (token?.ticker) {
+      navigation.navigate('BuySell', {
+        initialTab: 'buy',
+        coinTicker: token.ticker
+      })
     }
-  }, [navigation, token?.mint])
+  }, [navigation, token?.ticker])
 
   const handlePressArtistName = useCallback(
     (handle: string) => () => {

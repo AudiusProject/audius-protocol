@@ -40,7 +40,11 @@ export const coinMetadataFromCoin = (input: CoinSDK | Coin): CoinMetadata => ({
 /**
  * Converts a SDK `Coin` response to Coin, parsing ownerId from HashId string to number
  */
-export const coinFromSdk = (input: CoinSDK): Coin | undefined => {
+export const coinFromSdk = (input: CoinSDK | undefined): Coin | undefined => {
+  if (!input) {
+    return undefined
+  }
+
   const decodedOwnerId = HashId.parse(input.ownerId)
   if (!decodedOwnerId) {
     return undefined

@@ -1,6 +1,6 @@
 import { launchpadMessages } from '@audius/common/messages'
 import { useCoinSuccessModal } from '@audius/common/store'
-import { route } from '@audius/common/utils'
+import { formatTickerForUrl, route } from '@audius/common/utils'
 import {
   Artwork,
   Button,
@@ -18,6 +18,7 @@ import { useNavigate } from 'react-router-dom-v5-compat'
 
 import { AddressTile } from 'components/address-tile'
 import ConnectedMusicConfetti from 'components/music-confetti/ConnectedMusicConfetti'
+import { openXLink } from 'utils/xShare'
 
 export const CoinSuccessModal = () => {
   const { isOpen, data: coinData, onClose, onClosed } = useCoinSuccessModal()
@@ -29,11 +30,11 @@ export const CoinSuccessModal = () => {
   }
 
   const handleShareToX = () => {
-    if (!coinData?.ticker) return
+    if (!coinData?.ticker || !coinData?.mint) return
 
-    const shareText = `My artist coin $${coinData.ticker} is live on @AudiusProject. Be the first to buy and unlock my exclusive fan club:`
-    const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`
-    window.open(shareUrl, '_blank')
+    const coinUrl = `https://audius.co${route.COIN_DETAIL_ROUTE.replace(':ticker', formatTickerForUrl(coinData.ticker))}`
+    const shareText = `My artist coin ${coinData.ticker} is live on @Audius. Be the first to buy and unlock my exclusive fan club!\n\n${coinData.mint}\n`
+    openXLink(coinUrl, shareText)
   }
 
   if (!coinData) return null

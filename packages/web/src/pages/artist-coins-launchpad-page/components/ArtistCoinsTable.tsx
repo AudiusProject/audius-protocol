@@ -52,12 +52,31 @@ const renderTokenNameCell = (cellInfo: CoinCell) => {
   return (
     <Flex
       pl='xl'
-      gap='s'
+      gap='l'
       alignItems='center'
-      justifyContent='space-between'
+      justifyContent='flex-start'
       w='100%'
     >
-      <Flex gap='s' alignItems='center' w='100%' css={{ overflow: 'hidden' }}>
+      <Flex justifyContent='flex-end' css={{ flex: '0 0 2ch' }}>
+        <Text
+          variant='body'
+          size='s'
+          strength='strong'
+          css={{ fontVariantNumeric: 'tabular-nums' }}
+        >
+          {cellInfo.row.index + 1}
+        </Text>
+      </Flex>
+      <Flex
+        gap='m'
+        alignItems='center'
+        css={{
+          overflow: 'hidden',
+          flex: '0 0 clamp(80px, 24ch, 180px)',
+          minWidth: 'clamp(80px, 24ch, 180px)',
+          maxWidth: 'clamp(80px, 24ch, 180px)'
+        }}
+      >
         <TokenIcon
           logoURI={coin.logoUri}
           size='xl'
@@ -86,7 +105,14 @@ const renderTokenNameCell = (cellInfo: CoinCell) => {
           </TextLink>
         </Flex>
       </Flex>
-      <Flex w='100%' justifyContent='flex-start' css={{ overflow: 'hidden' }}>
+      <Flex
+        justifyContent='flex-start'
+        css={{
+          overflow: 'hidden',
+          flex: '1 1 0',
+          minWidth: '140px'
+        }}
+      >
         {ownerId ? (
           <UserLink
             userId={ownerId}
@@ -94,6 +120,8 @@ const renderTokenNameCell = (cellInfo: CoinCell) => {
             badgeSize='xs'
             ellipses
             fullWidth
+            hideArtistCoinBadge
+            popover
           />
         ) : (
           <Skeleton h='24px' w='100px' />
@@ -178,10 +206,9 @@ const renderBuyCell = (
 const tableColumnMap = {
   tokenName: {
     id: 'tokenName',
-    Header: 'Coin',
+    Header: () => <Flex css={{ paddingLeft: spacing.unit8 }}>Coin</Flex>,
     accessor: 'name',
     Cell: renderTokenNameCell,
-    width: 150,
     minWidth: 150,
     disableSortBy: true,
     align: 'left'
@@ -279,7 +306,7 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
   const mainContentRef = useMainContentRef()
   const navigate = useNavigate()
   const { onOpen: openBuySellModal } = useBuySellModal()
-  const tableRef = useRef<HTMLDivElement>(null)
+  const tableRef = useRef<HTMLDivElement | null>(null)
   const [hiddenColumns, setHiddenColumns] = useState<string[] | null>(null)
   const [sortMethod, setSortMethod] = useState<GetCoinsSortMethodEnum>(
     GetCoinsSortMethodEnum.MarketCap
@@ -300,42 +327,60 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
     (coin) => coin.mint !== env.WAUDIO_MINT_ADDRESS
   )
 
-  // Watch table width and hide columns accordingly
-  useEffect(() => {
-    const updateColumnVisibility = () => {
-      if (tableRef.current) {
-        const width = tableRef.current.offsetWidth
-        if (width < 550) {
-          setHiddenColumns([
-            tableColumnMap.volume24h.id,
-            tableColumnMap.marketCap.id,
-            tableColumnMap.createdDate.id,
-            tableColumnMap.holders.id
-          ])
-        } else if (width < 650) {
-          setHiddenColumns([
-            tableColumnMap.marketCap.id,
-            tableColumnMap.createdDate.id,
-            tableColumnMap.holders.id
-          ])
-        } else if (width < 720) {
-          setHiddenColumns([
-            tableColumnMap.createdDate.id,
-            tableColumnMap.holders.id
-          ])
-        } else if (width < 790) {
-          setHiddenColumns([tableColumnMap.holders.id])
-        } else {
-          setHiddenColumns(null)
-        }
+  const resizeObserverRef = useRef<ResizeObserver | null>(null)
+
+  const updateColumnVisibility = useCallback(() => {
+    if (!tableRef.current) return
+    const width = tableRef.current.offsetWidth
+    if (width < 728) {
+      setHiddenColumns([
+        tableColumnMap.volume24h.id,
+        tableColumnMap.marketCap.id,
+        tableColumnMap.createdDate.id,
+        tableColumnMap.holders.id
+      ])
+    } else if (width < 866) {
+      setHiddenColumns([
+        tableColumnMap.marketCap.id,
+        tableColumnMap.createdDate.id,
+        tableColumnMap.holders.id
+      ])
+    } else if (width < 972) {
+      setHiddenColumns([
+        tableColumnMap.createdDate.id,
+        tableColumnMap.holders.id
+      ])
+    } else if (width < 1074) {
+      setHiddenColumns([tableColumnMap.holders.id])
+    } else {
+      setHiddenColumns(null)
+    }
+  }, [])
+
+  const setTableNode = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (resizeObserverRef.current && tableRef.current) {
+        resizeObserverRef.current.unobserve(tableRef.current)
       }
+      tableRef.current = node
+      if (!node) return
+
+      if (!resizeObserverRef.current) {
+        resizeObserverRef.current = new ResizeObserver(() => {
+          updateColumnVisibility()
+        })
+      }
+      resizeObserverRef.current.observe(node)
+      updateColumnVisibility()
+    },
+    [updateColumnVisibility]
+  )
+
+  useEffect(() => {
+    return () => {
+      resizeObserverRef.current?.disconnect()
+      resizeObserverRef.current = null
     }
-    updateColumnVisibility()
-    const resizeObserver = new ResizeObserver(updateColumnVisibility)
-    if (tableRef.current) {
-      resizeObserver.observe(tableRef.current)
-    }
-    return () => resizeObserver.disconnect()
   }, [])
 
   const fetchMore = useCallback((offset: number) => {
@@ -430,7 +475,7 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
   }
 
   return (
-    <Flex ref={tableRef} border='default' borderRadius='m'>
+    <Flex ref={setTableNode} border='default' borderRadius='m'>
       <Table
         columns={columns}
         data={coins}

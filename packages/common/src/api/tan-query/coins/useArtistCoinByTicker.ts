@@ -5,6 +5,7 @@ import {
   type QueryFunctionContext
 } from '@tanstack/react-query'
 
+import { coinFromSdk } from '~/adapters/coin'
 import {
   useQueryContext,
   type QueryContextType
@@ -67,7 +68,7 @@ const getArtistCoinByTickerQueryFn =
     const response = await sdk.coins.getCoinByTicker({
       ticker
     })
-    const coin = response.data
+    const coin = coinFromSdk(response.data)
 
     // Prime the artist coin query key if we have the mint
     if (coin?.mint) {

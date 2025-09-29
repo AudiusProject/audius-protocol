@@ -59,6 +59,9 @@ export type SwapTokensResult = {
     amount: number
     uiAmount: number
   }
+  retryCount?: number
+  isRetrying?: boolean
+  maxRetries?: number
 }
 
 export type ClaimableTokenMint = TokenName | PublicKey
@@ -77,4 +80,5 @@ export type SwapDependencies = {
   ethAddress: string
   queryClient: ReturnType<typeof useQueryClient>
   user: User
+  audioMint: string
 }

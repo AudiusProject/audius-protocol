@@ -116,17 +116,6 @@ export const ArtistCoinDetailsDrawer = () => {
             </Flex>
           ) : null}
 
-          {artistCoin?.fdv ? (
-            <Flex direction='column' gap='xs'>
-              <Text variant='label' size='s' color='subdued'>
-                {artistCoinDetails.fdv}
-              </Text>
-              <Text variant='body' size='s'>
-                ${artistCoin.fdv.toLocaleString()}
-              </Text>
-            </Flex>
-          ) : null}
-
           {artistCoin?.price ? (
             <Flex direction='column' gap='xs'>
               <Text variant='label' size='s' color='subdued'>

@@ -1,6 +1,11 @@
 import { useCallback } from 'react'
 
-import type { ID, AccessConditions } from '@audius/common/models'
+import { useArtistCoin } from '@audius/common/api'
+import type {
+  ID,
+  AccessConditions,
+  TokenGatedConditions
+} from '@audius/common/models'
 import {
   ModalSource,
   isContentTokenGated,
@@ -79,6 +84,11 @@ export const LineupTileAccessStatus = ({
   const isUnlocking = gatedTrackStatus === 'UNLOCKING'
   const navigation = useNavigation()
 
+  const { data: token } = useArtistCoin(
+    (streamConditions as TokenGatedConditions)?.token_gate?.token_mint,
+    { enabled: isTokenGated }
+  )
+
   const handlePress = useCallback(() => {
     if (hasStreamAccess) {
       return
@@ -109,9 +119,10 @@ export const LineupTileAccessStatus = ({
         }
       )
     } else if (isTokenGated) {
-      if (streamConditions?.token_gate?.token_mint) {
-        navigation.push('CoinDetailsScreen', {
-          mint: streamConditions.token_gate.token_mint
+      if (token?.ticker) {
+        navigation.push('BuySell', {
+          initialTab: 'buy',
+          coinTicker: token.ticker
         })
       }
     } else if (contentId) {
@@ -126,7 +137,7 @@ export const LineupTileAccessStatus = ({
     contentType,
     openPremiumContentPurchaseModal,
     tileSource,
-    streamConditions,
+    token?.ticker,
     navigation,
     dispatch
   ])

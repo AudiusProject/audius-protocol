@@ -244,7 +244,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
         onScroll={throttledScrollHandler}
         className={cn(styles.root, classNameProp)}
         resetKey={chatId}
-        updateKey={messageListHeight}
+        updateKey={chatMessages}
         stickToBottom
         scrollBottomThreshold={SCROLL_BOTTOM_THRESHOLD}
         {...other}

@@ -114,16 +114,6 @@ export const ArtistCoinDetailsModal = ({
             />
           ) : null}
 
-          {artistCoin?.fdv ? (
-            <TokenInfoRow
-              label={artistCoinDetails.fdv}
-              value={`$${artistCoin.fdv.toLocaleString()}`}
-              hasTooltip
-              tooltipContent={artistCoinDetails.tooltips.fdv}
-              variant='block'
-            />
-          ) : null}
-
           {artistCoin?.price ? (
             <TokenInfoRow
               label={artistCoinDetails.price}

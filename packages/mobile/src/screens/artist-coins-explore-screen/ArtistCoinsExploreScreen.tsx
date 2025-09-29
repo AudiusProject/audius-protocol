@@ -28,6 +28,7 @@ import imageSearchHeaderBackground from 'app/assets/images/imageCoinsBackgroundI
 import { PlayBarChin } from 'app/components/core/PlayBarChin'
 import { UserLink } from 'app/components/user-link'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useStatusBarStyle } from 'app/hooks/useStatusBarStyle'
 import { env } from 'app/services/env'
 
 import { GradientText, TokenIcon, Screen } from '../../components/core'
@@ -55,7 +56,12 @@ const CoinRow = ({ coin, onPress }: CoinRowProps) => {
             </Text>
           </Flex>
 
-          <UserLink userId={ownerId} size='xs' badgeSize='2xs' />
+          <UserLink
+            userId={ownerId}
+            size='xs'
+            badgeSize='2xs'
+            hideArtistCoinBadge
+          />
         </Flex>
       </Flex>
     </TouchableOpacity>
@@ -120,6 +126,9 @@ export const ArtistCoinsExploreScreen = () => {
   const [sortDirection, setSortDirection] = useState<GetCoinsSortDirectionEnum>(
     GetCoinsSortDirectionEnum.Desc
   )
+
+  // Set status bar to light content for dark header
+  useStatusBarStyle('light-content')
 
   // Debounce search value to avoid excessive API calls
   useDebounce(() => setDebouncedSearchValue(searchValue), 300, [searchValue])

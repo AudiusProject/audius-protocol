@@ -67,7 +67,16 @@ export const coinDetailsMessages = {
     copyCoinAddress: 'Copy Coin Address',
     openDexscreener: 'Open Dexscreener',
     details: 'Details',
-    copiedToClipboard: 'Copied Coin Address To Clipboard!'
+    copiedToClipboard: 'Copied Coin Address To Clipboard!',
+    shareToX: 'Share to X',
+    shareToXArtistCopy: (coinTicker: string, coinAddress: string) =>
+      `My artist coin ${coinTicker} is live on @Audius. Be the first to buy and unlock my exclusive fan club!\n\n${coinAddress}\n`,
+    shareToXUserCopy: (
+      coinTicker: string,
+      artistHandle: string,
+      coinAddress: string
+    ) =>
+      `Check out @${artistHandle}'s artist coin ${coinTicker} on @Audius!\n\n${coinAddress}\n`
   },
   artistCoinDetails: {
     title: 'Artist Coin Details',
@@ -76,7 +85,6 @@ export const coinDetailsMessages = {
     onChainDescription: 'On-Chain Description',
     totalSupply: 'Total Supply',
     marketCap: 'Market Cap',
-    fdv: 'Fully Diluted Valuation',
     price: 'Current Price',
     liquidity: 'Liquidity',
     circulatingSupply: 'Circulating Supply',
@@ -87,7 +95,6 @@ export const coinDetailsMessages = {
         'The total number of your artist coins that will ever exist. This amount is fixed and never changes.',
       marketCap:
         'The current total value of all your artist coins in circulation, calculated by multiplying the current price by the total supply.',
-      fdv: 'The theoretical market cap if all tokens were in circulation, calculated by multiplying the current price by the total supply.',
       price: 'The current price of a single artist coin in USD.',
       liquidity:
         'The amount of funds available for trading your artist coin, which affects how easily it can be bought or sold.',

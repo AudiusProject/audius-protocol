@@ -268,7 +268,6 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
               onClick={isWAudio ? handleBrowseRewards : handleLearnMore}
               iconLeft={CTAIcon}
               variant='default'
-              size='large'
             >
               {isWAudio ? messages.browseRewards : messages.learnMore}
             </PlainButton>
@@ -291,7 +290,6 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
                     onClick={openDiscord}
                     iconLeft={IconDiscord}
                     variant='default'
-                    size='large'
                     disabled={isUserBalanceUnavailable}
                   >
                     {messages.openDiscord}
@@ -304,7 +302,6 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
                   onClick={openDiscord}
                   iconLeft={IconDiscord}
                   variant='default'
-                  size='large'
                   disabled={isUserBalanceUnavailable}
                 >
                   {messages.openDiscord}

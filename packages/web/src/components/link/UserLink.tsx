@@ -24,6 +24,7 @@ type UserLinkProps = Omit<TextLinkProps, 'to'> & {
   noOverflow?: boolean
   center?: boolean
   fullWidth?: boolean
+  hideArtistCoinBadge?: boolean
 }
 
 export const UserLink = (props: UserLinkProps) => {
@@ -38,6 +39,7 @@ export const UserLink = (props: UserLinkProps) => {
     noOverflow,
     center,
     fullWidth,
+    hideArtistCoinBadge,
     ...other
   } = props
   const { spacing } = useTheme()
@@ -63,6 +65,7 @@ export const UserLink = (props: UserLinkProps) => {
         display: 'inline-flex',
         verticalAlign: 'middle'
       }}
+      hideArtistCoinBadge={hideArtistCoinBadge}
     />
   )
 
