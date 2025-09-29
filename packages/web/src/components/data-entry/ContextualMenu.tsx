@@ -207,7 +207,7 @@ export const ContextualMenu = <FormValues extends FormikValues = FormikValues>(
           </Text>
           <IconCaretRight color='subdued' size='s' />
         </div>
-        <Text variant='body' textAlign='left'>
+        <Text variant='body' textAlign='left' color='subdued'>
           {description}
         </Text>
       </div>
