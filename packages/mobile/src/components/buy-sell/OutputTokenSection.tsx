@@ -77,7 +77,7 @@ export const OutputTokenSection = ({
             hideLabel
             placeholder={placeholder}
             startAdornmentText={isStablecoin ? '$' : ''}
-            endAdornmentText={symbol}
+            endAdornmentText={symbol === 'USDC' ? 'USD' : symbol}
             value={localAmount}
             onChangeText={handleTextChange}
             keyboardType='numeric'

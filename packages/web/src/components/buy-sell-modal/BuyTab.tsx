@@ -109,6 +109,7 @@ export const BuyTab = ({
             availableBalance={availableBalance}
             error={error}
             errorMessage={errorMessage}
+            hideTokenDisplay={true}
           />
           <OutputTokenSection
             tokenInfo={selectedOutputToken}

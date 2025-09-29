@@ -15,6 +15,7 @@ import {
 } from '@audius/harmony-native'
 import { TooltipInfoIcon } from 'app/components/buy-sell/TooltipInfoIcon'
 import { useDrawer } from 'app/hooks/useDrawer'
+import { env } from 'app/services/env'
 import { isIos } from 'app/utils/os'
 
 import { GraduationProgressBar } from './GraduationProgressBar'
@@ -96,7 +97,9 @@ const MetricRow = ({ metric, coin }: { metric: MetricData; coin?: Coin }) => {
   const isGraduationProgress = metric.label === 'Graduation Progress'
 
   if (isGraduationProgress) {
-    return <GraduationMetricRow metric={metric} coin={coin} />
+    return env.WAUDIO_MINT_ADDRESS === coin?.mint ? null : (
+      <GraduationMetricRow metric={metric} coin={coin} />
+    )
   }
 
   return (
