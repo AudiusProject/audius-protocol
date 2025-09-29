@@ -267,19 +267,16 @@ const LaunchpadPageContent = ({
 }
 
 export const LaunchpadPage = () => {
-  // const { data: currentUser } = useCurrentAccountUser()
-  const { data: currentUserId } = useCurrentUserId()
+  const { data: currentUser } = useCurrentAccountUser()
   const { data: createdCoins } = useUserCreatedCoins({
-    userId: currentUserId
+    userId: currentUser?.user_id
   })
 
-  // TODO (PE-6821) This is temporarily disabled to allow for testing
-  const isVerified = true // currentUser?.is_verified ?? false
+  const isVerified = currentUser?.is_verified ?? false
   const hasExistingArtistCoin = (createdCoins?.length ?? 0) > 0
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const { toast } = useContext(ToastContext)
-  const { data: user } = useCurrentAccountUser()
   const { data: connectedWallets } = useConnectedWallets()
   const { validationSchema } = useLaunchpadFormSchema()
   const [formValues, setFormValues] = useState<SetupFormValues | null>(null)
@@ -404,7 +401,7 @@ export const LaunchpadPage = () => {
       const connectedWallet: ConnectedWallet | undefined =
         getLatestConnectedWallet(connectedWallets)
 
-      if (!user || !connectedWallet) {
+      if (!currentUser || !connectedWallet) {
         toast(messages.errors.unknownError)
         reportToSentry({
           error: new Error(
@@ -413,7 +410,7 @@ export const LaunchpadPage = () => {
           name: 'Launchpad Submit Error',
           feature: Feature.ArtistCoins,
           additionalInfo: {
-            user,
+            currentUser,
             connectedWallet,
             formValues
           }
@@ -464,12 +461,12 @@ export const LaunchpadPage = () => {
         }
       } else {
         launchCoin({
-          userId: user.user_id,
+          userId: currentUser.user_id,
           name: formValues.coinName,
           symbol: formValues.coinSymbol,
           image: formValues.coinImage!,
           description: LAUNCHPAD_COIN_DESCRIPTION(
-            user.handle,
+            currentUser.handle,
             formValues.coinSymbol
           ),
           walletPublicKey: connectedWallet.address,
@@ -479,7 +476,7 @@ export const LaunchpadPage = () => {
     },
     [
       connectedWallets,
-      user,
+      currentUser,
       isFirstBuyError,
       launchCoinResponse?.newMint,
       errorMetadata,
