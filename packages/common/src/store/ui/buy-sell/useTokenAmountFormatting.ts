@@ -56,7 +56,12 @@ export const useTokenAmountFormatting = ({
       const maxFractionDigits =
         absAmount >= 0.1 ? 2 : getTokenDecimalPlaces(availableBalance)
 
-      return availableBalance.toLocaleString('en-US', {
+      // Use FixedDecimal truncation for consistency with cash wallet
+      // Create FixedDecimal with the token's decimal precision to avoid rounding during construction
+      const fd = new FixedDecimal(availableBalance, decimals)
+      const truncatedValue = Number(fd.trunc(maxFractionDigits).toString())
+
+      return truncatedValue.toLocaleString('en-US', {
         minimumFractionDigits: 2,
         maximumFractionDigits: maxFractionDigits
       })
