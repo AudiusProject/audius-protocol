@@ -172,7 +172,6 @@ const LaunchpadPageContent = ({
   // NOTE: an error here can also mean that a wallet has already been added recently
   const handleWalletConnectError = useCallback(
     async (error: unknown) => {
-      console.log('handleWalletConnectError', error)
       // If wallet is already linked, continue with the flow
       if (error instanceof AlreadyAssociatedError) {
         const lastConnectedWallet = getLatestConnectedWallet(connectedWallets)
