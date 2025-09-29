@@ -5,7 +5,6 @@ import {
   getWalletSolBalanceOptions,
   useConnectedWallets,
   useCurrentAccountUser,
-  useCurrentUserId,
   useQueryContext,
   useUserCreatedCoins
 } from '@audius/common/api'
@@ -271,8 +270,6 @@ export const LaunchpadPage = () => {
   const { data: createdCoins } = useUserCreatedCoins({
     userId: currentUser?.user_id
   })
-
-  const isVerified = currentUser?.is_verified ?? false
   const hasExistingArtistCoin = (createdCoins?.length ?? 0) > 0
 
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -487,7 +484,7 @@ export const LaunchpadPage = () => {
   )
 
   // Redirect if user is not verified or already has an artist coin
-  if (!isVerified || hasExistingArtistCoin) {
+  if (hasExistingArtistCoin) {
     return <Navigate to={route.COINS_EXPLORE_PAGE} replace />
   }
 

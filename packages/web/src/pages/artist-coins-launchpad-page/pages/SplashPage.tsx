@@ -1,15 +1,20 @@
-import { useArtistOwnedCoin, useCurrentUserId } from '@audius/common/api'
-import { Flex, makeResponsiveStyles } from '@audius/harmony'
+import { useCurrentAccountUser } from '@audius/common/api'
+import {
+  Button,
+  LoadingSpinner,
+  Paper,
+  Text,
+  IconArrowRight,
+  Flex,
+  makeResponsiveStyles
+} from '@audius/harmony'
 
 import gift from 'assets/fonts/emojis/gift.png'
 import globe from 'assets/fonts/emojis/globe.png'
 import moneyWithWingsEmoji from 'assets/fonts/emojis/money-with-wings.png'
+import { Tooltip } from 'components/tooltip'
 
-import {
-  LaunchPanel,
-  WalletSetupCard,
-  WhyCreateCard
-} from '../components/index'
+import { WalletSetupCard, WhyCreateCard } from '../components/index'
 
 const messages = {
   whyCreateTitle: 'Why Create a Coin?',
@@ -21,7 +26,14 @@ const messages = {
   rewardFansDescription: 'Give holders exclusive content, music, or perks.',
   growCommunityTitle: 'Grow Community',
   growCommunityDescription: 'Strengthen bonds with your biggest supporters.',
-  leftColumnPlaceholder: 'Left Column Content (716px)'
+  leftColumnPlaceholder: 'Left Column Content (716px)',
+  launchPanelTitle: 'Ready to launch?',
+  launchPanelDescription:
+    'Connect your wallet to start creating your artist coin.',
+  launchPanelDescription2:
+    'It only takes a few steps to set things up and share it with your fans.',
+  launchPanelButtonText: 'Get Started!',
+  verifiedOnlyTooltip: 'Verified users only'
 }
 
 const features = [
@@ -96,11 +108,8 @@ type SplashPageProps = {
 
 export const SplashPage = ({ onContinue, isPending }: SplashPageProps) => {
   const styles = useStyles()
-  const { data: currentUserId } = useCurrentUserId()
-  const { data: userCoin } = useArtistOwnedCoin(currentUserId)
-
-  // Hide the launch panel if user already has an artist coin
-  const hasArtistCoin = !!userCoin
+  const { data: currentUser } = useCurrentAccountUser()
+  const isVerified = currentUser?.is_verified ?? false
 
   return (
     <Flex css={styles.container}>
@@ -112,11 +121,47 @@ export const SplashPage = ({ onContinue, isPending }: SplashPageProps) => {
         />
         <WalletSetupCard />
       </Flex>
-      {!hasArtistCoin ? (
+      <Flex css={styles.rightSection}>
         <Flex css={styles.rightSection}>
-          <LaunchPanel onContinue={onContinue} isPending={isPending} />
+          <Paper p='2xl' gap='xl' direction='column' w='100%' h='fit'>
+            <Flex direction='column' gap='s'>
+              <Text variant='heading' size='m' color='default'>
+                {messages.launchPanelTitle}
+              </Text>
+              <Text variant='body' color='subdued'>
+                {messages.launchPanelDescription}
+              </Text>
+              <Text variant='body' color='subdued'>
+                {messages.launchPanelDescription2}
+              </Text>
+            </Flex>
+
+            <Tooltip
+              text={messages.verifiedOnlyTooltip}
+              placement='top'
+              disabled={isVerified}
+            >
+              {/* Need to wrap with Flex because disabled button doesn't capture mouse events */}
+              <Flex>
+                <Button
+                  variant='primary'
+                  fullWidth
+                  iconRight={isPending ? undefined : IconArrowRight}
+                  onClick={onContinue}
+                  disabled={isPending || !isVerified}
+                  color='coinGradient'
+                >
+                  {isPending ? (
+                    <LoadingSpinner />
+                  ) : (
+                    messages.launchPanelButtonText
+                  )}
+                </Button>
+              </Flex>
+            </Tooltip>
+          </Paper>
         </Flex>
-      ) : null}
+      </Flex>
     </Flex>
   )
 }
