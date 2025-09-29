@@ -65,12 +65,10 @@ export const findTokenBySymbol = (
   tokens: Record<string, TokenInfo>
 ): TokenInfo | null => {
   if (!symbol || typeof symbol !== 'string') {
-    console.warn('findTokenBySymbol: Invalid symbol provided:', symbol)
     return null
   }
 
   if (!tokens || typeof tokens !== 'object') {
-    console.warn('findTokenBySymbol: Invalid tokens object provided:', tokens)
     return null
   }
 
@@ -84,7 +82,6 @@ export const findTokenBySymbol = (
   // Try with $ prefix
   if (tokens[`$${normalized}`]) return tokens[`$${normalized}`]
 
-  console.debug(`findTokenBySymbol: Token not found for symbol: ${symbol}`)
   return null
 }
 
@@ -96,18 +93,14 @@ export const findTokenByAddress = (
   tokens: Record<string, TokenInfo>
 ): TokenInfo | null => {
   if (!address || typeof address !== 'string') {
-    console.warn('findTokenByAddress: Invalid address provided:', address)
     return null
   }
 
   if (!tokens || typeof tokens !== 'object') {
-    console.warn('findTokenByAddress: Invalid tokens object provided:', tokens)
     return null
   }
 
   const token = Object.values(tokens).find((token) => token.address === address)
-  if (!token) {
-    console.debug(`findTokenByAddress: Token not found for address: ${address}`)
-  }
+
   return token || null
 }

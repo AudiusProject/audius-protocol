@@ -1,3 +1,4 @@
+import type { Coin } from '@audius/common/adapters'
 import { useArtistCoin } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { createCoinMetrics, MetricData } from '@audius/common/utils'
@@ -11,6 +12,7 @@ import {
 } from '@audius/harmony'
 
 import { Tooltip } from 'components/tooltip'
+import { env } from 'services/env'
 
 import { componentWithErrorBoundary } from '../../../components/error-wrapper/componentWithErrorBoundary'
 import Skeleton from '../../../components/skeleton/Skeleton'
@@ -143,13 +145,15 @@ const MetricRowComponent = ({
   coin
 }: {
   metric: MetricData
-  coin?: any
+  coin?: Coin
 }) => {
   const changeColor = metric.change?.isPositive ? 'premium' : 'subdued'
   const isGraduationProgress = metric.label === 'Graduation Progress'
 
   if (isGraduationProgress) {
-    return <GraduationProgressMetricRow metric={metric} coin={coin} />
+    return env.WAUDIO_MINT_ADDRESS === coin?.mint ? null : (
+      <GraduationProgressMetricRow metric={metric} coin={coin} />
+    )
   }
 
   return (
