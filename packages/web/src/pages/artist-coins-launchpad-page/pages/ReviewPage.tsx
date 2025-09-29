@@ -1,3 +1,4 @@
+import type { LaunchpadFormValues } from '@audius/common/models'
 import {
   Artwork,
   Flex,
@@ -14,7 +15,7 @@ import { useFormImageUrl } from 'hooks/useFormImageUrl'
 import { ArtistCoinsSubmitRow } from '../components/ArtistCoinsSubmitRow'
 import { StepHeader } from '../components/StepHeader'
 import { TokenInfoRow } from '../components/TokenInfoRow'
-import type { PhasePageProps, LaunchpadFormValues } from '../components/types'
+import type { PhasePageProps } from '../components/types'
 import { AMOUNT_OF_STEPS } from '../constants'
 
 const messages = {

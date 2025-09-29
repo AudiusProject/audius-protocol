@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 
-import { ErrorLevel, Feature } from '@audius/common/models'
+import { ErrorLevel, Feature, LaunchpadFormValues } from '@audius/common/models'
 import { Flex, Paper } from '@audius/harmony'
 import { useFormikContext } from 'formik'
 
@@ -15,7 +15,7 @@ import { ArtistCoinsSubmitRow } from '../components/ArtistCoinsSubmitRow'
 import { CoinFormFields } from '../components/CoinFormFields'
 import { ImageUploadArea } from '../components/ImageUploadArea'
 import { StepHeader } from '../components/StepHeader'
-import type { LaunchpadFormValues, PhasePageProps } from '../components/types'
+import type { PhasePageProps } from '../components/types'
 import { AMOUNT_OF_STEPS, MAX_IMAGE_SIZE } from '../constants'
 import { useLaunchpadAnalytics } from '../utils'
 

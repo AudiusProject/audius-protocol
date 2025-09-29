@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react'
 
+import {
+  LaunchpadFormValues,
+  LaunchCoinErrorMetadata
+} from '@audius/common/models'
 import { useSendTokensModal } from '@audius/common/store'
 import { wAUDIO } from '@audius/fixed-decimal'
 import {
@@ -17,10 +21,7 @@ import {
 import { useFormikContext } from 'formik'
 
 import { AddressTile } from 'components/address-tile'
-import { LaunchCoinErrorMetadata } from 'hooks/useLaunchCoin'
 import { env } from 'services/env'
-
-import { LaunchpadFormValues } from './types'
 
 const messages = {
   awaitingConfirmation: 'Awaiting Confirmation',

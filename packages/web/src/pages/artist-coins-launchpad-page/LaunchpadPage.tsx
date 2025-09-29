@@ -11,6 +11,7 @@ import {
 } from '@audius/common/api'
 import { launchpadMessages } from '@audius/common/messages'
 import { Feature } from '@audius/common/models'
+import type { LaunchpadFormValues } from '@audius/common/models'
 import { TOKEN_LISTING_MAP, useCoinSuccessModal } from '@audius/common/store'
 import { shortenSPLAddress, route } from '@audius/common/utils'
 import { FixedDecimal, wAUDIO } from '@audius/fixed-decimal'
@@ -38,7 +39,6 @@ import {
   InsufficientBalanceModal,
   LaunchpadSubmitModal
 } from './components/LaunchpadModals'
-import type { LaunchpadFormValues } from './components/types'
 import { LAUNCHPAD_COIN_DESCRIPTION, MIN_SOL_BALANCE, Phase } from './constants'
 import { BuyCoinPage, ReviewPage, SetupPage, SplashPage } from './pages'
 import { getLatestConnectedWallet, useLaunchpadAnalytics } from './utils'
@@ -314,7 +314,7 @@ export const LaunchpadPage = () => {
 
   // TODO (PE-6821) This is temporarily disabled to allow for testing
   const isVerified = true // currentUser?.is_verified ?? false
-  const hasExistingArtistCoin = false // (createdCoins?.length ?? 0) > 0
+  const hasExistingArtistCoin = (createdCoins?.length ?? 0) > 0
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const { toast } = useContext(ToastContext)
@@ -354,6 +354,10 @@ export const LaunchpadPage = () => {
   const isLaunchCoinError = launchCoinResponse?.isError
   const isPoolCreateError =
     isLaunchCoinError && !errorMetadata?.poolCreateConfirmed
+  const isSdkCreateError =
+    isLaunchCoinError &&
+    errorMetadata?.poolCreateConfirmed &&
+    !errorMetadata?.sdkCoinAdded
   const isFirstBuyError =
     isLaunchCoinError &&
     errorMetadata?.poolCreateConfirmed &&
@@ -381,13 +385,23 @@ export const LaunchpadPage = () => {
 
   useEffect(() => {
     if (isLaunchCoinError) {
-      trackCoinCreationFailure(launchCoinResponse)
+      const errorState = isPoolCreateError
+        ? 'poolCreateFailed'
+        : isFirstBuyError
+          ? 'firstBuyFailed'
+          : isSdkCreateError
+            ? 'sdkCoinFailed'
+            : 'unknownError'
+      trackCoinCreationFailure(launchCoinResponse, errorState)
     }
   }, [
     isLaunchCoinError,
     launchCoinResponse,
     formValues,
-    trackCoinCreationFailure
+    trackCoinCreationFailure,
+    isPoolCreateError,
+    isFirstBuyError,
+    isSdkCreateError
   ])
 
   // If an error occurs after the pool is created, we close the modal to let the user resubmit via the swap retry flow

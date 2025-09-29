@@ -1,13 +1,3 @@
-export type LaunchpadFormValues = {
-  coinName: string
-  coinSymbol: string
-  coinImage: File | null
-  payAmount: string
-  receiveAmount: string
-  usdcValue: string
-  wantsToBuy: 'yes' | 'no'
-}
-
 export type PhasePageProps = {
   onContinue?: () => void
   onBack?: () => void

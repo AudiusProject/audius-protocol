@@ -2,15 +2,12 @@ import { useCallback, useMemo } from 'react'
 
 import { ConnectedWallet } from '@audius/common/api'
 import { useAnalytics } from '@audius/common/hooks'
-import { Chain, Name } from '@audius/common/models'
+import { Chain, Name, LaunchCoinResponse } from '@audius/common/models'
+import type { LaunchpadFormValues } from '@audius/common/models'
 import { useFormikContext } from 'formik'
 import { omit } from 'lodash'
 
-import { LaunchCoinResponse } from 'hooks/useLaunchCoin'
 import { make } from 'services/analytics'
-
-import type { LaunchpadFormValues } from './components/types'
-import { MIN_SOL_BALANCE } from './constants'
 
 /**
  * Gets the most recently added connected wallet
@@ -102,13 +99,14 @@ export const useLaunchpadAnalytics = (params?: {
         make({
           eventName: Name.LAUNCHPAD_FORM_INPUT_CHANGE,
           ...formValuesForAnalytics,
-          input,
+          input: input as string,
           newValue
         })
       )
     },
     [track, formValuesForAnalytics]
   )
+
   const trackFirstBuyQuoteReceived = useCallback(
     ({
       payAmount,
@@ -190,10 +188,18 @@ export const useLaunchpadAnalytics = (params?: {
   )
 
   const trackCoinCreationFailure = useCallback(
-    (launchCoinResponse: LaunchCoinResponse) => {
+    (
+      launchCoinResponse: LaunchCoinResponse,
+      errorState:
+        | 'poolCreateFailed'
+        | 'sdkCoinFailed'
+        | 'firstBuyFailed'
+        | 'unknownError'
+    ) => {
       track(
         make({
           eventName: Name.LAUNCHPAD_COIN_CREATION_FAILURE,
+          errorState,
           launchCoinResponse
         })
       )
@@ -229,6 +235,7 @@ export const useLaunchpadAnalytics = (params?: {
       })
     )
   }, [track])
+
   const trackFirstBuyMaxButton = useCallback(
     (maxValue: string) => {
       track(

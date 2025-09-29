@@ -3,7 +3,11 @@ import {
   getUserCreatedCoinsQueryKey,
   useQueryContext
 } from '@audius/common/api'
-import { Feature } from '@audius/common/models'
+import {
+  Feature,
+  LaunchCoinErrorMetadata,
+  LaunchCoinResponse
+} from '@audius/common/models'
 import { Id } from '@audius/sdk'
 import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react'
 import { PublicKey, VersionedTransaction } from '@solana/web3.js'
@@ -22,37 +26,6 @@ export type LaunchCoinParams = {
   walletPublicKey: string
   initialBuyAmountAudio?: string
   image: Blob
-}
-
-/**
- * Errors here are complicated & a sensitive area for users, so we want to log lots of info
- */
-export type LaunchCoinErrorMetadata = {
-  userId: number
-  lastStep: string
-  relayResponseReceived: boolean
-  poolCreateConfirmed: boolean
-  sdkCoinAdded: boolean
-  firstBuyConfirmed: boolean
-  requestedFirstBuy: boolean
-  createPoolTx: string
-  firstBuyTx: string | undefined
-  initialBuyAmountAudio: string | undefined
-  coinMetadata: {
-    mint: string
-    imageUri: string
-    name: string
-    symbol: string
-    description: string
-    walletAddress: string
-  }
-}
-
-export type LaunchCoinResponse = {
-  isError: boolean
-  errorMetadata: LaunchCoinErrorMetadata
-  newMint: string
-  logoUri: string
 }
 
 export const LAUNCHPAD_COIN_DECIMALS = 9 // All our launched coins will have 9 decimals

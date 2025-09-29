@@ -2,6 +2,7 @@ import { useContext, useEffect, useMemo, useState } from 'react'
 
 import { buySellMessages } from '@audius/common/messages'
 import { useConnectedWallets } from '@audius/common/src/api/tan-query/wallets/useConnectedWallets'
+import { Name } from '@audius/common/src/models/Analytics'
 import { TOKEN_LISTING_MAP } from '@audius/common/src/store/ui/buy-audio/constants'
 import { TokenInfo } from '@audius/common/src/store/ui/buy-sell/types'
 import { useTokenSwapForm } from '@audius/common/src/store/ui/buy-sell/useTokenSwapForm'
@@ -33,6 +34,7 @@ import { TokenDropdown } from 'components/buy-sell-modal/components/TokenDropdow
 import { ToastContext } from 'components/toast/ToastContext'
 import { Tooltip } from 'components/tooltip'
 import { useExternalWalletSwap } from 'hooks/useExternalWalletSwap'
+import { make, track } from 'services/analytics'
 import zIndex from 'utils/zIndex'
 
 import { getLatestConnectedWallet } from '../utils'
@@ -77,7 +79,7 @@ const FormInputStep = ({
   onContinue,
   availableBalance,
   isBalanceLoading,
-  handleMaxClick,
+  handleMaxClick: onMaxClick,
   onInputTokenChange,
   onInputAmountChange,
   onOutputAmountChange
@@ -95,8 +97,40 @@ const FormInputStep = ({
 
   const handleInputTokenChange = (token: TokenInfo) => {
     onInputTokenChange(token)
+    track(
+      make({
+        eventName: Name.LAUNCHPAD_BUY_MODAL_CHANGE_CURRENCY,
+        newCurrencySymbol: token.symbol
+      })
+    )
     setFieldValue('selectedInputToken', token)
   }
+
+  const handleInputAmountBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+    track(
+      make({
+        eventName: Name.LAUNCHPAD_BUY_MODAL_FORM_CHANGE,
+        inputChanged: 'inputAmount',
+        newValue: event.target.value
+      })
+    )
+  }
+  const handleOutputAmountBlur = (
+    event: React.FocusEvent<HTMLInputElement>
+  ) => {
+    track(
+      make({
+        eventName: Name.LAUNCHPAD_BUY_MODAL_FORM_CHANGE,
+        inputChanged: 'outputAmount',
+        newValue: event.target.value
+      })
+    )
+  }
+  const handleMaxClick = () => {
+    track(make({ eventName: Name.LAUNCHPAD_BUY_MODAL_MAX_BUTTON }))
+    onMaxClick()
+  }
+
   return (
     <>
       <ModalHeader onClose={onClose}>
@@ -163,6 +197,7 @@ const FormInputStep = ({
                   tokenLabel={values.selectedInputToken.symbol}
                   value={values.inputAmount}
                   onChange={onInputAmountChange}
+                  onBlur={handleInputAmountBlur}
                   error={!!errors.inputAmount}
                   helperText={errors.inputAmount}
                 />
@@ -192,6 +227,7 @@ const FormInputStep = ({
               endIcon={<IconAUDIO />}
               value={values.outputAmount}
               onChange={onOutputAmountChange}
+              onBlur={handleOutputAmountBlur}
             />
           </Flex>
           {/* Button */}
@@ -341,12 +377,16 @@ export const LaunchpadBuyModal = ({
 
   useEffect(() => {
     if (swapSuccess) {
+      track(make({ eventName: Name.LAUNCHPAD_BUY_MODAL_SUCCESS }))
       setCurrentStep(BuyModalStep.Success)
     }
     if (swapPending) {
       setCurrentStep(BuyModalStep.Loading)
     }
     if (swapError || swapData?.isError) {
+      track(
+        make({ eventName: Name.LAUNCHPAD_BUY_MODAL_FAILURE, error: swapError })
+      )
       console.error(swapError)
       const toastMessage = swapData?.progress?.userCancelled
         ? buySellMessages.transactionCancelled
@@ -383,9 +423,20 @@ export const LaunchpadBuyModal = ({
   )
 
   const handleContinue = () => {
+    track(make({ eventName: Name.LAUNCHPAD_BUY_MODAL_CONTINUE }))
     if (currentStep === BuyModalStep.Form) {
       setCurrentStep(BuyModalStep.Confirmation)
-    } else if (currentStep === 'confirmation') {
+    } else if (currentStep === BuyModalStep.Confirmation) {
+      track(
+        make({
+          eventName: Name.LAUNCHPAD_BUY_MODAL_SUBMIT,
+          inputAmount: buyModalForm.values.inputAmount,
+          outputAmount: buyModalForm.values.outputAmount,
+          inputTokenSymbol: selectedInputToken.symbol,
+          outputTokenSymbol: OUTPUT_TOKEN.symbol,
+          walletAddress: externalWalletAddress!
+        })
+      )
       swapTokens({
         inputAmountUi: Number(buyModalForm.values.inputAmount),
         inputToken: selectedInputToken,
@@ -397,6 +448,7 @@ export const LaunchpadBuyModal = ({
   }
 
   const handleBack = () => {
+    track(make({ eventName: Name.LAUNCHPAD_BUY_MODAL_BACK }))
     if (currentStep === BuyModalStep.Confirmation) {
       setCurrentStep(BuyModalStep.Form)
     }

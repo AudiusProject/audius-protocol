@@ -1,9 +1,8 @@
+import type { LaunchpadFormValues } from '@audius/common/models'
 import { Flex, TextInput } from '@audius/harmony'
 import { useFormikContext } from 'formik'
 
 import { useLaunchpadAnalytics } from '../utils'
-
-import type { LaunchpadFormValues } from './types'
 
 const messages = {
   coinName: 'Coin Name',

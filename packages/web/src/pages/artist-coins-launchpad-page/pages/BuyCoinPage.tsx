@@ -6,7 +6,7 @@ import {
   useWalletAudioBalance
 } from '@audius/common/api'
 import { useDebouncedCallback } from '@audius/common/hooks'
-import { Chain } from '@audius/common/models'
+import { Chain, LaunchpadFormValues } from '@audius/common/models'
 import { AUDIO } from '@audius/fixed-decimal'
 import {
   Artwork,
@@ -32,7 +32,7 @@ import { useLaunchpadConfig } from 'hooks/useLaunchpadConfig'
 
 import { ArtistCoinsSubmitRow } from '../components/ArtistCoinsSubmitRow'
 import { LaunchpadBuyModal } from '../components/LaunchpadBuyModal'
-import type { PhasePageProps, LaunchpadFormValues } from '../components/types'
+import type { PhasePageProps } from '../components/types'
 import { AMOUNT_OF_STEPS } from '../constants'
 import { getLatestConnectedWallet, useLaunchpadAnalytics } from '../utils'
 import { FIELDS } from '../validation'

@@ -12,6 +12,7 @@ import {
 import { Nullable } from '~/utils/typeUtils'
 
 import { Chain } from './Chain'
+import { LaunchCoinResponse, LaunchpadFormValues } from './Launchpad'
 import { PlaylistLibraryKind } from './PlaylistLibrary'
 import { PurchaseMethod } from './PurchaseContent'
 import { AccessConditions, TrackAccessType } from './Track'
@@ -611,7 +612,15 @@ export enum Name {
   LAUNCHPAD_FIRST_BUY_MAX_BUTTON = 'Launchpad: First Buy Max Button Clicked',
   LAUNCHPAD_FIRST_BUY_QUOTE_RECEIVED = 'Launchpad: First Buy Quote Received',
   LAUNCHPAD_BUY_MODAL_OPEN = 'Launchpad: Buy Audio Modal Open',
-  LAUNCHPAD_BUY_MODAL_CLOSE = 'Launchpad: Buy Audio Modal Close'
+  LAUNCHPAD_BUY_MODAL_CLOSE = 'Launchpad: Buy Audio Modal Close',
+  LAUNCHPAD_BUY_MODAL_SUBMIT = 'Launchpad: Buy Audio Modal Submit',
+  LAUNCHPAD_BUY_MODAL_SUCCESS = 'Launchpad: Buy Audio Modal Success',
+  LAUNCHPAD_BUY_MODAL_FAILURE = 'Launchpad: Buy Audio Modal Failure',
+  LAUNCHPAD_BUY_MODAL_CHANGE_CURRENCY = 'Launchpad: Buy Audio Modal Change Currency',
+  LAUNCHPAD_BUY_MODAL_FORM_CHANGE = 'Launchpad: Buy Audio Modal Form Change',
+  LAUNCHPAD_BUY_MODAL_MAX_BUTTON = 'Launchpad: Buy Audio Modal Max Button Clicked',
+  LAUNCHPAD_BUY_MODAL_CONTINUE = 'Launchpad: Buy Audio Modal Continue Clicked',
+  LAUNCHPAD_BUY_MODAL_BACK = 'Launchpad: Buy Audio Modal Back Clicked'
 }
 
 type PageView = {
@@ -2911,20 +2920,11 @@ export type LaunchpadWalletInsufficientBalance = {
 
 export type LaunchpadSetupContinue = {
   eventName: Name.LAUNCHPAD_SETUP_CONTINUE
-  coinName: string
-  coinSymbol: string
-  hasImage: boolean
-  wantsToBuy: 'yes' | 'no'
-  payAmount?: string
-}
+} & Partial<LaunchpadFormValues>
 
 export type LaunchpadReviewContinue = {
   eventName: Name.LAUNCHPAD_REVIEW_CONTINUE
-  coinName: string
-  coinSymbol: string
-  payAmount?: string
-  receiveAmount?: string
-}
+} & Partial<LaunchpadFormValues>
 
 export type LaunchpadCoinCreationStarted = {
   eventName: Name.LAUNCHPAD_COIN_CREATION_STARTED
@@ -2936,17 +2936,17 @@ export type LaunchpadCoinCreationStarted = {
 
 export type LaunchpadCoinCreationSuccess = {
   eventName: Name.LAUNCHPAD_COIN_CREATION_SUCCESS
-  coinName: string
-  coinSymbol: string
-  mintAddress: string
-  initialBuyAmount?: string
+  launchCoinResponse: LaunchCoinResponse
 }
 
 export type LaunchpadCoinCreationFailure = {
   eventName: Name.LAUNCHPAD_COIN_CREATION_FAILURE
-  coinName: string
-  coinSymbol: string
-  error: string
+  errorState:
+    | 'poolCreateFailed'
+    | 'sdkCoinFailed'
+    | 'firstBuyFailed'
+    | 'unknownError'
+  launchCoinResponse: LaunchCoinResponse
 }
 
 export type LaunchpadFirstBuyStarted = {
@@ -2975,15 +2975,13 @@ export type LaunchpadFirstBuyFailure = {
 
 export type LaunchpadFirstBuyRetry = {
   eventName: Name.LAUNCHPAD_FIRST_BUY_RETRY
-  coinSymbol: string
-  mintAddress: string
-  payAmount: string
+  launchCoinResponse: LaunchCoinResponse
 }
 
 export type LaunchpadFirstBuyMaxButton = {
   eventName: Name.LAUNCHPAD_FIRST_BUY_MAX_BUTTON
-  maxValue: string
-}
+  maxValue?: string
+} & Partial<LaunchpadFormValues>
 
 export type LaunchpadFirstBuyQuoteReceived = {
   eventName: Name.LAUNCHPAD_FIRST_BUY_QUOTE_RECEIVED
@@ -2998,6 +2996,47 @@ export type LaunchpadBuyModalOpen = {
 
 export type LaunchpadBuyModalClose = {
   eventName: Name.LAUNCHPAD_BUY_MODAL_CLOSE
+}
+
+export type LaunchpadBuyModalContinue = {
+  eventName: Name.LAUNCHPAD_BUY_MODAL_CONTINUE
+}
+
+export type LaunchpadBuyModalBack = {
+  eventName: Name.LAUNCHPAD_BUY_MODAL_BACK
+}
+
+export type LaunchpadBuyModalSubmit = {
+  eventName: Name.LAUNCHPAD_BUY_MODAL_SUBMIT
+  inputAmount: string
+  outputAmount: string
+  inputTokenSymbol: string
+  outputTokenSymbol: string
+  walletAddress: string
+}
+
+export type LaunchpadBuyModalSuccess = {
+  eventName: Name.LAUNCHPAD_BUY_MODAL_SUCCESS
+}
+
+export type LaunchpadBuyModalFailure = {
+  eventName: Name.LAUNCHPAD_BUY_MODAL_FAILURE
+  error: any
+}
+
+export type LaunchpadBuyModalChangeCurrency = {
+  eventName: Name.LAUNCHPAD_BUY_MODAL_CHANGE_CURRENCY
+  newCurrencySymbol: string
+}
+
+export type LaunchpadBuyModalFormChange = {
+  eventName: Name.LAUNCHPAD_BUY_MODAL_FORM_CHANGE
+  inputChanged: string
+  newValue: string
+}
+
+export type LaunchpadBuyModalMaxButton = {
+  eventName: Name.LAUNCHPAD_BUY_MODAL_MAX_BUTTON
 }
 
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
@@ -3403,3 +3442,11 @@ export type AllTrackingEvents =
   | LaunchpadFirstBuyQuoteReceived
   | LaunchpadBuyModalOpen
   | LaunchpadBuyModalClose
+  | LaunchpadBuyModalSubmit
+  | LaunchpadBuyModalSuccess
+  | LaunchpadBuyModalFailure
+  | LaunchpadBuyModalChangeCurrency
+  | LaunchpadBuyModalFormChange
+  | LaunchpadBuyModalMaxButton
+  | LaunchpadBuyModalContinue
+  | LaunchpadBuyModalBack
