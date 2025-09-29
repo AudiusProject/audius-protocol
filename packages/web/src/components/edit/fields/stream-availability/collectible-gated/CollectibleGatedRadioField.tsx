@@ -2,6 +2,7 @@ import {
   useAccessAndRemixSettings,
   useHasNoCollectibles
 } from '@audius/common/hooks'
+import { priceAndAudienceMessages as messages } from '@audius/common/messages'
 import { StreamTrackAvailabilityType } from '@audius/common/models'
 import { IconCollectible } from '@audius/harmony'
 
@@ -9,14 +10,6 @@ import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
 
 import { CollectibleGatedDescription } from './CollectibleGatedDescription'
 import { CollectibleGatedFields } from './CollectibleGatedFields'
-
-const messages = {
-  collectibleGated: 'Collectible Gated',
-  noCollectibles:
-    'No collectibles found. Link a wallet containing a digital collectible to enable this option.',
-  fromFreeHint: (contentType: 'album' | 'track') =>
-    `You can't make a free ${contentType} premium.`
-}
 
 type CollectibleGatedRadioFieldProps = {
   isRemix: boolean
@@ -43,7 +36,7 @@ export const CollectibleGatedRadioField = (
   return (
     <ModalRadioItem
       icon={<IconCollectible />}
-      label={messages.collectibleGated}
+      label={messages.collectibleGatedRadio.title}
       value={StreamTrackAvailabilityType.COLLECTIBLE_GATED}
       disabled={disabled}
       description={
@@ -55,9 +48,9 @@ export const CollectibleGatedRadioField = (
       checkedContent={<CollectibleGatedFields disabled={fieldsDisabled} />}
       tooltipText={
         hasNoCollectibles
-          ? messages.noCollectibles
+          ? messages.collectibleGatedRadio.noCollectibles
           : disabled
-            ? messages.fromFreeHint(isAlbum ? 'album' : 'track')
+            ? messages.fromFreeHint(isAlbum ? 'album' : 'track', 'premium')
             : undefined
       }
     />

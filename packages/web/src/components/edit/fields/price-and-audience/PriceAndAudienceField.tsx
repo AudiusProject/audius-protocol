@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 
 import { useArtistCoin, useCurrentUserId } from '@audius/common/api'
 import { useUSDCPurchaseConfig } from '@audius/common/hooks'
+import { priceAndAudienceMessages } from '@audius/common/messages'
 import {
   isContentCollectibleGated,
   isContentFollowGated,
@@ -76,17 +77,7 @@ import { PriceAndAudienceMenuFields } from './PriceAndAudienceMenuFields'
 import { priceAndAudienceSchema } from './priceAndAudienceSchema'
 
 const messages = {
-  title: 'Price & Audience',
-  freePremiumDescription:
-    'Customize who can listen to this release. Sell your music and create gated experiences for your fans.',
-  specialAccessDescription:
-    'Customize your music’s audience and create gated experiences for your fans.',
-  public: 'Free for Everyone',
-  premium: 'Premium',
-  specialAccess: 'Special Access',
-  collectibleGated: 'Collectible Gated',
-  coinGated: 'Coin Gated',
-  hidden: 'Hidden',
+  ...priceAndAudienceMessages,
   fieldVisibility: {
     genre: 'Show Genre',
     mood: 'Show Mood',
@@ -95,8 +86,6 @@ const messages = {
     play_count: 'Show Play Count',
     remixes: 'Show Remixes'
   },
-  followersOnly: 'Followers Only',
-  supportersOnly: 'Supporters Only',
   ownersOf: 'Owners Of',
   price: (price: number) =>
     price.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
@@ -509,7 +498,7 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
         }
       ]
     } else {
-      selectedValues = [{ label: messages.public }]
+      selectedValues = [{ label: messages.free }]
     }
 
     return (

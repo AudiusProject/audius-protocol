@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import { useArtistOwnedCoin, useCurrentUserId } from '@audius/common/api'
 import { useAccessAndRemixSettings, useHasNoTokens } from '@audius/common/hooks'
+import { priceAndAudienceMessages as messages } from '@audius/common/messages'
 import { StreamTrackAvailabilityType } from '@audius/common/models'
 import { useField } from 'formik'
 import { IconArtistCoin } from '~harmony/icons'
@@ -13,12 +14,6 @@ import { AccessAndSaleFormValues, STREAM_CONDITIONS } from '../../types'
 
 import { TokenGatedDescription } from './TokenGatedDescription'
 
-const messages = {
-  tokenGated: 'Coin Gated',
-  noCoins: 'No coins found. Launch a coin to enable this option.',
-  fromFreeHint: (contentType: 'album' | 'track') =>
-    `You can't make a free ${contentType} premium.`
-}
 type TokenGatedRadioFieldProps = {
   isRemix: boolean
   isUpload?: boolean
@@ -66,7 +61,7 @@ export const TokenGatedRadioField = (props: TokenGatedRadioFieldProps) => {
           <IconArtistCoin />
         )
       }
-      label={messages.tokenGated}
+      label={messages.tokenGatedRadio.title}
       value={StreamTrackAvailabilityType.TOKEN_GATED}
       disabled={disabled}
       onChange={handleSelect}
@@ -79,9 +74,9 @@ export const TokenGatedRadioField = (props: TokenGatedRadioFieldProps) => {
       }
       tooltipText={
         hasNoTokens
-          ? messages.noCoins
+          ? messages.tokenGatedRadio.noCoins
           : disabled
-            ? messages.fromFreeHint(isAlbum ? 'album' : 'track')
+            ? messages.fromFreeHint(isAlbum ? 'album' : 'track', 'premium')
             : undefined
       }
     />

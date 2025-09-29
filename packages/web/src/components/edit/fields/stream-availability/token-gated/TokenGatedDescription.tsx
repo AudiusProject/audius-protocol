@@ -1,11 +1,5 @@
+import { priceAndAudienceMessages as messages } from '@audius/common/messages'
 import { Flex, IconQuestionCircle, Hint, Text } from '@audius/harmony'
-
-const messages = {
-  tokenGatedSubtitle: (tokenName: string) =>
-    `Anyone holding ${tokenName} can stream.`,
-  noTokens: 'No Tokens found. To enable this option, launch a token.',
-  learnMore: 'Learn More'
-}
 
 type TokenGatedDescriptionProps = {
   tokenName: string
@@ -16,11 +10,13 @@ type TokenGatedDescriptionProps = {
 export const TokenGatedDescription = (props: TokenGatedDescriptionProps) => {
   const { hasTokens, isUpload, tokenName } = props
 
-  const helpContent = !hasTokens ? messages.noTokens : null
+  const helpContent = !hasTokens ? messages.tokenGatedRadio.noCoins : null
 
   return (
     <Flex gap='m' direction='column'>
-      <Text variant='body'>{messages.tokenGatedSubtitle(tokenName)}</Text>
+      <Text variant='body'>
+        {messages.tokenGatedRadio.description(tokenName)}
+      </Text>
       {!hasTokens && isUpload ? (
         <Hint icon={IconQuestionCircle}>{helpContent}</Hint>
       ) : null}
