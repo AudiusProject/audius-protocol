@@ -73,7 +73,7 @@ export const useAssetDetailTabs = ({
   })
 
   const rightDecorator = (
-    <Button variant='primary' onClick={handleEditClick}>
+    <Button variant='tertiary' size='small' onClick={handleEditClick}>
       {messages.coinInsights.edit}
     </Button>
   )
