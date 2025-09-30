@@ -88,6 +88,7 @@ export type ValidationInput = {
  */
 export type TokenDataHookResult = {
   balance: number
+  fullBalance: number
   formattedBalance: string
   exchangeRate: number | null
   displayExchangeRate: number | null
