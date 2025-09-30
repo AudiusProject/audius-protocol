@@ -81,6 +81,30 @@ export interface Coin {
      */
     website?: string;
     /**
+     * Generic link URL for the coin
+     * @type {string}
+     * @memberof Coin
+     */
+    link1?: string;
+    /**
+     * Generic link URL for the coin
+     * @type {string}
+     * @memberof Coin
+     */
+    link2?: string;
+    /**
+     * Generic link URL for the coin
+     * @type {string}
+     * @memberof Coin
+     */
+    link3?: string;
+    /**
+     * Generic link URL for the coin
+     * @type {string}
+     * @memberof Coin
+     */
+    link4?: string;
+    /**
      * Whether the coin has a Discord server
      * @type {boolean}
      * @memberof Coin
@@ -140,6 +164,10 @@ export function CoinFromJSONTyped(json: any, ignoreDiscriminator: boolean): Coin
         'instagramHandle': !exists(json, 'instagram_handle') ? undefined : json['instagram_handle'],
         'tiktokHandle': !exists(json, 'tiktok_handle') ? undefined : json['tiktok_handle'],
         'website': !exists(json, 'website') ? undefined : json['website'],
+        'link1': !exists(json, 'link_1') ? undefined : json['link_1'],
+        'link2': !exists(json, 'link_2') ? undefined : json['link_2'],
+        'link3': !exists(json, 'link_3') ? undefined : json['link_3'],
+        'link4': !exists(json, 'link_4') ? undefined : json['link_4'],
         'hasDiscord': !exists(json, 'has_discord') ? undefined : json['has_discord'],
         'createdAt': (new Date(json['created_at'])),
         'updatedAt': !exists(json, 'updated_at') ? undefined : (new Date(json['updated_at'])),
@@ -166,6 +194,10 @@ export function CoinToJSON(value?: Coin | null): any {
         'instagram_handle': value.instagramHandle,
         'tiktok_handle': value.tiktokHandle,
         'website': value.website,
+        'link_1': value.link1,
+        'link_2': value.link2,
+        'link_3': value.link3,
+        'link_4': value.link4,
         'has_discord': value.hasDiscord,
         'created_at': (value.createdAt.toISOString()),
         'updated_at': value.updatedAt === undefined ? undefined : (value.updatedAt.toISOString()),

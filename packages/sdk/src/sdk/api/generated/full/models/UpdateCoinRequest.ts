@@ -27,29 +27,29 @@ export interface UpdateCoinRequest {
      */
     description?: string;
     /**
-     * X (Twitter) handle for the coin (without @ symbol)
+     * Generic link URL for the coin
      * @type {string}
      * @memberof UpdateCoinRequest
      */
-    xHandle?: string;
+    link1?: string;
     /**
-     * Instagram handle for the coin (without @ symbol)
+     * Generic link URL for the coin
      * @type {string}
      * @memberof UpdateCoinRequest
      */
-    instagramHandle?: string;
+    link2?: string;
     /**
-     * TikTok handle for the coin (without @ symbol)
+     * Generic link URL for the coin
      * @type {string}
      * @memberof UpdateCoinRequest
      */
-    tiktokHandle?: string;
+    link3?: string;
     /**
-     * Website URL for the coin
+     * Generic link URL for the coin
      * @type {string}
      * @memberof UpdateCoinRequest
      */
-    website?: string;
+    link4?: string;
 }
 
 /**
@@ -72,10 +72,10 @@ export function UpdateCoinRequestFromJSONTyped(json: any, ignoreDiscriminator: b
     return {
         
         'description': !exists(json, 'description') ? undefined : json['description'],
-        'xHandle': !exists(json, 'x_handle') ? undefined : json['x_handle'],
-        'instagramHandle': !exists(json, 'instagram_handle') ? undefined : json['instagram_handle'],
-        'tiktokHandle': !exists(json, 'tiktok_handle') ? undefined : json['tiktok_handle'],
-        'website': !exists(json, 'website') ? undefined : json['website'],
+        'link1': !exists(json, 'link_1') ? undefined : json['link_1'],
+        'link2': !exists(json, 'link_2') ? undefined : json['link_2'],
+        'link3': !exists(json, 'link_3') ? undefined : json['link_3'],
+        'link4': !exists(json, 'link_4') ? undefined : json['link_4'],
     };
 }
 
@@ -89,10 +89,10 @@ export function UpdateCoinRequestToJSON(value?: UpdateCoinRequest | null): any {
     return {
         
         'description': value.description,
-        'x_handle': value.xHandle,
-        'instagram_handle': value.instagramHandle,
-        'tiktok_handle': value.tiktokHandle,
-        'website': value.website,
+        'link_1': value.link1,
+        'link_2': value.link2,
+        'link_3': value.link3,
+        'link_4': value.link4,
     };
 }
 
