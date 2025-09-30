@@ -1,8 +1,9 @@
 import type { User } from '@audius/common/models'
 import { formatCount } from '@audius/common/utils'
 import type { StyleProp, ViewStyle } from 'react-native'
-import { View, Text } from 'react-native'
+import { View } from 'react-native'
 
+import { Text } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 
 import { NotificationProfilePicture } from './NotificationProfilePicture'
@@ -45,7 +46,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   imageCount: {
     textAlign: 'center',
-    color: palette.staticWhite,
     fontSize: typography.fontSize.xs,
     fontFamily: typography.fontByWeight.bold,
     textShadowColor: 'rgba(0,0,0,0.25)',
@@ -161,6 +161,7 @@ export const ProfilePictureList = (props: ProfilePictureListProps) => {
                 styles.imageCount,
                 useSmallText && styles.imageCountSmall
               ]}
+              color='staticWhite'
               numberOfLines={1}
               ellipsizeMode='clip'
             >
