@@ -99,7 +99,9 @@ const DEFAULT_HANDLE_VERIFICATION_TIMEOUT_MILLIS = 5_000
 const messages = {
   incompleteAccount:
     'Oops, it looks like your account was never fully completed!',
-  emailCheckFailed: 'Something has gone wrong, please try again later.'
+  emailCheckFailed: 'Something has gone wrong, please try again later.',
+  deactivatedAccount:
+    'Your account has been deactivated. Please contact support.'
 }
 
 function* getDefautFollowUserIds() {
@@ -934,7 +936,17 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
 
     const { user } = account
 
-    // Loging succeeded and we found a user, but it's missing name, likely
+    // Handle deactivated account
+    if (user.is_deactivated) {
+      yield* put(
+        make(Name.SIGN_IN_WITH_DEACTIVATED_ACCOUNT, { handle: user.handle })
+      )
+      yield* put(signOnActions.signInFailed('Account is deactivated'))
+      yield* put(toastActions.toast({ content: messages.deactivatedAccount }))
+      return
+    }
+
+    // Login succeeded and we found a user, but it's missing name, likely
     // due to incomplete signup
 
     if (!user.name) {
