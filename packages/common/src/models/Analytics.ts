@@ -107,6 +107,7 @@ export enum Name {
   SIGN_IN_START = 'Sign In: Start',
   SIGN_IN_FINISH = 'Sign In: Finish',
   SIGN_IN_WITH_INCOMPLETE_ACCOUNT = 'Sign In: Incomplete Account',
+  SIGN_IN_WITH_DEACTIVATED_ACCOUNT = 'Sign In: Deactivated Account',
 
   // Settings
   SETTINGS_CHANGE_THEME = 'Settings: Change Theme',
