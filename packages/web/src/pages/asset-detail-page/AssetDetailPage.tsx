@@ -19,12 +19,18 @@ type AssetDetailPageContentProps = {
 
 const DesktopAssetDetailPageContent = ({
   mint,
-  title
-}: AssetDetailPageContentProps) => {
-  const { tabs, body } = useAssetDetailTabs({ mint })
+  title,
+  ticker
+}: AssetDetailPageContentProps & { ticker: string }) => {
+  const { tabs, body, rightDecorator } = useAssetDetailTabs({ mint, ticker })
 
   const header = (
-    <Header primary={title} showBackButton={true} bottomBar={tabs} />
+    <Header
+      primary={title}
+      showBackButton={true}
+      bottomBar={tabs}
+      rightDecorator={rightDecorator}
+    />
   )
 
   return (
@@ -92,6 +98,7 @@ export const AssetDetailPage = () => {
     <DesktopAssetDetailPageContent
       mint={coin?.mint ?? ''}
       title={coin?.ticker ?? ''}
+      ticker={coin?.ticker ?? ''}
     />
   )
 }

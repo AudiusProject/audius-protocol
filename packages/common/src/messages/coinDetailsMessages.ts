@@ -37,7 +37,8 @@ export const coinDetailsMessages = {
     preGraduation:
       'Until graduation, the price of this coin is tied to the controlled distribution of supply.',
     postGraduation:
-      'This coin has graduated. The price is determined by the open market.'
+      'This coin has graduated. The price is determined by the open market.',
+    edit: 'Edit'
   },
   coinLeaderboard: {
     title: 'Members Leaderboard',
