@@ -190,7 +190,11 @@ export const ExternalWallets = ({ mint }: ExternalWalletsProps) => {
   const handleAddWalletError = useCallback(
     async (e: unknown) => {
       if (e instanceof AlreadyAssociatedError) {
-        toast(messages.walletAlreadyAdded)
+        if (e.userId) {
+          toast(messages.walletConnectedElsewhere)
+        } else {
+          toast(messages.walletAlreadyAdded)
+        }
       } else {
         toast(messages.error)
       }

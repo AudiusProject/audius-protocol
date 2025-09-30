@@ -467,6 +467,22 @@ def add_associated_wallet(
                 existing_wallet = wallet
                 break
 
+        # Check if wallet already exists for another user
+        wallet_in_use = (
+            session.query(AssociatedWallet)
+            .filter(
+                AssociatedWallet.wallet == wallet_address,
+                AssociatedWallet.chain == chain,
+                AssociatedWallet.is_current == True,
+                AssociatedWallet.is_delete == False,
+            )
+            .first()
+        )
+        if wallet_in_use and wallet_in_use.user_id != user_id:
+            raise IndexingValidationError(
+                f"Associated wallet {wallet_address} already associated with another user",
+            )
+
         if not existing_wallet:
             # Create new wallet association only if it doesn't exist
             associated_wallet_entry = AssociatedWallet(

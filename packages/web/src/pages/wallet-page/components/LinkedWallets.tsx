@@ -200,7 +200,11 @@ const WalletEmptyState = () => {
   const handleAddWalletError = useCallback(
     async (e: unknown) => {
       if (e instanceof AlreadyAssociatedError) {
-        toast(walletMessages.linkedWallets.walletAlreadyAdded)
+        if (e.userId) {
+          toast(walletMessages.linkedWallets.walletConnectedElsewhere)
+        } else {
+          toast(walletMessages.linkedWallets.walletAlreadyAdded)
+        }
       } else {
         toast(walletMessages.linkedWallets.error)
       }
@@ -246,7 +250,11 @@ export const LinkedWallets = () => {
   const handleAddWalletError = useCallback(
     async (e: unknown) => {
       if (e instanceof AlreadyAssociatedError) {
-        toast(walletMessages.linkedWallets.walletAlreadyAdded)
+        if (e.userId) {
+          toast(walletMessages.linkedWallets.walletConnectedElsewhere)
+        } else {
+          toast(walletMessages.linkedWallets.walletAlreadyAdded)
+        }
       } else {
         toast(walletMessages.linkedWallets.error)
       }

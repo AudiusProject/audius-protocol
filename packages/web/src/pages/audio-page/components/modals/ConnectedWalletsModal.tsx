@@ -47,6 +47,8 @@ const messages = {
   remove: 'Remove Wallet',
   ignore: 'Nevermind',
   error: 'Something went wrong. Please try again.',
+  walletConnectedElsewhere:
+    'Wallet already connected to another Audius account.',
   walletAlreadyAdded: 'No new wallets selected to connect.',
   goToDesktop:
     'To connect external wallets to your account, visit audius.co from a desktop browser.'
@@ -106,7 +108,11 @@ export const ConnectedWalletsModal = () => {
   const handleAddWalletError = useCallback(
     async (e: unknown) => {
       if (e instanceof AlreadyAssociatedError) {
-        toast(messages.walletAlreadyAdded)
+        if (e.userId) {
+          toast(messages.walletConnectedElsewhere)
+        } else {
+          toast(messages.walletAlreadyAdded)
+        }
       } else {
         toast(messages.error)
         await reportToSentry({

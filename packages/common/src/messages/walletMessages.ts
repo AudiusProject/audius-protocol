@@ -117,6 +117,8 @@ export const walletMessages = {
     options: 'Options',
     newWalletConnected: 'New Wallet Successfully Connected!',
     error: 'Something went wrong. Please try again.',
+    walletConnectedElsewhere:
+      'Wallet already connected to another Audius account.',
     walletAlreadyAdded: 'No new wallets selected to connect.',
     linkedWallet: (index: number) => `Linked Wallet ${index + 1}`,
     linkWallet:

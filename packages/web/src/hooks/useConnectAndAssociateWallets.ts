@@ -4,14 +4,16 @@ import {
   type ConnectedWallet,
   useConnectedWallets,
   useAddConnectedWallet,
-  useCurrentAccountUser
+  useCurrentAccountUser,
+  useQueryContext
 } from '@audius/common/api'
 import { useAppContext } from '@audius/common/context'
 import { Name, Chain } from '@audius/common/models'
+import { decodeHashId } from '@audius/sdk'
 import { useTheme } from '@emotion/react'
 import type { NamespaceTypeMap } from '@reown/appkit'
 import { mainnet } from '@reown/appkit/networks'
-import { useAppKit, useAppKitState, useDisconnect } from '@reown/appkit/react'
+import { useAppKit, useDisconnect } from '@reown/appkit/react'
 import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react'
 import type { Hex } from 'viem'
 import { useSignMessage, useSwitchAccount, useAccount } from 'wagmi'
@@ -62,6 +64,17 @@ const useSignMessageAgnostic = () => {
  */
 export class AlreadyAssociatedError extends Error {
   name = 'AlreadyAssociatedError'
+  public address: string | undefined
+  public userId: number | undefined
+  constructor(
+    message: string,
+    address: string | undefined = undefined,
+    userId: number | undefined = undefined
+  ) {
+    super(message)
+    this.address = address
+    this.userId = userId
+  }
 }
 
 /**
@@ -88,6 +101,7 @@ export const useConnectAndAssociateWallets = (
   const {
     analytics: { track, make }
   } = useAppContext()
+  const { audiusSdk } = useQueryContext()
   const theme = useTheme()
   const { open: openAppKitModal, close: closeAppKitModal } = useAppKit()
   const { signMessageAgnostic } = useSignMessageAgnostic()
@@ -97,7 +111,7 @@ export const useConnectAndAssociateWallets = (
   const { disconnect } = useDisconnect()
 
   // The state goes from modal open => connecting => associating
-  const { open: isAppKitModalOpen } = useAppKitState()
+  const [isAppKitOpen, setIsAppKitOpen] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
   const [isAssociating, setIsAssociating] = useState(false)
 
@@ -131,6 +145,9 @@ export const useConnectAndAssociateWallets = (
       // to the audiusChain network. Reset that to mainnet to connect properly.
       await appkitModal.switchNetwork(mainnet)
       await openAppKitModal({ view: 'Connect', namespace })
+
+      // Track state ourself in case there are multiple subscribers to appkit events
+      setIsAppKitOpen(true)
     },
     [disconnect, isConnected, openAppKitModal, theme.type]
   )
@@ -184,6 +201,38 @@ export const useConnectAndAssociateWallets = (
           w.address.toLowerCase() !== originalAddress?.toLocaleLowerCase() &&
           !connectedWallets?.find((w2) => w2.address === w.address)
       )
+
+      // Check if any of the selected wallets are already associated with another user
+      const sdk = await audiusSdk()
+      const { data: existingWallets } = await sdk.users.getUserIDsByAddresses({
+        address: wallets.map((w) => w.address)
+      })
+      if (existingWallets && existingWallets.length > 0) {
+        let otherUserHasWallet = null
+        for (const wallet of existingWallets) {
+          if (
+            currentUser?.user_id &&
+            currentUser.user_id !== decodeHashId(wallet.userId)
+          ) {
+            otherUserHasWallet = wallet
+            track(
+              make({
+                eventName: Name.CONNECT_WALLET_ALREADY_ASSOCIATED,
+                chain: wallet.address.startsWith('0x') ? Chain.Eth : Chain.Sol,
+                walletAddress: wallet.address
+              })
+            )
+          }
+        }
+        if (otherUserHasWallet) {
+          throw new AlreadyAssociatedError(
+            'Wallet already associated with another user',
+            otherUserHasWallet.address,
+            decodeHashId(otherUserHasWallet.userId)!
+          )
+        }
+      }
+
       console.debug(
         '[associate-wallet]',
         'Wallets to associate:',
@@ -263,6 +312,7 @@ export const useConnectAndAssociateWallets = (
     }
   }, [
     addConnectedWalletAsync,
+    audiusSdk,
     connectedWallets,
     currentUser?.user_id,
     currentUser?.wallet,
@@ -284,12 +334,15 @@ export const useConnectAndAssociateWallets = (
    */
   useEffect(() => {
     return appkitModal.subscribeEvents(async (event) => {
+      // Ignore events that weren't triggered by this hook instance's modal opening
+      if (!isAppKitOpen) return
       if (event.data.event === 'SELECT_WALLET') {
         setIsConnecting(true)
       } else if (event.data.event === 'MODAL_CLOSE') {
         if (!isConnecting && !isAssociating) {
           await reconnectExternalAuthWallet()
         }
+        setIsAppKitOpen(false)
       } else if (event.data.event === 'CONNECT_SUCCESS') {
         setIsConnecting(false)
         await associateConnectedWallets()
@@ -299,6 +352,7 @@ export const useConnectAndAssociateWallets = (
       }
     })
   }, [
+    isAppKitOpen,
     associateConnectedWallets,
     reconnectExternalAuthWallet,
     isConnecting,
@@ -307,7 +361,7 @@ export const useConnectAndAssociateWallets = (
   ])
 
   return {
-    isPending: isAppKitModalOpen || isConnecting || isAssociating,
+    isPending: isAppKitOpen || isConnecting || isAssociating,
     openAppKitModal: openAppKitModalCallback
   }
 }

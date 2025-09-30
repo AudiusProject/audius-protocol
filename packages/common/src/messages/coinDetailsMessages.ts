@@ -56,6 +56,8 @@ export const coinDetailsMessages = {
     options: 'Options',
     newWalletConnected: 'New Wallet Successfully Connected!',
     error: 'Something went wrong. Please try again.',
+    walletConnectedElsewhere:
+      'Wallet already connected to another Audius account.',
     walletAlreadyAdded: 'No new wallets selected to connect.',
     builtIn: 'Built-In Wallet',
     toasts: {
