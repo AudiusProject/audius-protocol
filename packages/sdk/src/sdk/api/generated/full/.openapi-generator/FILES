@@ -1,6 +1,7 @@
 .openapi-generator-ignore
 apis/ChallengesApi.ts
 apis/CidDataApi.ts
+apis/CoinsApi.ts
 apis/CommentsApi.ts
 apis/ExploreApi.ts
 apis/NotificationsApi.ts
@@ -48,6 +49,9 @@ models/CidDataResponse.ts
 models/ClaimableRewardNotification.ts
 models/ClaimableRewardNotificationAction.ts
 models/ClaimableRewardNotificationActionData.ts
+models/Coin.ts
+models/CoinResponse.ts
+models/CoinsResponse.ts
 models/CollectionActivityFull.ts
 models/CollectionActivityFullWithoutTracks.ts
 models/CollectionLibraryResponseFull.ts
@@ -73,6 +77,9 @@ models/CosignNotificationActionData.ts
 models/CoverArt.ts
 models/CoverPhoto.ts
 models/CoverPhotoFull.ts
+models/CreateCoinRequest.ts
+models/CreateCoinResponse.ts
+models/CreateCoinResponseData.ts
 models/CreateNotification.ts
 models/CreateNotificationAction.ts
 models/CreateNotificationActionData.ts
@@ -255,6 +262,8 @@ models/TrendingTimesIds.ts
 models/TrendingUndergroundNotification.ts
 models/TrendingUndergroundNotificationAction.ts
 models/TrendingUndergroundNotificationActionData.ts
+models/UpdateCoinRequest.ts
+models/UpdateCoinResponse.ts
 models/UrlWithMirrors.ts
 models/UsdcGate.ts
 models/UsdcPurchaseBuyerNotification.ts

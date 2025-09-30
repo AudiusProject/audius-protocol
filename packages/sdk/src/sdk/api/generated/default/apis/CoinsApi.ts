@@ -22,6 +22,8 @@ import type {
   CoinsResponse,
   CreateCoinRequest,
   CreateCoinResponse,
+  UpdateCoinRequest,
+  UpdateCoinResponse,
 } from '../models';
 import {
     CoinInsightsResponseFromJSON,
@@ -36,6 +38,10 @@ import {
     CreateCoinRequestToJSON,
     CreateCoinResponseFromJSON,
     CreateCoinResponseToJSON,
+    UpdateCoinRequestFromJSON,
+    UpdateCoinRequestToJSON,
+    UpdateCoinResponseFromJSON,
+    UpdateCoinResponseToJSON,
 } from '../models';
 
 export interface CreateCoinOperationRequest {
@@ -71,6 +77,12 @@ export interface GetCoinsRequest {
     limit?: number;
     sortMethod?: GetCoinsSortMethodEnum;
     sortDirection?: GetCoinsSortDirectionEnum;
+}
+
+export interface UpdateCoinOperationRequest {
+    mint: string;
+    userId: string;
+    updateCoinRequest: UpdateCoinRequest;
 }
 
 /**
@@ -312,6 +324,52 @@ export class CoinsApi extends runtime.BaseAPI {
      */
     async getCoins(params: GetCoinsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CoinsResponse> {
         const response = await this.getCoinsRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Updates information about a specific coin by its mint address
+     */
+    async updateCoinRaw(params: UpdateCoinOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UpdateCoinResponse>> {
+        if (params.mint === null || params.mint === undefined) {
+            throw new runtime.RequiredError('mint','Required parameter params.mint was null or undefined when calling updateCoin.');
+        }
+
+        if (params.userId === null || params.userId === undefined) {
+            throw new runtime.RequiredError('userId','Required parameter params.userId was null or undefined when calling updateCoin.');
+        }
+
+        if (params.updateCoinRequest === null || params.updateCoinRequest === undefined) {
+            throw new runtime.RequiredError('updateCoinRequest','Required parameter params.updateCoinRequest was null or undefined when calling updateCoin.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/coins/{mint}`.replace(`{${"mint"}}`, encodeURIComponent(String(params.mint))),
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: UpdateCoinRequestToJSON(params.updateCoinRequest),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => UpdateCoinResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Updates information about a specific coin by its mint address
+     */
+    async updateCoin(params: UpdateCoinOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UpdateCoinResponse> {
+        const response = await this.updateCoinRaw(params, initOverrides);
         return await response.value();
     }
 
