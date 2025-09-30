@@ -9,15 +9,7 @@ import {
 const env = import.meta.env.VITE_ENVIRONMENT
 
 export const discoveryNodeAllowlist =
-  env === 'production'
-    ? new Set([
-        'https://discoveryprovider.audius.co',
-        'https://discoveryprovider2.audius.co',
-        'https://discoveryprovider3.audius.co',
-        'https://audius-dn1.tikilabs.com',
-        'https://dn1.monophonic.digital'
-      ])
-    : undefined
+  env === 'production' ? new Set([]) : undefined
 
 // Initialize a DN selector with allow list to be shared by SDK/libs
 const servicesConfig =
