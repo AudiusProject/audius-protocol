@@ -83,6 +83,11 @@ export const useTokenData = ({
   })
 
   // Process balance data
+  // fullBalance: the complete untruncated balance for swap calculations
+  const fullBalance =
+    balanceFD && balanceFD.toString() !== '0' ? Number(balanceFD) : 0
+
+  // balance: truncated balance for display purposes only
   const displayDecimals = getTokenDecimalPlaces(Number(balanceFD))
   const balance =
     balanceFD && balanceFD.toString() !== '0'
@@ -105,6 +110,7 @@ export const useTokenData = ({
   return {
     // Balance data
     balance,
+    fullBalance,
     formattedBalance,
 
     // Exchange rate data

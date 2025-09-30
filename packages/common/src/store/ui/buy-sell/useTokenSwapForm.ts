@@ -109,7 +109,7 @@ export const useTokenSwapForm = ({
 
   const swapValidation = useSwapValidation({
     inputAmount: swapCalculations.inputAmount,
-    balance: tokenData.balance,
+    balance: tokenData.fullBalance,
     limits: calculatedLimits,
     tokenSymbol: inputToken.symbol,
     tokenDecimals: inputToken.decimals,
@@ -118,18 +118,18 @@ export const useTokenSwapForm = ({
   })
 
   const availableBalance = tokenData.balance
-  // Create validation schema
+  // Create validation schema - use full balance for validation
   const validationSchema = useMemo(() => {
     return toFormikValidationSchema(
       createSwapFormSchema(
         min,
         max,
-        availableBalance,
+        tokenData.fullBalance,
         inputToken.symbol,
         inputToken.decimals
       )
     )
-  }, [min, max, availableBalance, inputToken.symbol, inputToken.decimals])
+  }, [min, max, tokenData.fullBalance, inputToken.symbol, inputToken.decimals])
 
   // Initialize form with Formik
   const formik = useFormik<SwapFormValues>({
@@ -261,16 +261,15 @@ export const useTokenSwapForm = ({
     [swapCalculations]
   )
 
-  // Handle max button click
+  // Handle max button click - use full untruncated balance for swaps
   const handleMaxClick = useCallback(() => {
-    const balance = tokenData.balance
-    if (balance !== undefined) {
-      const finalAmount = balance
-      const finalAmountString = finalAmount.toString()
+    const fullBalance = tokenData.fullBalance
+    if (fullBalance !== undefined) {
+      const finalAmountString = fullBalance.toString()
       swapCalculations.handleInputChange(finalAmountString)
       setFieldTouched('inputAmount', true, false)
     }
-  }, [tokenData.balance, swapCalculations, setFieldTouched])
+  }, [tokenData.fullBalance, swapCalculations, setFieldTouched])
 
   return {
     inputAmount: swapCalculations.inputAmount, // Raw string input for display
