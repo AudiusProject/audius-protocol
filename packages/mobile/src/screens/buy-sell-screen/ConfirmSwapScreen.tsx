@@ -101,8 +101,6 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
       receiveTokenInfo,
       payAmount,
       receiveAmount,
-      pricePerBaseToken,
-      baseTokenSymbol,
       exchangeRate = null
     },
     activeTab,
@@ -254,11 +252,6 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
     decimals: receiveTokenInfo.decimals
   })
 
-  const isReceivingBaseToken = receiveTokenInfo.symbol === baseTokenSymbol
-  const priceLabel = isReceivingBaseToken
-    ? messages.priceEach(pricePerBaseToken)
-    : undefined
-
   const handleBack = () => {
     navigation.goBack()
   }
@@ -320,9 +313,22 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
                 title={messages.youReceive}
                 tokenInfo={receiveTokenInfo}
                 amount={formattedReceiveAmount}
-                priceLabel={priceLabel}
               />
             </Flex>
+            {exchangeRate ? (
+              <Flex row gap='xs' alignItems='center' pt='s'>
+                <Text variant='body' size='s' color='subdued'>
+                  {messages.exchangeRateLabel}
+                </Text>
+                <Text variant='body' size='s' color='default'>
+                  {messages.exchangeRateValue(
+                    payTokenInfo.symbol,
+                    receiveTokenInfo.symbol,
+                    exchangeRate
+                  )}
+                </Text>
+              </Flex>
+            ) : null}
           </Flex>
         </FixedFooterContent>
 

@@ -1,6 +1,7 @@
 import { USDC } from '@audius/fixed-decimal'
 
 import { formatTokenPrice } from '../api/tan-query/jupiter/utils'
+import { getCurrencyDecimalPlaces } from '../utils/decimal'
 
 export const buySellMessages = {
   title: 'BUY / SELL',
@@ -72,7 +73,14 @@ export const buySellMessages = {
     inputSymbol: string,
     outputSymbol: string,
     rate: number
-  ) => `1 ${inputSymbol} ≈ ${rate} ${outputSymbol}`,
+  ) => {
+    const decimalPlaces = getCurrencyDecimalPlaces(rate)
+    const formattedRate = new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: decimalPlaces
+    }).format(rate)
+    return `1 ${inputSymbol} ≈ ${formattedRate} ${outputSymbol}`
+  },
   formattedAvailableBalance: (
     formattedBalance: string,
     _symbol: string,
