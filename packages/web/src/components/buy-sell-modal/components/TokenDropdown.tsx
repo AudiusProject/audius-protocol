@@ -204,7 +204,7 @@ export const TokenDropdown = ({
             borderRadius: cornerRadius.m,
             padding: `${spacing.s} 0`,
             border: `1px solid ${color.border.default}`,
-            minWidth: 242,
+            minWidth: 300,
             right: 0,
             marginTop: spacing.l
           }),
