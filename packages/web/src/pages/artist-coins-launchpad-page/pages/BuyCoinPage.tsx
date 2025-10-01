@@ -34,7 +34,7 @@ import { ArtistCoinsSubmitRow } from '../components/ArtistCoinsSubmitRow'
 import { LaunchpadBuyModal } from '../components/LaunchpadBuyModal'
 import type { PhasePageProps } from '../components/types'
 import { AMOUNT_OF_STEPS } from '../constants'
-import { getLatestConnectedWallet, useLaunchpadAnalytics } from '../utils'
+import { getLastConnectedSolWallet, useLaunchpadAnalytics } from '../utils'
 import { FIELDS } from '../validation'
 
 const messages = {
@@ -92,7 +92,7 @@ export const BuyCoinPage = ({
   const [isReceiveAmountChanging, setIsReceiveAmountChanging] = useState(false)
   const { data: connectedWallets } = useConnectedWallets()
   const connectedWallet = useMemo(
-    () => getLatestConnectedWallet(connectedWallets),
+    () => getLastConnectedSolWallet(connectedWallets),
     [connectedWallets]
   )
 

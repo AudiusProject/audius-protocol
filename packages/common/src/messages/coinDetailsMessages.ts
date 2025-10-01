@@ -65,6 +65,8 @@ export const coinDetailsMessages = {
   },
   overflowMenu: {
     copyCoinAddress: 'Copy Coin Address',
+    unclaimedFees: 'Unclaimed Fees',
+    claim: 'Claim',
     openDexscreener: 'Open Dexscreener',
     details: 'Details',
     copiedToClipboard: 'Copied Coin Address To Clipboard!',

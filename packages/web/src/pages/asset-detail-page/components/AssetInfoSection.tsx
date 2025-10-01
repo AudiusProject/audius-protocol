@@ -4,21 +4,27 @@ import {
   useArtistCoin,
   useCurrentUserId,
   useUser,
-  useUserCoins
+  useUserCoins,
+  useConnectedWallets,
+  useWalletAddresses,
+  useCurrentAccountUser
 } from '@audius/common/api'
 import { useDiscordOAuthLink } from '@audius/common/hooks'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { WidthSizes } from '@audius/common/models'
 import { route, shortenSPLAddress } from '@audius/common/utils'
 import {
+  Button,
   Flex,
   IconCopy,
   IconDiscord,
   IconExternalLink,
   IconGift,
+  IconInfo,
   Paper,
   PlainButton,
   Text,
+  TextLink,
   useTheme
 } from '@audius/harmony'
 import { HashId } from '@audius/sdk'
@@ -28,7 +34,9 @@ import Skeleton from 'components/skeleton/Skeleton'
 import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
 import { UserTokenBadge } from 'components/user-token-badge/UserTokenBadge'
+import { useClaimFee } from 'hooks/useClaimFee'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
+import { getLastConnectedSolWallet } from 'pages/artist-coins-launchpad-page/utils'
 import { env } from 'services/env'
 import { copyToClipboard } from 'utils/clipboardUtil'
 import { push } from 'utils/navigation'
@@ -184,14 +192,35 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
 
   const { data: coin, isLoading } = useArtistCoin(mint)
 
-  const { data: currentUserId } = useCurrentUserId()
-  const { data: userCoins } = useUserCoins({ userId: currentUserId })
+  const { data: currentUser } = useCurrentAccountUser()
+  const { data: userCoins } = useUserCoins({ userId: currentUser?.user_id })
   const userToken = useMemo(
     () => userCoins?.find((coin) => coin.mint === mint),
     [userCoins, mint]
   )
+  const isCoinCreator = coin?.ownerId === currentUser?.user_id
   const discordOAuthLink = useDiscordOAuthLink(userToken?.ticker)
   const { balance: userTokenBalance } = userToken ?? {}
+
+  // Get wallet addresses for claim fee
+  const { data: connectedWallets } = useConnectedWallets()
+  const externalSolWallet = useMemo(
+    () => getLastConnectedSolWallet(connectedWallets),
+    [connectedWallets]
+  )
+
+  // Claim fee hook
+  const { mutate: claimFee, isPending: isClaimFeePending } = useClaimFee({
+    onSuccess: (data) => {
+      toast('Fees claimed successfully!')
+      // eslint-disable-next-line no-console
+      console.log('Claim fee transaction signature:', data.signature)
+    },
+    onError: (error) => {
+      toast(`Failed to claim fees: ${error.message}`)
+    }
+  })
+  const unclaimedFees = coin?.unclaimedFees ?? 0.01 // TODO: get this working on api side
 
   const descriptionParagraphs = coin?.description?.split('\n') ?? []
 
@@ -211,6 +240,29 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
     copyToClipboard(mint)
     toast(overflowMessages.copiedToClipboard)
   }, [mint, toast])
+
+  const handleClaimFees = useCallback(() => {
+    if (!externalSolWallet) {
+      toast('Please connect your wallet to claim fees')
+      return
+    }
+
+    if (!mint) {
+      toast('Invalid token mint address')
+      return
+    }
+
+    if (!currentUser?.spl_wallet) {
+      toast('Something went wrong')
+      return
+    }
+
+    claimFee({
+      tokenMint: mint,
+      ownerWalletAddress: externalSolWallet.address,
+      receiverWalletAddress: currentUser.spl_wallet // Using same wallet for owner and receiver
+    })
+  }, [externalSolWallet, mint, claimFee, currentUser?.spl_wallet, toast])
 
   if (isLoading || !coin) {
     return <AssetInfoSectionSkeleton />
@@ -330,6 +382,42 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
           {shortenSPLAddress(mint)}
         </Text>
       </Flex>
+      {isCoinCreator ? (
+        <Flex
+          alignItems='center'
+          justifyContent='space-between'
+          alignSelf='stretch'
+          p='l'
+          borderTop='default'
+        >
+          <Flex alignItems='center' gap='s'>
+            <Text variant='body' size='s' strength='strong'>
+              {overflowMessages.unclaimedFees}
+            </Text>
+            <Tooltip text={overflowMessages.unclaimedFees}>
+              <IconInfo size='s' color='subdued' />
+            </Tooltip>
+          </Flex>
+          <Flex alignItems='center' gap='s'>
+            {unclaimedFees > 0 ? (
+              <TextLink
+                onClick={handleClaimFees}
+                variant={isClaimFeePending ? 'subdued' : 'visible'}
+                disabled={
+                  isClaimFeePending ||
+                  !externalSolWallet ||
+                  !currentUser?.spl_wallet
+                }
+              >
+                {overflowMessages.claim}
+              </TextLink>
+            ) : null}
+            <Text variant='body' size='s' color='subdued'>
+              ${unclaimedFees}
+            </Text>
+          </Flex>
+        </Flex>
+      ) : null}
     </Paper>
   )
 }
