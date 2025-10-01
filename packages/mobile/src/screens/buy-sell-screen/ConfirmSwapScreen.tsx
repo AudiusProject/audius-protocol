@@ -196,7 +196,11 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
 
   // Handle swap data errors (when swap returns error status) - navigate back and show toast
   useEffect(() => {
-    if (swapData?.status === SwapStatus.ERROR && swapData?.error) {
+    if (
+      (swapData?.status === SwapStatus.ERROR && swapData?.error) ||
+      swapStatus === 'error' ||
+      swapError
+    ) {
       trackSwapFailure(
         {
           activeTab,
@@ -209,8 +213,8 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
         {
           errorType: 'swap_error',
           errorStage: 'transaction',
-          errorMessage: swapData.error.message
-            ? swapData.error.message.substring(0, 500)
+          errorMessage: swapData?.error?.message
+            ? swapData?.error?.message.substring(0, 500)
             : 'Unknown error'
         }
       )
@@ -230,47 +234,9 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
     exchangeRate,
     trackSwapFailure,
     navigation,
-    toast
-  ])
-
-  // Handle swap error - navigate back to input screen and show toast
-  useEffect(() => {
-    if (swapStatus === 'error' && swapError) {
-      trackSwapFailure(
-        {
-          activeTab,
-          inputToken: swapTokens.inputToken,
-          outputToken: swapTokens.outputToken,
-          inputAmount: payAmount,
-          outputAmount: receiveAmount,
-          exchangeRate
-        },
-        {
-          errorType: 'swap_error',
-          errorStage: 'transaction',
-          errorMessage: swapError?.message
-            ? swapError.message.substring(0, 500)
-            : 'Unknown error'
-        }
-      )
-
-      // Navigate back to input screen (matching web behavior)
-      navigation.navigate('BuySellMain')
-
-      // Show toast notification
-      toast({ content: messages.transactionFailed, type: 'error' })
-    }
-  }, [
+    toast,
     swapStatus,
-    swapError,
-    navigation,
-    activeTab,
-    payAmount,
-    receiveAmount,
-    swapTokens,
-    exchangeRate,
-    trackSwapFailure,
-    toast
+    swapError
   ])
 
   // balance isn't needed so we pass 0
