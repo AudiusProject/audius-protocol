@@ -1,6 +1,5 @@
 import { useArtistCoinByTicker, useCurrentUserId } from '@audius/common/api'
 import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
-import { formatTickerFromUrl } from '@audius/common/utils'
 import { Flex, LoadingSpinner } from '@audius/harmony'
 import { Redirect, useParams } from 'react-router-dom'
 
@@ -73,7 +72,7 @@ export const AssetDetailPage = () => {
     isPending,
     isSuccess,
     error: coinError
-  } = useArtistCoinByTicker({ ticker: ticker })
+  } = useArtistCoinByTicker({ ticker })
 
   if (!ticker) {
     return <Redirect to='/wallet' />

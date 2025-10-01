@@ -5,8 +5,9 @@ import { Coin } from '~/adapters/coin'
 import { useCurrentUserId } from '~/api'
 import { useQueryContext } from '~/api/tan-query/utils'
 
-import { getArtistCoinQueryKey } from './useArtistCoin'
 import { QUERY_KEYS } from '../queryKeys'
+
+import { getArtistCoinQueryKey } from './useArtistCoin'
 
 type UpdateCoinRequest = {
   description?: string

@@ -1,4 +1,12 @@
 import {
+  ChangeEvent,
+  createContext,
+  useCallback,
+  useRef,
+  useState
+} from 'react'
+
+import {
   useArtistCoinByTicker,
   useUpdateArtistCoin,
   useCurrentUserId
@@ -9,6 +17,7 @@ import {
   type EditCoinDetailsFormValues
 } from '@audius/common/hooks'
 import { coinDetailsMessages } from '@audius/common/messages'
+import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import { removeNullable } from '@audius/common/utils'
 import {
   Box,
@@ -25,24 +34,15 @@ import {
   Text,
   TextInput
 } from '@audius/harmony'
-import { Field, Form, Formik, useFormikContext } from 'formik'
-import {
-  ChangeEvent,
-  createContext,
-  useCallback,
-  useRef,
-  useState
-} from 'react'
+import { Form, Formik, useFormikContext } from 'formik'
 import { Redirect, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
+import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
 import { AnchoredSubmitRowEdit } from 'components/edit/AnchoredSubmitRowEdit'
 import { TextAreaField } from 'components/form-fields'
-
 import { Header } from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
-import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
-import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
-import { useNavigate } from 'react-router-dom-v5-compat'
 import { reportToSentry } from 'store/errors/reportToSentry'
 
 // Local scroll context for the coin details form
@@ -160,31 +160,9 @@ export const EditCoinDetailsPage = () => {
     isPending,
     isSuccess,
     error: coinError
-  } = useArtistCoinByTicker({ ticker: ticker })
+  } = useArtistCoinByTicker({ ticker })
 
   const [submitError, setSubmitError] = useState<string | undefined>(undefined)
-
-  if (!ticker || (coin && currentUserId !== coin.ownerId)) {
-    return <Redirect to='/wallet' />
-  }
-
-  if (isPending) {
-    return (
-      <Flex
-        justifyContent='center'
-        alignItems='center'
-        css={{ minHeight: '100vh' }}
-      >
-        <LoadingSpinner />
-      </Flex>
-    )
-  }
-
-  if (coinError || (isSuccess && !coin)) {
-    return <Redirect to='/wallet' />
-  }
-
-  if (!coin) return null
 
   const scrollRef = useRef<HTMLDivElement>(null)
   const scrollToTop = useCallback(() => {
@@ -194,6 +172,7 @@ export const EditCoinDetailsPage = () => {
   const updateCoinMutation = useUpdateArtistCoin()
 
   const handleSubmit = async (values: any) => {
+    if (!coin) return
     // Clear any previous errors
     setSubmitError(undefined)
 
@@ -238,17 +217,17 @@ export const EditCoinDetailsPage = () => {
 
   // Populate initial social links from existing coin data
   const initialSocialLinks = [
-    coin.link1,
-    coin.link2,
-    coin.link3,
-    coin.link4
+    coin?.link1,
+    coin?.link2,
+    coin?.link3,
+    coin?.link4
   ].filter(removeNullable)
   if (initialSocialLinks.length === 0) {
     initialSocialLinks.push('')
   }
 
   const initialValues: EditCoinDetailsFormValues = {
-    description: coin.description ?? '',
+    description: coin?.description ?? '',
     socialLinks: initialSocialLinks
   }
 
@@ -263,6 +242,22 @@ export const EditCoinDetailsPage = () => {
       showBackButton={true}
     />
   )
+
+  if (!ticker || (coin && currentUserId !== coin.ownerId)) {
+    return <Redirect to='/wallet' />
+  }
+
+  if (isPending) {
+    return (
+      <Flex justifyContent='center' alignItems='center' h='100%'>
+        <LoadingSpinner />
+      </Flex>
+    )
+  }
+
+  if (coinError || (isSuccess && !coin)) {
+    return <Redirect to='/wallet' />
+  }
 
   return (
     <Page title={coinDetailsMessages.editCoinDetails.pageTitle} header={header}>

@@ -28,12 +28,12 @@ import {
 import { HashId } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
+import { ExternalLink } from 'components/link/ExternalLink'
 import Skeleton from 'components/skeleton/Skeleton'
 import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
 import { UserTokenBadge } from 'components/user-token-badge/UserTokenBadge'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
-import { ExternalLink } from 'components/link/ExternalLink'
 import { env } from 'services/env'
 import { copyToClipboard } from 'utils/clipboardUtil'
 import { push } from 'utils/navigation'
