@@ -1,4 +1,4 @@
-import { useArtistCoin } from '@audius/common/api'
+import { useArtistCoin, useCoinGeckoCoin } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { formatCurrencyWithSubscript } from '@audius/common/utils'
 import {
@@ -9,6 +9,9 @@ import {
   Button,
   useTheme
 } from '@audius/harmony'
+import type { Coin } from '@audius/sdk'
+
+import { env } from 'services/env'
 
 import { TokenIcon } from '../../../components/buy-sell-modal/TokenIcon'
 import ResponsiveModal from '../../../components/modal/ResponsiveModal'
@@ -36,8 +39,13 @@ export const ArtistCoinDetailsModal = ({
   onClose,
   mint
 }: ArtistCoinDetailsModalProps) => {
+  const isAudio = mint === env.WAUDIO_MINT_ADDRESS
   const { spacing } = useTheme()
   const { data: artistCoin } = useArtistCoin(mint)
+  const { data: coingeckoResponse } = useCoinGeckoCoin(
+    { coinId: 'audius' },
+    { enabled: isAudio }
+  )
 
   return (
     <ResponsiveModal
@@ -99,57 +107,11 @@ export const ArtistCoinDetailsModal = ({
         <Divider />
 
         {/* Token Details */}
-        <Flex direction='column' gap='m'>
-          {artistCoin?.totalSupply ? (
-            <TokenInfoRow
-              label={artistCoinDetails.totalSupply}
-              value={artistCoin.totalSupply.toLocaleString()}
-              hasTooltip
-              tooltipContent={artistCoinDetails.tooltips.totalSupply}
-              variant='block'
-            />
-          ) : null}
-
-          {artistCoin?.marketCap ? (
-            <TokenInfoRow
-              label={artistCoinDetails.marketCap}
-              value={`$${artistCoin.marketCap.toLocaleString()}`}
-              hasTooltip
-              tooltipContent={artistCoinDetails.tooltips.marketCap}
-              variant='block'
-            />
-          ) : null}
-
-          {artistCoin?.price ? (
-            <TokenInfoRow
-              label={artistCoinDetails.price}
-              value={formatCurrencyWithSubscript(artistCoin.price)}
-              hasTooltip
-              tooltipContent={artistCoinDetails.tooltips.price}
-              variant='block'
-            />
-          ) : null}
-
-          {artistCoin?.liquidity ? (
-            <TokenInfoRow
-              label={artistCoinDetails.liquidity}
-              value={`$${artistCoin.liquidity.toLocaleString()}`}
-              hasTooltip
-              tooltipContent={artistCoinDetails.tooltips.liquidity}
-              variant='block'
-            />
-          ) : null}
-
-          {artistCoin?.circulatingSupply ? (
-            <TokenInfoRow
-              label={artistCoinDetails.circulatingSupply}
-              value={artistCoin.circulatingSupply.toLocaleString()}
-              hasTooltip
-              tooltipContent={artistCoinDetails.tooltips.circulatingSupply}
-              variant='block'
-            />
-          ) : null}
-        </Flex>
+        <TokenDetailsStatsSection
+          {...(isAudio
+            ? convertCoinGeckoResponseToStatsDetailsProps(coingeckoResponse)
+            : artistCoin)}
+        />
 
         {/* Close Button */}
         <Flex direction='column' gap='l' pt='l'>
@@ -160,5 +122,83 @@ export const ArtistCoinDetailsModal = ({
         </Flex>
       </Flex>
     </ResponsiveModal>
+  )
+}
+
+export type TokenDetailsStatsSectionProps = Partial<
+  Pick<
+    Coin,
+    'totalSupply' | 'marketCap' | 'price' | 'liquidity' | 'circulatingSupply'
+  >
+>
+
+export const convertCoinGeckoResponseToStatsDetailsProps = (
+  coingeckoResponse: any
+): TokenDetailsStatsSectionProps => {
+  if (!coingeckoResponse || !coingeckoResponse.market_data) {
+    return {}
+  }
+  return {
+    totalSupply: coingeckoResponse.market_data.total_supply,
+    marketCap: coingeckoResponse.market_data.market_cap.usd,
+    price: coingeckoResponse.market_data.current_price.usd,
+    liquidity: coingeckoResponse.market_data.total_volume.usd,
+    circulatingSupply: coingeckoResponse.market_data.circulating_supply
+  }
+}
+
+const TokenDetailsStatsSection = (props?: TokenDetailsStatsSectionProps) => {
+  return (
+    <Flex direction='column' gap='m'>
+      {props?.totalSupply ? (
+        <TokenInfoRow
+          label={artistCoinDetails.totalSupply}
+          value={props.totalSupply.toLocaleString()}
+          hasTooltip
+          tooltipContent={artistCoinDetails.tooltips.totalSupply}
+          variant='block'
+        />
+      ) : null}
+
+      {props?.marketCap ? (
+        <TokenInfoRow
+          label={artistCoinDetails.marketCap}
+          value={`$${props.marketCap.toLocaleString()}`}
+          hasTooltip
+          tooltipContent={artistCoinDetails.tooltips.marketCap}
+          variant='block'
+        />
+      ) : null}
+
+      {props?.price ? (
+        <TokenInfoRow
+          label={artistCoinDetails.price}
+          value={formatCurrencyWithSubscript(props.price)}
+          hasTooltip
+          tooltipContent={artistCoinDetails.tooltips.price}
+          variant='block'
+        />
+      ) : null}
+
+      {props?.liquidity ? (
+        <TokenInfoRow
+          label={artistCoinDetails.liquidity}
+          value={`$${props.liquidity.toLocaleString()}`}
+          hasTooltip
+          tooltipContent={artistCoinDetails.tooltips.liquidity}
+          variant='block'
+        />
+      ) : null}
+
+      {props?.circulatingSupply ? (
+        <TokenInfoRow
+          label={artistCoinDetails.circulatingSupply}
+          value={props.circulatingSupply.toLocaleString()}
+          hasTooltip
+          tooltipContent={artistCoinDetails.tooltips.circulatingSupply}
+          variant='block'
+        />
+      ) : null}
+    </Flex>
   )
 }

@@ -84,3 +84,27 @@ export const createCoinMetrics = (coin: Coin): MetricData[] => {
     (metric): metric is MetricData => metric !== null
   )
 }
+
+export const createAudioCoinMetrics = (coingeckoResponse: any) => {
+  if (coingeckoResponse === null || coingeckoResponse === undefined) {
+    return []
+  }
+  return [
+    createMetric(
+      formatCurrencyWithSubscript(
+        coingeckoResponse.market_data.current_price.usd
+      ),
+      messages.pricePerCoin,
+      coingeckoResponse.market_data.price_change_percentage_24h
+    ),
+    createMetric(
+      `$${formatCount(coingeckoResponse.market_data.market_cap.usd, 2)}`,
+      messages.marketCap
+    ),
+    createMetric(
+      `$${formatCount(coingeckoResponse.market_data.total_volume.usd, 2)}`,
+      messages.volume24hr,
+      coingeckoResponse.market_data.price_change_percentage_24h
+    )
+  ].filter((metric): metric is MetricData => metric !== null)
+}

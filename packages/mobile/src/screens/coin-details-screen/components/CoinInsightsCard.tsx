@@ -1,7 +1,11 @@
 import type { Coin } from '@audius/common/adapters'
-import { useArtistCoin } from '@audius/common/api'
+import { useArtistCoin, useCoinGeckoCoin } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
-import { createCoinMetrics, type MetricData } from '@audius/common/utils'
+import {
+  createAudioCoinMetrics,
+  createCoinMetrics,
+  type MetricData
+} from '@audius/common/utils'
 
 import {
   Flex,
@@ -152,7 +156,20 @@ const MetricRow = ({ metric, coin }: { metric: MetricData; coin?: Coin }) => {
 }
 
 export const CoinInsightsCard = ({ mint }: { mint: string }) => {
-  const { data: coin, isPending, error } = useArtistCoin(mint)
+  const isAudio = mint === env.WAUDIO_MINT_ADDRESS
+  const {
+    data: coin,
+    isPending: isCoinPending,
+    isError: isCoinError
+  } = useArtistCoin(mint)
+  const {
+    data: coingeckoResponse,
+    isPending: isCoingeckoPending,
+    isError: isCoingeckoError
+  } = useCoinGeckoCoin({ coinId: 'audius' }, { enabled: isAudio })
+
+  const isPending = isCoinPending || (isAudio && isCoingeckoPending)
+  const isError = isCoinError || (isAudio && isCoingeckoError)
 
   const { onOpen } = useDrawer('AssetInsightsOverflowMenu')
 
@@ -164,7 +181,9 @@ export const CoinInsightsCard = ({ mint }: { mint: string }) => {
     return null
   }
 
-  const metrics = createCoinMetrics(coin)
+  const metrics = isAudio
+    ? createAudioCoinMetrics(coingeckoResponse)
+    : createCoinMetrics(coin)
 
   return (
     <Paper
@@ -193,7 +212,7 @@ export const CoinInsightsCard = ({ mint }: { mint: string }) => {
         />
       </Flex>
 
-      {error || !coin ? (
+      {isError || !coin ? (
         <Flex pv='xl' ph='l' w='100%' justifyContent='center'>
           <Text variant='body' color='subdued'>
             {messages.unableToLoad}
