@@ -1,4 +1,4 @@
-import { useArtistCoinByTicker } from '@audius/common/api'
+import { useArtistCoinByTicker, useCurrentUserId } from '@audius/common/api'
 import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import { formatTickerFromUrl } from '@audius/common/utils'
 import { Flex, LoadingSpinner } from '@audius/harmony'
@@ -20,9 +20,14 @@ type AssetDetailPageContentProps = {
 const DesktopAssetDetailPageContent = ({
   mint,
   title,
-  ticker
-}: AssetDetailPageContentProps & { ticker: string }) => {
-  const { tabs, body, rightDecorator } = useAssetDetailTabs({ mint, ticker })
+  ticker,
+  isOwner
+}: AssetDetailPageContentProps & { ticker: string; isOwner: boolean }) => {
+  const { tabs, body, rightDecorator } = useAssetDetailTabs({
+    mint,
+    ticker,
+    isOwner
+  })
 
   const header = (
     <Header
@@ -61,6 +66,7 @@ const MobileAssetDetailPageContent = ({
 export const AssetDetailPage = () => {
   const { ticker } = useParams<{ ticker: string }>()
   const isMobile = useIsMobile()
+  const { data: currentUserId } = useCurrentUserId()
 
   const {
     data: coin,
@@ -89,6 +95,8 @@ export const AssetDetailPage = () => {
     return <Redirect to='/wallet' />
   }
 
+  const isOwner = currentUserId === coin?.ownerId
+
   return isMobile ? (
     <MobileAssetDetailPageContent
       mint={coin?.mint ?? ''}
@@ -99,6 +107,7 @@ export const AssetDetailPage = () => {
       mint={coin?.mint ?? ''}
       title={coin?.ticker ?? ''}
       ticker={coin?.ticker ?? ''}
+      isOwner={isOwner}
     />
   )
 }

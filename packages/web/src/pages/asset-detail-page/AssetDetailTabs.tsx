@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 
 import { EDIT_COIN_DETAILS_PAGE } from '@audius/common/src/utils/route'
-import { formatTickerForUrl } from '@audius/common/utils'
+import { formatTickerForUrl, formatTickerFromUrl } from '@audius/common/utils'
 import { Button } from '@audius/harmony'
 import { useNavigate } from 'react-router-dom-v5-compat'
 import useTabs from 'hooks/useTabs/useTabs'
@@ -25,11 +25,13 @@ const messages = {
 type UseAssetDetailTabsProps = {
   mint: string
   ticker?: string
+  isOwner?: boolean
 }
 
 export const useAssetDetailTabs = ({
   mint,
-  ticker
+  ticker,
+  isOwner = false
 }: UseAssetDetailTabsProps) => {
   const [selectedTab, setSelectedTab] = useState(AssetDetailTabType.HOME)
   const navigate = useNavigate()
@@ -40,8 +42,9 @@ export const useAssetDetailTabs = ({
 
   const handleEditClick = useCallback(() => {
     if (ticker) {
-      const formattedTicker = formatTickerForUrl(ticker)
-      navigate(EDIT_COIN_DETAILS_PAGE.replace(':ticker', formattedTicker))
+      navigate(
+        EDIT_COIN_DETAILS_PAGE.replace(':ticker', formatTickerFromUrl(ticker))
+      )
     }
   }, [ticker, navigate])
 
@@ -72,11 +75,11 @@ export const useAssetDetailTabs = ({
     didChangeTabsFrom: handleTabChange
   })
 
-  const rightDecorator = (
+  const rightDecorator = isOwner ? (
     <Button variant='tertiary' size='small' onClick={handleEditClick}>
       {messages.coinInsights.edit}
     </Button>
-  )
+  ) : null
 
   // If not wAUDIO, just return the content without tabs
   if (!isWAudio) {
@@ -89,7 +92,6 @@ export const useAssetDetailTabs = ({
 
   // For wAUDIO, return the full tabs system
   return {
-    ...tabsResult,
-    rightDecorator
+    ...tabsResult
   }
 }
