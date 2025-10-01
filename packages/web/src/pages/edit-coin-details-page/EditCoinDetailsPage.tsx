@@ -40,7 +40,7 @@ import { useNavigate } from 'react-router-dom-v5-compat'
 
 import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
 import { AnchoredSubmitRowEdit } from 'components/edit/AnchoredSubmitRowEdit'
-import { TextAreaField } from 'components/form-fields'
+import { TextAreaField, TextField } from 'components/form-fields'
 import { Header } from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
 import { reportToSentry } from 'store/errors/reportToSentry'
@@ -125,7 +125,8 @@ const SocialLinksSection = () => {
           const hasError = Boolean(fieldTouched && fieldError)
 
           return (
-            <TextInput
+            <TextField
+              name={`socialLinks.${index}`}
               key={index}
               label={`${coinDetailsMessages.editCoinDetails.socialLink} ${index + 1}`}
               placeholder={coinDetailsMessages.editCoinDetails.pasteLink}
@@ -135,6 +136,7 @@ const SocialLinksSection = () => {
               startIcon={PlatformIcon}
               error={hasError}
               helperText={hasError ? fieldError : undefined}
+              required={false}
             />
           )
         })}
@@ -176,13 +178,12 @@ export const EditCoinDetailsPage = () => {
     // Clear any previous errors
     setSubmitError(undefined)
 
-    // Transform social links array to generic link fields for API
+    // Transform social links array for API - include empty strings to indicate deletion
     const transformedValues = {
       description: values.description,
-      link1: values.socialLinks[0] ?? undefined,
-      link2: values.socialLinks[1] ?? undefined,
-      link3: values.socialLinks[2] ?? undefined,
-      link4: values.socialLinks[3] ?? undefined
+      links: values.socialLinks.filter(
+        (link: string) => link !== null && link !== undefined
+      )
     }
 
     try {

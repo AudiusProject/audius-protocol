@@ -11,10 +11,7 @@ import { getArtistCoinQueryKey } from './useArtistCoin'
 
 type UpdateCoinRequest = {
   description?: string
-  link1?: string
-  link2?: string
-  link3?: string
-  link4?: string
+  links?: string[]
 }
 
 type UpdateArtistCoinParams = {
@@ -44,10 +41,10 @@ export const useUpdateArtistCoin = () => {
         userId: Id.parse(currentUserId),
         updateCoinRequest: {
           description: updateCoinRequest.description,
-          link1: updateCoinRequest.link1,
-          link2: updateCoinRequest.link2,
-          link3: updateCoinRequest.link3,
-          link4: updateCoinRequest.link4
+          link1: updateCoinRequest.links?.[0] ?? '',
+          link2: updateCoinRequest.links?.[1] ?? '',
+          link3: updateCoinRequest.links?.[2] ?? '',
+          link4: updateCoinRequest.links?.[3] ?? ''
         }
       })
 
@@ -71,10 +68,10 @@ export const useUpdateArtistCoin = () => {
         const optimisticCoin = {
           ...previousCoin,
           description: updateCoinRequest.description ?? coinData.description,
-          link1: updateCoinRequest.link1 ?? coinData.link1,
-          link2: updateCoinRequest.link2 ?? coinData.link2,
-          link3: updateCoinRequest.link3 ?? coinData.link3,
-          link4: updateCoinRequest.link4 ?? coinData.link4
+          link1: updateCoinRequest.links?.[0] ?? undefined,
+          link2: updateCoinRequest.links?.[1] ?? undefined,
+          link3: updateCoinRequest.links?.[2] ?? undefined,
+          link4: updateCoinRequest.links?.[3] ?? undefined
         }
 
         queryClient.setQueryData(getArtistCoinQueryKey(mint), optimisticCoin)

@@ -17,7 +17,8 @@ const messages = {
 const validationSchema = z.object({
   description: z
     .string()
-    .max(MAX_COIN_DESCRIPTION_LENGTH, messages.descriptionTooLong),
+    .max(MAX_COIN_DESCRIPTION_LENGTH, messages.descriptionTooLong)
+    .optional(),
   socialLinks: z
     .array(
       z
@@ -28,6 +29,7 @@ const validationSchema = z.object({
             message: messages.invalidUrl
           }
         )
+        .optional()
     )
     .max(4, 'Maximum 4 social links allowed')
 })

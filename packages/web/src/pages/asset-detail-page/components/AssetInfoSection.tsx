@@ -25,7 +25,7 @@ import {
   Text,
   useTheme
 } from '@audius/harmony'
-import { HashId } from '@audius/sdk'
+import { Coin, HashId } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
 import { ExternalLink } from 'components/link/ExternalLink'
@@ -77,12 +77,7 @@ const getPlatformIcon = (platform: string) => {
   }
 }
 
-type SocialLinksDisplayProps = {
-  coin: any
-  owner: any
-}
-
-const SocialLinksDisplay = ({ coin, owner }: SocialLinksDisplayProps) => {
+const SocialLinksDisplay = ({ coin }: { coin: Coin }) => {
   const socialLinks = [coin.link1, coin.link2, coin.link3, coin.link4].filter(
     removeNullable
   )
