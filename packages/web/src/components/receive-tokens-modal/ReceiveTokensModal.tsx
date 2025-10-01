@@ -105,7 +105,11 @@ export const ReceiveTokensModal = () => {
     >
       <Flex direction='column' gap='xl' p='xl' h='100%'>
         {tokenInfo && balance ? (
-          <CryptoBalanceSection tokenInfo={tokenInfo} amount={balance} />
+          <CryptoBalanceSection
+            tokenInfo={tokenInfo}
+            name={tokenInfo.name}
+            amount={balance}
+          />
         ) : null}
 
         <Divider orientation='horizontal' color='default' />

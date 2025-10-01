@@ -21,6 +21,7 @@ export const SwapBalanceSection = (props: SwapBalanceSectionProps) => {
     <CryptoBalanceSection
       title={title}
       tokenInfo={tokenInfo}
+      name={tokenInfo.name}
       amount={amount}
       priceLabel={priceLabel}
     />

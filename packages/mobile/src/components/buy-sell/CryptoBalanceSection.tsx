@@ -6,6 +6,7 @@ import { Flex, Text, useTheme, HexagonalIcon } from '@audius/harmony-native'
 type CryptoBalanceSectionProps = {
   title: string
   tokenInfo: TokenInfo
+  name?: string
   amount: string
   priceLabel?: string
 }
@@ -13,6 +14,7 @@ type CryptoBalanceSectionProps = {
 export const CryptoBalanceSection = ({
   title,
   tokenInfo,
+  name,
   amount,
   priceLabel
 }: CryptoBalanceSectionProps) => {
@@ -35,29 +37,36 @@ export const CryptoBalanceSection = ({
             style={{ width: iconSize, height: iconSize }}
           />
         </HexagonalIcon>
-        <Flex>
-          <Flex row gap='xs' alignItems='center'>
-            <Text variant='heading' size='l'>
-              {amount}
+        <Flex gap='xs'>
+          {name && (
+            <Text variant='heading' size='s'>
+              {name}
             </Text>
-            <Text variant='heading' size='m' color='subdued'>
-              {tokenInfo.symbol}
-            </Text>
-          </Flex>
-          <Flex row gap='xs'>
-            {priceLabel && (
-              <Text
-                variant='heading'
-                size='s'
-                color='subdued'
-                style={{
-                  lineHeight: spacing.unit7,
-                  transform: [{ translateY: -spacing.unitHalf }]
-                }}
-              >
-                {priceLabel}
+          )}
+          <Flex>
+            <Flex row gap='xs' alignItems='center'>
+              <Text variant='title' size='l'>
+                {amount}
               </Text>
-            )}
+              <Text variant='title' size='l' color='subdued'>
+                {tokenInfo.symbol}
+              </Text>
+            </Flex>
+            <Flex row gap='xs'>
+              {priceLabel && (
+                <Text
+                  variant='heading'
+                  size='s'
+                  color='subdued'
+                  style={{
+                    lineHeight: spacing.unit7,
+                    transform: [{ translateY: -spacing.unitHalf }]
+                  }}
+                >
+                  {priceLabel}
+                </Text>
+              )}
+            </Flex>
           </Flex>
         </Flex>
       </Flex>
