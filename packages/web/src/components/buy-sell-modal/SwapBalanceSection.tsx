@@ -20,7 +20,6 @@ export const SwapBalanceSection = (props: SwapBalanceSectionProps) => {
     return (
       <USDCBalanceSection
         title={title}
-        tokenInfo={tokenInfo}
         amount={amount}
         hideTooltip={hideUSDCTooltip}
         tooltipPlacement='right'
