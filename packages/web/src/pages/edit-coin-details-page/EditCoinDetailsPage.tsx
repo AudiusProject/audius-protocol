@@ -31,8 +31,7 @@ import {
   LoadingSpinner,
   PlainButton,
   spacing,
-  Text,
-  TextInput
+  Text
 } from '@audius/harmony'
 import { Form, Formik, useFormikContext } from 'formik'
 import { Redirect, useParams } from 'react-router-dom'
