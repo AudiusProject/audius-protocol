@@ -1,7 +1,5 @@
 import React from 'react'
 
-import type { TokenInfo } from '@audius/common/store'
-
 import { Flex, Text } from '@audius/harmony-native'
 
 import { TooltipInfoIcon } from './TooltipInfoIcon'
@@ -12,13 +10,11 @@ const messages = {
 
 type USDCBalanceSectionProps = {
   title: string
-  tokenInfo: TokenInfo
   amount: string
 }
 
 export const USDCBalanceSection = ({
   title,
-  tokenInfo,
   amount
 }: USDCBalanceSectionProps) => {
   return (

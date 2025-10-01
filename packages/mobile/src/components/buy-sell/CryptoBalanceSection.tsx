@@ -8,15 +8,13 @@ type CryptoBalanceSectionProps = {
   tokenInfo: TokenInfo
   name?: string
   amount: string
-  priceLabel?: string
 }
 
 export const CryptoBalanceSection = ({
   title,
   tokenInfo,
   name,
-  amount,
-  priceLabel
+  amount
 }: CryptoBalanceSectionProps) => {
   const { logoURI } = tokenInfo
   const { iconSizes } = useTheme()

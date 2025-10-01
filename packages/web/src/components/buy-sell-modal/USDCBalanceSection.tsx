@@ -1,4 +1,3 @@
-import { TokenInfo } from '@audius/common/store'
 import { Divider, Flex, Text } from '@audius/harmony'
 import { TooltipPlacement } from 'antd/lib/tooltip'
 
@@ -10,7 +9,6 @@ const messages = {
 
 type USDCBalanceSectionProps = {
   title: string
-  tokenInfo: TokenInfo
   amount: string
   tooltipPlacement?: TooltipPlacement
   hideTooltip?: boolean

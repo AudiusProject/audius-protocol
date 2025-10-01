@@ -115,6 +115,21 @@ export const ConfirmSwapScreen = (props: ConfirmSwapScreenProps) => {
         />
       </Flex>
 
+      {exchangeRate ? (
+        <Flex gap='xs' alignItems='center' mt='l'>
+          <Text variant='body' size='s' color='subdued'>
+            {messages.exchangeRateLabel}
+          </Text>
+          <Text variant='body' size='s' color='default'>
+            {messages.exchangeRateValue(
+              payTokenInfo.symbol,
+              receiveTokenInfo.symbol,
+              exchangeRate
+            )}
+          </Text>
+        </Flex>
+      ) : null}
+
       <Flex gap='s' mt='xl'>
         <Button variant='secondary' fullWidth onClick={onBack}>
           {messages.back}
