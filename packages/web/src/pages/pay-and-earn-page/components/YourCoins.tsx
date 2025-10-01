@@ -209,7 +209,7 @@ const CoinCardWithBalance = ({ coin }: { coin: UserCoin }) => {
 
   const handleCoinClick = useCallback(
     (ticker: string) => {
-      navigate(ASSET_DETAIL_PAGE.replace(':ticker', formatTickerForUrl(ticker)))
+      navigate(ASSET_DETAIL_PAGE.replace(':ticker', ticker))
     },
     [navigate]
   )

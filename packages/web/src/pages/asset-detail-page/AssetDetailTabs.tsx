@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react'
 
 import { EDIT_COIN_DETAILS_PAGE } from '@audius/common/src/utils/route'
-import { formatTickerForUrl, formatTickerFromUrl } from '@audius/common/utils'
 import { Button } from '@audius/harmony'
 import { useNavigate } from 'react-router-dom-v5-compat'
 import useTabs from 'hooks/useTabs/useTabs'
@@ -42,9 +41,7 @@ export const useAssetDetailTabs = ({
 
   const handleEditClick = useCallback(() => {
     if (ticker) {
-      navigate(
-        EDIT_COIN_DETAILS_PAGE.replace(':ticker', formatTickerFromUrl(ticker))
-      )
+      navigate(EDIT_COIN_DETAILS_PAGE.replace(':ticker', ticker))
     }
   }, [ticker, navigate])
 
@@ -76,7 +73,7 @@ export const useAssetDetailTabs = ({
   })
 
   const rightDecorator = isOwner ? (
-    <Button variant='tertiary' size='small' onClick={handleEditClick}>
+    <Button variant='secondary' size='small' onClick={handleEditClick}>
       {messages.coinInsights.edit}
     </Button>
   ) : null

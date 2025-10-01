@@ -1,18 +1,22 @@
-import { useArtistCoinByTicker } from '@audius/common/api'
-import { useCurrentUserId } from '@audius/common/api'
 import {
+  useArtistCoinByTicker,
+  useUpdateArtistCoin,
+  useCurrentUserId
+} from '@audius/common/api'
+import {
+  MAX_COIN_DESCRIPTION_LENGTH,
   useEditCoinDetailsFormConfiguration,
   type EditCoinDetailsFormValues
 } from '@audius/common/hooks'
-import { EDIT_COIN_DETAILS_PAGE } from '@audius/common/src/utils/route'
-import { formatTickerFromUrl } from '@audius/common/utils'
+import { coinDetailsMessages } from '@audius/common/messages'
+import { removeNullable } from '@audius/common/utils'
 import {
   Box,
   Divider,
   Flex,
+  IconInstagram,
   IconLink,
   IconPlus,
-  IconInstagram,
   IconTikTok,
   IconX,
   LoadingSpinner,
@@ -22,21 +26,27 @@ import {
   TextInput
 } from '@audius/harmony'
 import { Field, Form, Formik, useFormikContext } from 'formik'
-import { ChangeEvent, createContext, useCallback, useRef } from 'react'
+import {
+  ChangeEvent,
+  createContext,
+  useCallback,
+  useRef,
+  useState
+} from 'react'
 import { Redirect, useParams } from 'react-router-dom'
 
 import { AnchoredSubmitRowEdit } from 'components/edit/AnchoredSubmitRowEdit'
-
-// Local scroll context for the coin details form
-const EditFormScrollContext = createContext(() => {})
+import { TextAreaField } from 'components/form-fields'
 
 import { Header } from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
-import { useIsMobile } from 'hooks/useIsMobile'
-import { BASE_URL } from 'utils/route'
 import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
-import type { Coin } from '~/adapters/coin'
-import TextArea from 'components/data-entry/TextArea'
+import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
+import { useNavigate } from 'react-router-dom-v5-compat'
+import { reportToSentry } from 'store/errors/reportToSentry'
+
+// Local scroll context for the coin details form
+const EditFormScrollContext = createContext(() => {})
 
 // Helper function to detect platform from URL
 const detectPlatform = (
@@ -54,13 +64,7 @@ const detectPlatform = (
     return 'tiktok'
   }
 
-  // Check for valid URL format (generic website)
-  try {
-    new URL(cleanUrl.startsWith('http') ? cleanUrl : `https://${cleanUrl}`)
-    return 'website'
-  } catch {
-    return 'website'
-  }
+  return 'website'
 }
 
 // Get platform icon
@@ -79,10 +83,11 @@ const getPlatformIcon = (platform: string) => {
 }
 
 const SocialLinksSection = () => {
-  const { values, setFieldValue } = useFormikContext<any>()
+  const { values, setFieldValue, errors, touched } =
+    useFormikContext<EditCoinDetailsFormValues>()
 
   const handleAddSocialLink = () => {
-    const newLinks = [...values.socialLinks, { platform: 'website', value: '' }]
+    const newLinks = [...values.socialLinks, '']
     setFieldValue('socialLinks', newLinks)
   }
 
@@ -91,13 +96,8 @@ const SocialLinksSection = () => {
     value: ChangeEvent<HTMLInputElement> | string
   ) => {
     const newValue = typeof value === 'string' ? value : value.target.value
-    const detectedPlatform = detectPlatform(newValue)
-
     const newLinks = [...values.socialLinks]
-    newLinks[index] = {
-      platform: detectedPlatform,
-      value: newValue
-    }
+    newLinks[index] = newValue
     setFieldValue('socialLinks', newLinks)
   }
 
@@ -105,32 +105,44 @@ const SocialLinksSection = () => {
     <Flex column gap='l' m='xl'>
       <Flex alignItems='center' gap='s'>
         <Text variant='title' size='l'>
-          {messages.socialLinks}
+          {coinDetailsMessages.editCoinDetails.socialLinks}
         </Text>
         <Text variant='body' size='m' color='subdued'>
-          {messages.optional}
+          {coinDetailsMessages.editCoinDetails.optional}
         </Text>
       </Flex>
 
-      <Flex column gap='m'>
-        {values.socialLinks.map((link: any, index: number) => (
-          <TextInput
-            label={`${link.platform.charAt(0).toUpperCase() + link.platform.slice(1)} ${messages.socialLink}`}
-            placeholder={messages.pasteLink}
-            value={link.value}
-            onChange={(value) => handleLinkChange(index, value)}
-            startIcon={getPlatformIcon(link.platform) ?? IconLink}
-          />
-        ))}
+      <Flex column gap='l' alignItems='flex-start'>
+        {values.socialLinks.map((link: string, index: number) => {
+          const platform = detectPlatform(link)
+          const PlatformIcon = getPlatformIcon(platform)
+          const fieldError = Array.isArray(errors.socialLinks)
+            ? errors.socialLinks[index]
+            : undefined
+          const fieldTouched = Array.isArray(touched.socialLinks)
+            ? touched.socialLinks[index]
+            : touched.socialLinks
+          const hasError = Boolean(fieldTouched && fieldError)
+
+          return (
+            <TextInput
+              key={index}
+              label={`${coinDetailsMessages.editCoinDetails.socialLink} ${index + 1}`}
+              placeholder={coinDetailsMessages.editCoinDetails.pasteLink}
+              hideLabel
+              value={link}
+              onChange={(value) => handleLinkChange(index, value)}
+              startIcon={PlatformIcon}
+              error={hasError}
+              helperText={hasError ? fieldError : undefined}
+            />
+          )
+        })}
 
         {/* Add new link button */}
         {values.socialLinks.length < 4 && (
-          <PlainButton
-            size='large'
-            onClick={handleAddSocialLink}
-            iconLeft={IconPlus}
-          >
-            {messages.addAnotherLink}
+          <PlainButton onClick={handleAddSocialLink} iconLeft={IconPlus}>
+            {coinDetailsMessages.editCoinDetails.addAnotherLink}
           </PlainButton>
         )}
       </Flex>
@@ -138,81 +150,127 @@ const SocialLinksSection = () => {
   )
 }
 
-const messages = {
-  editCoinPage: 'Edit Coin Page',
-  tokenDetails: 'Token Details',
-  description: 'Description',
-  socialLinks: 'Social Links',
-  socialLink: 'Link',
-  addAnotherLink: 'Add another link',
-  saveChanges: 'Save Changes',
-  optional: '(Optional)',
-  descriptionPlaceholder:
-    'Tell fans what makes your artist coin special — think early listens, exclusive drops, or fun perks for your biggest supporters.',
-  pasteLink: 'Paste a link'
-}
+export const EditCoinDetailsPage = () => {
+  const { ticker } = useParams<{ ticker: string }>()
+  const { data: currentUserId } = useCurrentUserId()
+  const navigate = useNavigate()
 
-const DesktopEditCoinDetailsPageContent = ({ coin }: { coin?: Coin }) => {
+  const {
+    data: coin,
+    isPending,
+    isSuccess,
+    error: coinError
+  } = useArtistCoinByTicker({ ticker: ticker })
+
+  const [submitError, setSubmitError] = useState<string | undefined>(undefined)
+
+  if (!ticker || (coin && currentUserId !== coin.ownerId)) {
+    return <Redirect to='/wallet' />
+  }
+
+  if (isPending) {
+    return (
+      <Flex
+        justifyContent='center'
+        alignItems='center'
+        css={{ minHeight: '100vh' }}
+      >
+        <LoadingSpinner />
+      </Flex>
+    )
+  }
+
+  if (coinError || (isSuccess && !coin)) {
+    return <Redirect to='/wallet' />
+  }
+
   if (!coin) return null
-  const { data: userId } = useCurrentUserId()
 
   const scrollRef = useRef<HTMLDivElement>(null)
   const scrollToTop = useCallback(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }, [])
 
+  const updateCoinMutation = useUpdateArtistCoin()
+
   const handleSubmit = async (values: any) => {
-    // Transform social links array to individual fields for API
+    // Clear any previous errors
+    setSubmitError(undefined)
+
+    // Transform social links array to generic link fields for API
     const transformedValues = {
       description: values.description,
-      ...values.socialLinks.reduce((acc: any, link: any) => {
-        switch (link.platform) {
-          case 'x':
-            acc.xHandle = link.value
-            break
-          case 'instagram':
-            acc.instagramHandle = link.value
-            break
-          case 'tiktok':
-            acc.tiktokHandle = link.value
-            break
-          case 'website':
-            acc.website = link.value
-            break
-        }
-        return acc
-      }, {})
+      link1: values.socialLinks[0] ?? undefined,
+      link2: values.socialLinks[1] ?? undefined,
+      link3: values.socialLinks[2] ?? undefined,
+      link4: values.socialLinks[3] ?? undefined
     }
 
-    console.log('Submitting coin update:', {
-      mint: coin.mint,
-      userId,
-      originalValues: values,
-      transformedValues
-    })
-    // TODO: Implement actual API call to update coin
-    // For now, just simulate a delay
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      await updateCoinMutation.mutateAsync({
+        mint: coin.mint,
+        updateCoinRequest: transformedValues
+      })
+      navigate(ASSET_DETAIL_PAGE.replace(':ticker', coin?.ticker ?? ''))
+    } catch (e) {
+      const errorMessage =
+        e instanceof Error
+          ? e.message
+          : 'Failed to update coin details. Please try again.'
+      setSubmitError(errorMessage)
+      await reportToSentry({
+        name: 'EditCoinDetails',
+        error:
+          e instanceof Error
+            ? e
+            : new Error(
+                e instanceof Object && 'message' in e
+                  ? (e.message as string)
+                  : 'Unknown Error'
+              ),
+        additionalInfo: {
+          raw: e
+        }
+      })
+      throw e // Re-throw to let Formik handle the error
+    }
   }
 
-  const formConfiguration = useEditCoinDetailsFormConfiguration(handleSubmit)
+  // Populate initial social links from existing coin data
+  const initialSocialLinks = [
+    coin.link1,
+    coin.link2,
+    coin.link3,
+    coin.link4
+  ].filter(removeNullable)
+  if (initialSocialLinks.length === 0) {
+    initialSocialLinks.push('')
+  }
 
   const initialValues: EditCoinDetailsFormValues = {
-    description: coin.description || '',
-    socialLinks: [{ platform: 'website', value: '' }] // Start with one empty social link
+    description: coin.description ?? '',
+    socialLinks: initialSocialLinks
   }
 
+  const formConfiguration = useEditCoinDetailsFormConfiguration(
+    handleSubmit,
+    initialValues
+  )
+
   const header = (
-    <Header primary={messages.editCoinPage} showBackButton={true} />
+    <Header
+      primary={coinDetailsMessages.editCoinDetails.pageTitle}
+      showBackButton={true}
+    />
   )
 
   return (
-    <Page title={messages.editCoinPage} header={header}>
-      <Formik {...formConfiguration} initialValues={initialValues}>
+    <Page title={coinDetailsMessages.editCoinDetails.pageTitle} header={header}>
+      <Formik {...formConfiguration}>
         {({ isSubmitting }) => (
           <Form>
             <EditFormScrollContext.Provider value={scrollToTop}>
-              <div ref={scrollRef}>
+              <Flex ref={scrollRef} column w='100%'>
                 <Box backgroundColor='white' borderRadius='m' border='default'>
                   {/* Token Details Section */}
                   <Flex gap='s' m='xl'>
@@ -238,19 +296,17 @@ const DesktopEditCoinDetailsPageContent = ({ coin }: { coin?: Coin }) => {
                   {/* Description Section */}
                   <Flex column gap='l' m='xl'>
                     <Text variant='title' size='l'>
-                      {messages.description}
+                      {coinDetailsMessages.editCoinDetails.description}
                     </Text>
 
-                    <Field name='description'>
-                      {({ field, meta }: any) => (
-                        <TextArea
-                          {...field}
-                          placeholder={messages.descriptionPlaceholder}
-                          characterLimit={2500}
-                          error={meta.touched && meta.error}
-                        />
-                      )}
-                    </Field>
+                    <TextAreaField
+                      name='description'
+                      placeholder={
+                        coinDetailsMessages.editCoinDetails
+                          .descriptionPlaceholder
+                      }
+                      maxLength={MAX_COIN_DESCRIPTION_LENGTH}
+                    />
                   </Flex>
 
                   {/* Divider */}
@@ -259,45 +315,15 @@ const DesktopEditCoinDetailsPageContent = ({ coin }: { coin?: Coin }) => {
                   {/* Social Links Section */}
                   <SocialLinksSection />
                 </Box>
-              </div>
-              <AnchoredSubmitRowEdit />
+              </Flex>
+              <AnchoredSubmitRowEdit
+                errorText={submitError}
+                isSubmitting={isSubmitting}
+              />
             </EditFormScrollContext.Provider>
           </Form>
         )}
       </Formik>
     </Page>
   )
-}
-
-export const EditCoinDetailsPage = () => {
-  const { ticker } = useParams<{ ticker: string }>()
-
-  const {
-    data: coin,
-    isPending,
-    isSuccess,
-    error: coinError
-  } = useArtistCoinByTicker({ ticker: formatTickerFromUrl(ticker) })
-
-  if (!ticker) {
-    return <Redirect to='/wallet' />
-  }
-
-  if (isPending) {
-    return (
-      <Flex
-        justifyContent='center'
-        alignItems='center'
-        css={{ minHeight: '100vh' }}
-      >
-        <LoadingSpinner />
-      </Flex>
-    )
-  }
-
-  if (coinError || (isSuccess && !coin)) {
-    return <Redirect to='/wallet' />
-  }
-
-  return <DesktopEditCoinDetailsPageContent coin={coin ?? undefined} />
 }

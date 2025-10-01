@@ -73,7 +73,7 @@ export const AssetDetailPage = () => {
     isPending,
     isSuccess,
     error: coinError
-  } = useArtistCoinByTicker({ ticker: formatTickerFromUrl(ticker) })
+  } = useArtistCoinByTicker({ ticker: ticker })
 
   if (!ticker) {
     return <Redirect to='/wallet' />

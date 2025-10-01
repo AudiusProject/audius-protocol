@@ -102,5 +102,18 @@ export const coinDetailsMessages = {
       circulatingSupply:
         'The number of artist coins currently available for trading, excluding any tokens that are locked or reserved.'
     }
+  },
+  editCoinDetails: {
+    pageTitle: 'Edit Coin Page',
+    tokenDetails: 'Token Details',
+    description: 'Description',
+    socialLinks: 'Social Links',
+    socialLink: 'Link',
+    addAnotherLink: 'Add another link',
+    saveChanges: 'Save Changes',
+    optional: '(Optional)',
+    descriptionPlaceholder:
+      'Tell fans what makes your artist coin special — think early listens, exclusive drops, or fun perks for your biggest supporters.',
+    pasteLink: 'Paste a link'
   }
 }
