@@ -1,4 +1,3 @@
-name: audius
 version: '3.9'
 
 # TODO: Run nethermind in a container called `chain` like https://github.com/AudiusProject/audius-docker-compose/blob/main/discovery-provider/docker-compose.yml#L247
