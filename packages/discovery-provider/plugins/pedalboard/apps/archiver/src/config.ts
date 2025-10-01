@@ -39,7 +39,7 @@ export const readConfig = (): Config => {
       default: 'dev'
     }),
     audius_redis_url: str({
-      default: 'redis://audius-protocol-discovery-provider-redis-1:6379/0'
+      default: 'redis://audius-discovery-provider-redis-1:6379/0'
     }),
     archiver_server_host: str({ default: '0.0.0.0' }),
     archiver_server_port: num({ default: 6004 }),

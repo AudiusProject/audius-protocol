@@ -22,7 +22,7 @@ func recoverPubkeyFromCoreTx(em *core_proto.ManageEntityLegacy) (string, *ecdsa.
 
 	// prod values
 	// see:
-	// audius-protocol/packages/sdk/src/sdk/config/production.ts
+	// apps/packages/sdk/src/sdk/config/production.ts
 	contractAddress := "0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64"
 	chainId := 31524
 

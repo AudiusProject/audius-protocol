@@ -1,5 +1,5 @@
 identity-init:
-  working_directory: ~/audius-protocol
+  working_directory: ~/apps
   docker:
     - image: cimg/node:18.17
   steps:

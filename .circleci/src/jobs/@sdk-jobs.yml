@@ -1,5 +1,5 @@
 sdk-init:
-  working_directory: ~/audius-protocol
+  working_directory: ~/apps
   docker:
     - image: cimg/node:18.17
   steps:
@@ -27,7 +27,7 @@ sdk-init:
           - packages/sdk/dist
 
 sdk-test:
-  working_directory: ~/audius-protocol
+  working_directory: ~/apps
   docker:
     - image: cimg/node:18.17
   steps:

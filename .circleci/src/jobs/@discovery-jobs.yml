@@ -1,5 +1,5 @@
 lint-discovery-provider:
-  working_directory: ~/audius-protocol
+  working_directory: ~/apps
   docker:
     - image: cimg/python:3.11
   steps:

@@ -47,7 +47,7 @@ jobs:
             - .circleci/continue_config.yml
 
   init:
-    working_directory: ~/audius-protocol
+    working_directory: ~/apps
     docker:
       - image: cimg/node:18.17
     resource_class: large
@@ -95,7 +95,7 @@ jobs:
             - ./packages/discovery-provider/plugins/pedalboard/apps/solana-relay/node_modules
 
   generate-release-branch:
-    working_directory: ~/audius-protocol
+    working_directory: ~/apps
     resource_class: small
     docker:
       - image: cimg/base:2023.01
@@ -156,7 +156,7 @@ jobs:
           command: bash .circleci/scripts/auto-approve-release.sh sp
 
   generate-client-release:
-    working_directory: ~/audius-protocol
+    working_directory: ~/apps
     docker:
       - image: cimg/node:18.17
     steps:
@@ -237,7 +237,7 @@ jobs:
               set -e
 
               # Fetch the latest version from the GitHub repository (assume Content and Discovery have the same latest versions)
-              versionUrl="https://raw.githubusercontent.com/AudiusProject/audius-protocol/main/packages/discovery-provider/.version.json"
+              versionUrl="https://raw.githubusercontent.com/AudiusProject/apps/main/packages/discovery-provider/.version.json"
               VERSION=$(curl -s "$versionUrl" | jq -r '.version')
 
               if [ -z "$VERSION" ]; then
@@ -282,7 +282,7 @@ jobs:
             ) || handle_error
 
   notify-pipeline-status:
-    working_directory: ~/audius-protocol
+    working_directory: ~/apps
     resource_class: small
     docker:
       - image: cimg/base:2023.01
@@ -299,7 +299,7 @@ jobs:
           template: PIPELINE_STATUS_TEMPLATE
 
   aggregate-pipeline-status:
-    working_directory: ~/audius-protocol
+    working_directory: ~/apps
     resource_class: small
     docker:
       - image: cimg/base:2023.01

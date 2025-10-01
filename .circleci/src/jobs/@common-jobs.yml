@@ -1,5 +1,5 @@
 common-init:
-  working_directory: ~/audius-protocol
+  working_directory: ~/apps
   docker:
     - image: cimg/node:18.17
 
@@ -29,7 +29,7 @@ common-init:
           - packages/sdk/dist
 
 common-test:
-  working_directory: ~/audius-protocol
+  working_directory: ~/apps
   docker:
     - image: cimg/node:18.17
   steps:
