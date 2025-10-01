@@ -115,6 +115,8 @@ export * from './TrendingPlaylistsResponse';
 export * from './UnclaimedIdResponse';
 export * from './UndisbursedChallenge';
 export * from './UndisbursedChallenges';
+export * from './UpdateCoinRequest';
+export * from './UpdateCoinResponse';
 export * from './User';
 export * from './UserCoin';
 export * from './UserCoinAccount';

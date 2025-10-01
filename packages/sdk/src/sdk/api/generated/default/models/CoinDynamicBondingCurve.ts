@@ -44,6 +44,18 @@ export interface CoinDynamicBondingCurve {
      * @memberof CoinDynamicBondingCurve
      */
     curveProgress: number;
+    /**
+     * Whether the bonding curve has been migrated
+     * @type {boolean}
+     * @memberof CoinDynamicBondingCurve
+     */
+    isMigrated?: boolean;
+    /**
+     * Creator quote fee for the bonding curve
+     * @type {number}
+     * @memberof CoinDynamicBondingCurve
+     */
+    creatorQuoteFee?: number;
 }
 
 /**
@@ -73,6 +85,8 @@ export function CoinDynamicBondingCurveFromJSONTyped(json: any, ignoreDiscrimina
         'price': json['price'],
         'priceUSD': json['priceUSD'],
         'curveProgress': json['curveProgress'],
+        'isMigrated': !exists(json, 'isMigrated') ? undefined : json['isMigrated'],
+        'creatorQuoteFee': !exists(json, 'creatorQuoteFee') ? undefined : json['creatorQuoteFee'],
     };
 }
 
@@ -89,6 +103,8 @@ export function CoinDynamicBondingCurveToJSON(value?: CoinDynamicBondingCurve | 
         'price': value.price,
         'priceUSD': value.priceUSD,
         'curveProgress': value.curveProgress,
+        'isMigrated': value.isMigrated,
+        'creatorQuoteFee': value.creatorQuoteFee,
     };
 }
 

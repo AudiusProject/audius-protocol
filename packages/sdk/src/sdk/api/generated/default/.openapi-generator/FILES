@@ -129,6 +129,8 @@ models/TrendingPlaylistsResponse.ts
 models/UnclaimedIdResponse.ts
 models/UndisbursedChallenge.ts
 models/UndisbursedChallenges.ts
+models/UpdateCoinRequest.ts
+models/UpdateCoinResponse.ts
 models/User.ts
 models/UserCoin.ts
 models/UserCoinAccount.ts
