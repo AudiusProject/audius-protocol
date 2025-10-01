@@ -10,6 +10,7 @@ import {
   useIsManagedAccount
 } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
+import { APP_REDIRECT } from '@audius/common/src/utils/route'
 import {
   useAddCashModal,
   useBuySellModal,
@@ -25,6 +26,7 @@ import {
   Text,
   useTheme
 } from '@audius/harmony'
+import { useHistory } from 'react-router-dom'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { useBuySellRegionSupport } from 'components/buy-sell-modal'
@@ -34,6 +36,7 @@ import Skeleton from 'components/skeleton/Skeleton'
 import Tooltip from 'components/tooltip/Tooltip'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
+import { getPathname } from 'utils/route'
 import { zIndex } from 'utils/zIndex'
 
 const messages = {
@@ -265,6 +268,14 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
   const isMobile = useIsMobile()
   const [isOpenAppDrawerOpen, setIsOpenAppDrawerOpen] = useState(false)
 
+  const history = useHistory()
+
+  const handleOpenAppClick = useCallback(() => {
+    const pathname = getPathname(history.location)
+    const redirectHref = `https://redirect.audius.co${APP_REDIRECT}${pathname}`
+    window.location.href = redirectHref
+  }, [history.location])
+
   const onOpenOpenAppDrawer = useCallback(() => {
     setIsOpenAppDrawerOpen(true)
   }, [setIsOpenAppDrawerOpen])
@@ -361,6 +372,9 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
               <Box pv='l'>
                 <Text>{messages.drawerDescription}</Text>
               </Box>
+              <Button variant='secondary' onClick={handleOpenAppClick}>
+                {messages.openTheApp}
+              </Button>
             </Flex>
           </Drawer>
         )}
