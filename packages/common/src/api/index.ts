@@ -180,6 +180,7 @@ export * from './tan-query/wallets/useWalletSolBalance'
 export * from './tan-query/jupiter/useSwapTokens'
 export * from './tan-query/jupiter/useTokenExchangeRate'
 export * from './tan-query/jupiter/utils'
+export * from './tan-query/jupiter/types'
 
 // Saga fetch utils, remove when migration is complete
 export * from './tan-query/saga-utils'
