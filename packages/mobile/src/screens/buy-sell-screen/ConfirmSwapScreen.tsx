@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
-import { SLIPPAGE_BPS } from '@audius/common/api'
+import { SLIPPAGE_BPS, SwapStatus } from '@audius/common/api'
 import { useBuySellAnalytics } from '@audius/common/hooks'
 import { buySellMessages as baseMessages } from '@audius/common/messages'
 import type { TokenInfo, TokenPair } from '@audius/common/store'
@@ -28,6 +28,7 @@ import {
   ScreenContent
 } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useToast } from 'app/hooks/useToast'
 
 import { SwapBalanceSection } from '../../components/buy-sell'
 
@@ -90,6 +91,7 @@ const LoadingScreen = () => (
 
 export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
   const navigation = useNavigation()
+  const { toast } = useToast()
   const { trackSwapConfirmed, trackSwapSuccess, trackSwapFailure } =
     useBuySellAnalytics()
 
@@ -135,7 +137,8 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
     isConfirmButtonLoading,
     swapStatus,
     swapError,
-    swapResult
+    swapResult,
+    swapData
   } = useBuySellSwap({
     transactionData,
     currentScreen,
@@ -191,7 +194,46 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
     trackSwapSuccess
   ])
 
-  // Handle swap error
+  // Handle swap data errors (when swap returns error status) - navigate back and show toast
+  useEffect(() => {
+    if (swapData?.status === SwapStatus.ERROR && swapData?.error) {
+      trackSwapFailure(
+        {
+          activeTab,
+          inputToken: swapTokens.inputToken,
+          outputToken: swapTokens.outputToken,
+          inputAmount: payAmount,
+          outputAmount: receiveAmount,
+          exchangeRate
+        },
+        {
+          errorType: 'swap_error',
+          errorStage: 'transaction',
+          errorMessage: swapData.error.message
+            ? swapData.error.message.substring(0, 500)
+            : 'Unknown error'
+        }
+      )
+
+      // Navigate back to input screen (matching web behavior)
+      navigation.navigate('BuySellMain')
+
+      // Show toast notification
+      toast({ content: messages.transactionFailed, type: 'error' })
+    }
+  }, [
+    swapData,
+    activeTab,
+    swapTokens,
+    payAmount,
+    receiveAmount,
+    exchangeRate,
+    trackSwapFailure,
+    navigation,
+    toast
+  ])
+
+  // Handle swap error - navigate back to input screen and show toast
   useEffect(() => {
     if (swapStatus === 'error' && swapError) {
       trackSwapFailure(
@@ -212,12 +254,11 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
         }
       )
 
-      navigation.navigate('TransactionResultScreen', {
-        result: {
-          status: 'error' as const,
-          error: swapError
-        }
-      })
+      // Navigate back to input screen (matching web behavior)
+      navigation.navigate('BuySellMain')
+
+      // Show toast notification
+      toast({ content: messages.transactionFailed, type: 'error' })
     }
   }, [
     swapStatus,
@@ -228,7 +269,8 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
     receiveAmount,
     swapTokens,
     exchangeRate,
-    trackSwapFailure
+    trackSwapFailure,
+    toast
   ])
 
   // balance isn't needed so we pass 0

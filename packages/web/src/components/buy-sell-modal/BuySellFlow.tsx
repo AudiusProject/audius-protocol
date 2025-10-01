@@ -7,11 +7,15 @@ import {
   useState
 } from 'react'
 
-import { useArtistCoin, useTokenPair, useTokens } from '@audius/common/api'
+import {
+  SwapStatus,
+  useArtistCoin,
+  useTokenPair,
+  useTokens
+} from '@audius/common/api'
 import { useBuySellAnalytics, useOwnedTokens } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
-import { SwapStatus } from '@audius/common/src/api/tan-query/jupiter/types'
 import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import {
   BuySellTab,
