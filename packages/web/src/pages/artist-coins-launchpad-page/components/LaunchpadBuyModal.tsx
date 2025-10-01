@@ -326,6 +326,7 @@ const SuccessStep = ({ onClose }: { onClose: () => void }) => {
           baseTokenSymbol={values.selectedInputToken.symbol}
           payAmount={Number(values.inputAmount)}
           receiveAmount={Number(values.outputAmount)}
+          exchangeRate={null}
           hideUSDCTooltip
           onDone={onClose}
         />

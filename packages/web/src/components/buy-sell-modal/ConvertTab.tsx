@@ -47,12 +47,10 @@ export const ConvertTab = ({
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
     useArtistCoin(selectedOutputToken.address)
 
-  const tokenPrice = tokenPriceData?.price?.toString() ?? null
-
   const decimalPlaces = useMemo(() => {
-    if (!tokenPrice) return 2
-    return getCurrencyDecimalPlaces(parseFloat(tokenPrice))
-  }, [tokenPrice])
+    if (!tokenPriceData?.price) return 2
+    return getCurrencyDecimalPlaces(tokenPriceData.price)
+  }, [tokenPriceData?.price])
 
   const {
     inputAmount,
@@ -204,7 +202,7 @@ export const ConvertTab = ({
             onAmountChange={handleOutputAmountChange}
             availableBalance={0}
             exchangeRate={currentExchangeRate}
-            tokenPrice={tokenPrice}
+            tokenPrice={tokenPriceData?.price.toString() ?? null}
             isTokenPriceLoading={isTokenPriceLoading}
             tokenPriceDecimalPlaces={decimalPlaces}
             availableTokens={filteredAvailableOutputTokens}

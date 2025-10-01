@@ -92,6 +92,7 @@ const SendTokensFailure = ({
       {/* Token Balance Section */}
       <CryptoBalanceSection
         tokenInfo={tokenInfo}
+        name={tokenInfo.name}
         amount={formatBalance(currentBalance)}
       />
 
