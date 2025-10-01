@@ -175,8 +175,9 @@ export const ProfileHeader = memo(() => {
               <UploadTrackButton />
             ) : isArtistCoinsEnabled &&
               isArtistCoinLoading ? null : isArtistCoinsEnabled && // Show nothing while loading artist coin status
+              userId &&
               artistCoin?.mint ? (
-              <BuyArtistCoinButton />
+              <BuyArtistCoinButton userId={userId} />
             ) : (
               <TipAudioButton />
             )}

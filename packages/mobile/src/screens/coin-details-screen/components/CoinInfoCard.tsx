@@ -87,7 +87,7 @@ const BannerSection = ({ mint }: { mint: string }) => {
           {messages.createdBy}
         </Text>
 
-        {ownerId && (
+        {ownerId ? (
           <Flex
             row
             alignItems='center'
@@ -101,7 +101,7 @@ const BannerSection = ({ mint }: { mint: string }) => {
             <ProfilePicture userId={ownerId} size='small' />
             <UserLink userId={ownerId} size='l' />
           </Flex>
-        )}
+        ) : null}
       </Flex>
     </Flex>
   )

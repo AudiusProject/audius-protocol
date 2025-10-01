@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useArtistOwnedCoin, useProfileUser } from '@audius/common/api'
+import { useArtistOwnedCoin } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 
@@ -11,21 +11,14 @@ const messages = {
   title: 'Buy Artist Coin'
 }
 
-export const BuyArtistCoinButton = () => {
+export const BuyArtistCoinButton = ({ userId }: { userId: number }) => {
   const { color } = useTheme()
   const navigation = useNavigation()
   const { isEnabled: isArtistCoinsEnabled } = useFeatureFlag(
     FeatureFlags.ARTIST_COINS
   )
 
-  const { user_id } =
-    useProfileUser({
-      select: (user) => ({
-        user_id: user.user_id
-      })
-    }).user ?? {}
-
-  const { data: artistCoin } = useArtistOwnedCoin(user_id)
+  const { data: artistCoin } = useArtistOwnedCoin(userId)
 
   const handlePress = useCallback(() => {
     if (artistCoin?.ticker) {
