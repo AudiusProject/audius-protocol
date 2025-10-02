@@ -1,5 +1,6 @@
 import {
   getArtistCoinsQueryKey,
+  getCurrentAccountQueryKey,
   getUserCreatedCoinsQueryKey,
   getUserQueryKey,
   useQueryContext
@@ -191,6 +192,9 @@ export const useLaunchCoin = () => {
       // Invalidate the user to refresh their badge info
       queryClient.invalidateQueries({
         queryKey: getUserQueryKey(params.userId)
+      })
+      queryClient.invalidateQueries({
+        queryKey: getCurrentAccountQueryKey()
       })
       // Invalidate our user - this will refresh their badge info
       // NOTE: this will eventually move to the users metadata
