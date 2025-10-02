@@ -1,5 +1,6 @@
 import { useCallback, useContext, useMemo } from 'react'
 
+import type { Coin } from '@audius/common/adapters'
 import {
   useArtistCoin,
   useCurrentUserId,
@@ -25,7 +26,7 @@ import {
   Text,
   useTheme
 } from '@audius/harmony'
-import { Coin, HashId } from '@audius/sdk'
+import { HashId } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
 import { ExternalLink } from 'components/link/ExternalLink'
@@ -315,7 +316,7 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
           gap='l'
         >
           <Flex column gap='m'>
-            <SocialLinksDisplay coin={coin} owner={owner} />
+            <SocialLinksDisplay coin={coin} />
             {descriptionParagraphs.map((paragraph) => {
               if (paragraph.trim() === '') {
                 return null
