@@ -16,7 +16,7 @@ const messages = {
   holdersOnAudius: 'Holders on Audius',
   uniqueHolders: 'Unique Holders',
   volume24hr: 'Volume (24hr)',
-  totalTransfers: 'Total Transfers',
+  totalTransfers: 'Transfers (24hr)',
   marketCap: 'Market Cap',
   graduationProgress: 'Graduation Progress'
 }
