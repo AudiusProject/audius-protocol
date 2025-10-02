@@ -1,8 +1,8 @@
-import { useArtistCoin } from '@audius/common/api'
+import { useArtistCoin, useCurrentUserId } from '@audius/common/api'
 import { route } from '@audius/common/utils'
-import { useRoute } from '@react-navigation/native'
+import { useRoute, useNavigation } from '@react-navigation/native'
 
-import { Flex } from '@audius/harmony-native'
+import { Flex, IconCompose, IconButton } from '@audius/harmony-native'
 import { Screen, ScreenContent, ScrollView } from 'app/components/core'
 
 import { BalanceCard } from './components/BalanceCard'
@@ -13,14 +13,34 @@ import { ExternalWalletsCard } from './components/ExternalWalletsCard'
 
 export const CoinDetailsScreen = () => {
   const { mint } = useRoute().params as { mint: string }
+  const navigation = useNavigation()
   const { data: coin } = useArtistCoin(mint)
-  const { ticker } = coin ?? {}
+  const { data: currentUserId } = useCurrentUserId()
+  const { ticker, ownerId } = coin ?? {}
+
+  const isOwner = currentUserId === ownerId
+
+  const handleEditPress = () => {
+    if (ticker) {
+      ;(navigation as any).navigate('EditCoinDetailsScreen', { ticker })
+    }
+  }
+
+  const topbarRight = isOwner ? (
+    <IconButton
+      icon={IconCompose}
+      color='subdued'
+      size='l'
+      onPress={handleEditPress}
+    />
+  ) : undefined
 
   return (
     <Screen
       url={route.ASSET_DETAIL_PAGE}
       variant='secondary'
       title={ticker ?? 'Coin Details'}
+      topbarRight={topbarRight}
     >
       <ScreenContent>
         <ScrollView>

@@ -47,7 +47,8 @@ export const FixedFooter = ({
         left: 0
       })}
     >
-      <KeyboardAvoidContainer keyboardShowingOffset={spacing.unit5}>
+      {/* <KeyboardAvoidContainer keyboardShowingOffset={spacing.unit5}> */}
+      <KeyboardAvoidContainer keyboardShowingOffset={spacing.unit12}>
         <Paper
           p='l'
           justifyContent='center'
