@@ -57,7 +57,7 @@ const INPUT_TOKEN_MAP: Record<string, TokenInfo & { minSwapAmount?: number }> =
 
 const INPUT_TOKEN_LIST = Object.values(INPUT_TOKEN_MAP)
 
-const DEFAULT_INPUT_TOKEN = INPUT_TOKEN_MAP.USDC
+const DEFAULT_INPUT_TOKEN = INPUT_TOKEN_MAP.SOL
 
 const OUTPUT_TOKEN: TokenInfo = {
   ...TOKEN_LISTING_MAP.AUDIO,
