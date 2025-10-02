@@ -53,19 +53,26 @@ type BalanceStateProps = {
   onSend?: () => void
 }
 
+const BalanceSectionSkeletonContent = () => {
+  return (
+    <Flex column gap='l' w='100%'>
+      <Flex gap='s' alignItems='center'>
+        <Skeleton width='64px' height='64px' />
+        <Skeleton width='120px' height='24px' />
+      </Flex>
+      <Flex gap='s'>
+        <Skeleton width='100%' height='40px' />
+        <Skeleton width='100%' height='40px' />
+      </Flex>
+      <Skeleton width='100%' height='40px' />
+    </Flex>
+  )
+}
+
 const BalanceSectionSkeleton = () => {
   return (
     <Paper ph='xl' pv='l'>
-      <Flex column gap='l' w='100%'>
-        <Flex gap='s' alignItems='center'>
-          <Skeleton width='64px' height='64px' />
-          <Skeleton width='120px' height='24px' />
-        </Flex>
-        <Flex gap='s'>
-          <Skeleton width='100%' height='40px' />
-          <Skeleton width='100%' height='40px' />
-        </Flex>
-      </Flex>
+      <BalanceSectionSkeletonContent />
     </Paper>
   )
 }
@@ -254,7 +261,8 @@ type AssetDetailProps = {
 
 const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
   const { data: coin, isPending: coinsLoading } = useArtistCoin(mint)
-  const { data: tokenBalance } = useTokenBalance({ mint })
+  const { data: tokenBalance, isPending: tokenBalanceLoading } =
+    useTokenBalance({ mint })
   const { data: usdcBalance } = useUSDCBalance()
 
   const { isBuySellSupported } = useBuySellRegionSupport()
@@ -329,8 +337,10 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
   return (
     <Paper ph='xl' pv='l' border='default'>
       <Flex column gap='l' w='100%'>
-        {!tokenBalance?.balance ||
-        Number(tokenBalance.balance.toString()) === 0 ? (
+        {tokenBalanceLoading ? (
+          <BalanceSectionSkeletonContent />
+        ) : !tokenBalance?.balance ||
+          Number(tokenBalance.balance.toString()) === 0 ? (
           <ZeroBalanceState
             ticker={ticker}
             logoURI={logoURI}
