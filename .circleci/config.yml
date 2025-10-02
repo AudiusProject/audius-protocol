@@ -59,7 +59,7 @@ jobs:
 
       - restore_cache:
           keys:
-            - npm-cache-v1-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+            - npm-cache-2025-10-01-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
 
       - run: sudo apt-get update
       - run: sudo apt-get install -y build-essential libssl-dev
@@ -75,7 +75,7 @@ jobs:
             fi
 
       - save_cache:
-          key: npm-cache-v1-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+          key: npm-cache-2025-10-01-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
           paths:
             - ./node_modules
             - ./packages/protocol-dashboard/node_modules
