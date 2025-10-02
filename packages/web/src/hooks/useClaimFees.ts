@@ -1,5 +1,6 @@
 import { type Coin } from '@audius/common/adapters'
 import { getArtistCoinQueryKey, useQueryContext } from '@audius/common/api'
+import { Feature } from '@audius/common/models'
 import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react'
 import { VersionedTransaction } from '@solana/web3.js'
 import {
@@ -9,34 +10,36 @@ import {
 } from '@tanstack/react-query'
 
 import { appkitModal } from 'app/ReownAppKitModal'
+import { reportToSentry } from 'store/errors/reportToSentry'
 
-export type UseClaimFeeParams = {
+export type UseClaimFeesParams = {
   tokenMint: string
   ownerWalletAddress: string
   receiverWalletAddress: string
 }
 
-export type ClaimFeeResponse = {
-  claimFeeTx: string
+export type ClaimFeesResponse = {
+  claimFeessTx: string
   signature: string
 }
 
 /**
  * Hook for claiming creator trading fees from a dynamic bonding curve pool.
- * This creates, signs, and sends the claim fee transaction.
+ * This gets the TX from solana relay, then signs and sends the claim fees transaction.
+ * NOTE: This is a web feature only because the user must sign with the same external wallet they used to launch the coin (wallet connect wallet).
  */
-export const useClaimFee = (
-  options?: UseMutationOptions<ClaimFeeResponse, Error, UseClaimFeeParams>
+export const useClaimFees = (
+  options?: UseMutationOptions<ClaimFeesResponse, Error, UseClaimFeesParams>
 ) => {
   const { audiusSdk } = useQueryContext()
   const queryClient = useQueryClient()
 
-  return useMutation<ClaimFeeResponse, Error, UseClaimFeeParams>({
+  return useMutation<ClaimFeesResponse, Error, UseClaimFeesParams>({
     mutationFn: async ({
       tokenMint,
       ownerWalletAddress,
       receiverWalletAddress
-    }: UseClaimFeeParams): Promise<ClaimFeeResponse> => {
+    }: UseClaimFeesParams): Promise<ClaimFeesResponse> => {
       const sdk = await audiusSdk()
       const solanaProvider = appkitModal.getProvider<SolanaProvider>('solana')
       if (!solanaProvider) {
@@ -47,17 +50,17 @@ export const useClaimFee = (
       }
 
       // Get the claim fee transaction from the relay
-      const claimFeeResponse = await sdk.services.solanaRelay.claimFee({
+      const claimFeesResponse = await sdk.services.solanaRelay.claimFees({
         tokenMint,
         ownerWalletAddress,
         receiverWalletAddress
       })
 
-      const { claimFeeTx: claimFeeTxSerialized } = claimFeeResponse
+      const { claimFeessTx: claimFeessTxSerialized } = claimFeesResponse
 
       // Transaction is sent from the backend as a serialized base64 string
       const deserializedTx = VersionedTransaction.deserialize(
-        Buffer.from(claimFeeTxSerialized, 'base64')
+        Buffer.from(claimFeessTxSerialized, 'base64')
       )
 
       // Triggers 3rd party wallet to sign and send the transaction
@@ -71,11 +74,22 @@ export const useClaimFee = (
       )
 
       return {
-        claimFeeTx: claimFeeTxSerialized,
+        claimFeessTx: claimFeessTxSerialized,
         signature
       }
     },
     ...options,
+    onError: (error, params) => {
+      // Call the original onError if provided
+      reportToSentry({
+        error,
+        feature: Feature.ArtistCoins,
+        name: 'Artist coin fees claim error',
+        additionalInfo: {
+          ...params
+        }
+      })
+    },
     onSuccess: (data, variables, context) => {
       // Optimistically update the unclaimed fees data
       const queryKey = getArtistCoinQueryKey(variables.tokenMint)

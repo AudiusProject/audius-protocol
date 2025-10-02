@@ -5,14 +5,14 @@ import { Request, Response } from 'express'
 import { logger } from '../../logger'
 import { getConnection } from '../../utils/connections'
 
-interface ClaimFeeRequestBody {
+interface ClaimFeesRequestBody {
   tokenMint: string
   ownerWalletAddress: string
   receiverWalletAddress: string
 }
 
-export const claimFee = async (
-  req: Request<unknown, unknown, ClaimFeeRequestBody>,
+export const claimFees = async (
+  req: Request<unknown, unknown, ClaimFeesRequestBody>,
   res: Response
 ) => {
   try {
@@ -37,29 +37,30 @@ export const claimFee = async (
 
     const poolAddress = tokenPool.publicKey
     const poolData = tokenPool.account
+    const ownerWallet = new PublicKey(ownerWalletAddress)
+    const receiverWallet = new PublicKey(receiverWalletAddress)
 
-    const claimFeeTx = await dbcClient.creator.claimCreatorTradingFee({
+    const claimFeesTx = await dbcClient.creator.claimCreatorTradingFee({
       pool: poolAddress,
-      payer: new PublicKey(ownerWalletAddress),
-      creator: new PublicKey(ownerWalletAddress),
+      payer: ownerWallet,
+      creator: ownerWallet,
       maxBaseAmount: poolData.creatorBaseFee, // Match max amount to the claimable amount (effectively no limit)
       maxQuoteAmount: poolData.creatorQuoteFee, // Match max amount to the claimable amount (effectively no limit)
-      receiver: new PublicKey(receiverWalletAddress)
+      receiver: receiverWallet
     })
 
-    claimFeeTx.recentBlockhash = (
+    claimFeesTx.recentBlockhash = (
       await connection.getLatestBlockhash()
     ).blockhash
-    claimFeeTx.feePayer = new PublicKey(ownerWalletAddress)
+    claimFeesTx.feePayer = ownerWallet
 
     return res.status(200).send({
-      claimFeeTx: claimFeeTx.serialize({ requireAllSignatures: false })
+      claimFeesTx: claimFeesTx.serialize({ requireAllSignatures: false })
     })
   } catch (e) {
     logger.error(
       'Error in claim_fee - unable to create creator claim fee transaction'
     )
-    logger.error(e)
     res.status(500).send()
   }
 }
