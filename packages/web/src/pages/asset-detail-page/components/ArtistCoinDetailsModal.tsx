@@ -1,4 +1,8 @@
-import { useArtistCoin, useCoinGeckoCoin } from '@audius/common/api'
+import {
+  useArtistCoin,
+  useCoinGeckoCoin,
+  type CoinGeckoCoinResponse
+} from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { formatCurrencyWithSubscript } from '@audius/common/utils'
 import {
@@ -133,7 +137,7 @@ export type TokenDetailsStatsSectionProps = Partial<
 >
 
 export const convertCoinGeckoResponseToStatsDetailsProps = (
-  coingeckoResponse: any
+  coingeckoResponse?: CoinGeckoCoinResponse
 ): TokenDetailsStatsSectionProps => {
   if (!coingeckoResponse || !coingeckoResponse.market_data) {
     return {}

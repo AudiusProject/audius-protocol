@@ -4,6 +4,30 @@ type UseCoinGeckoCoinParams = {
   coinId: string
 }
 
+export type CoinGeckoCoinResponse = {
+  id: string
+  symbol: string
+  name: string
+  market_data: {
+    total_supply: number
+    circulating_supply: number
+    market_cap: {
+      usd: number
+      [currency: string]: number | undefined
+    }
+    current_price: {
+      usd: number
+      [currency: string]: number | undefined
+    }
+    price_change_percentage_24h: number
+    total_volume: {
+      usd: number
+      [currency: string]: number | undefined
+    }
+  }
+  [key: string]: any
+}
+
 const useCoinGeckoCoinQueryOptions = (params: UseCoinGeckoCoinParams) =>
   queryOptions({
     queryKey: ['coinGeckoPrice', params.coinId],
@@ -14,7 +38,7 @@ const useCoinGeckoCoinQueryOptions = (params: UseCoinGeckoCoinParams) =>
       if (!res.ok) {
         throw new Error('Failed to fetch coinGecko price')
       }
-      return await res.json()
+      return (await res.json()) as CoinGeckoCoinResponse
     }
   })
 

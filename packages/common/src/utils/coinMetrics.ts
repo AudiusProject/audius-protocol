@@ -1,4 +1,5 @@
 import { Coin } from '~/adapters/coin'
+import type { CoinGeckoCoinResponse } from '~/api'
 
 import { formatCurrencyWithSubscript, formatCount } from './decimal'
 
@@ -85,7 +86,9 @@ export const createCoinMetrics = (coin: Coin): MetricData[] => {
   )
 }
 
-export const createAudioCoinMetrics = (coingeckoResponse: any) => {
+export const createAudioCoinMetrics = (
+  coingeckoResponse?: CoinGeckoCoinResponse
+) => {
   if (coingeckoResponse === null || coingeckoResponse === undefined) {
     return []
   }
@@ -103,8 +106,7 @@ export const createAudioCoinMetrics = (coingeckoResponse: any) => {
     ),
     createMetric(
       `$${formatCount(coingeckoResponse.market_data.total_volume.usd, 2)}`,
-      messages.volume24hr,
-      coingeckoResponse.market_data.price_change_percentage_24h
+      messages.volume24hr
     )
   ].filter((metric): metric is MetricData => metric !== null)
 }
