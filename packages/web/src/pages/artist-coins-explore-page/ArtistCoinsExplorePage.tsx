@@ -1,6 +1,10 @@
 import { useCallback, useState, ChangeEvent } from 'react'
 
-import { useCurrentAccountUser } from '@audius/common/api'
+import {
+  useCurrentAccountUser,
+  useCurrentUserId,
+  useUserCreatedCoins
+} from '@audius/common/api'
 import { walletMessages } from '@audius/common/messages'
 import { COINS_CREATE_PAGE } from '@audius/common/src/utils/route'
 import {
@@ -18,18 +22,21 @@ import {
   PlainButton,
   IconSearch
 } from '@audius/harmony'
-import { useDispatch } from 'react-redux'
-import { push } from 'redux-first-history'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
 import imageCoinsBackgroundImage from 'assets/img/publicSite/imageCoinsBackgroundImage2x.webp'
 import { ExternalLink } from 'components/link'
 import Page from 'components/page/Page'
 import { Tooltip } from 'components/tooltip'
+import { isMobile } from 'utils/clientUtil'
 
 import { ArtistCoinsTable } from '../artist-coins-launchpad-page/components/ArtistCoinsTable'
 
+import { MobileArtistCoinsExplorePage } from './MobileArtistCoinsExplorePage'
+
 const SEARCH_WIDTH = 400
-const CHECKLIST_WIDTH = 540
+const CHECKLIST_WIDTH = 340
+const MIN_WIDTH = 620
 
 const messages = {
   searchPlaceholder: 'Search',
@@ -37,31 +44,44 @@ const messages = {
   launchYourOwn: 'Launch Your Own Artist Coin!',
   required: 'Required',
   checklistItems: [
-    'Launch Your Coin',
+    'Launch your Coin',
     'Start collecting trading fees',
     'Offer exclusive perks to your fans'
   ],
   help: 'Help',
-  getStartedTooltip: 'Verified users only'
+  getStartedTooltip: 'Verified users only',
+  alreadyHasCoinTooltip: 'You already have an artist coin'
 }
 
-export const ArtistCoinsExplorePage = () => {
-  const dispatch = useDispatch()
+// Desktop version
+const DesktopArtistCoinsExplorePage = () => {
+  const navigate = useNavigate()
   const [searchValue, setSearchValue] = useState('')
   const { data: currentUser } = useCurrentAccountUser()
+  const { data: currentUserId } = useCurrentUserId()
+  const { data: createdCoins } = useUserCreatedCoins({
+    userId: currentUserId
+  })
 
   const isVerified = currentUser?.is_verified ?? false
+  const hasExistingArtistCoin = (createdCoins?.length ?? 0) > 0
+  const canLaunchCoin = isVerified && !hasExistingArtistCoin
 
   const handleGetStarted = useCallback(() => {
-    dispatch(push(COINS_CREATE_PAGE))
-  }, [dispatch])
+    if (canLaunchCoin) {
+      navigate(COINS_CREATE_PAGE)
+    }
+  }, [navigate, canLaunchCoin])
 
   const handleSearchChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value)
   }, [])
 
   return (
-    <Page title={walletMessages.artistCoins.title}>
+    <Page
+      title={walletMessages.artistCoins.title}
+      css={{ minWidth: MIN_WIDTH }}
+    >
       <Flex column gap='xl'>
         <Flex
           p='3xl'
@@ -84,7 +104,7 @@ export const ArtistCoinsExplorePage = () => {
             {walletMessages.artistCoins.title}
           </Text>
 
-          <Box w={SEARCH_WIDTH}>
+          <Box w='100%' css={{ maxWidth: SEARCH_WIDTH }}>
             <TextInput
               label={messages.searchPlaceholder}
               placeholder={messages.searchPlaceholder}
@@ -96,93 +116,115 @@ export const ArtistCoinsExplorePage = () => {
           </Box>
         </Flex>
 
-        <Paper p='xl' gap='xl'>
-          <Flex gap='xl' w='100%'>
-            <Flex column gap='l' justifyContent='space-between' w='100%'>
-              <Flex alignItems='center' justifyContent='space-between'>
-                <Text variant='heading'>{messages.launchYourOwn}</Text>
+        {!hasExistingArtistCoin ? (
+          <Paper p='xl' gap='xl' border='default' borderRadius='m'>
+            <Flex gap='xl' w='100%' wrap='wrap'>
+              <Flex
+                column
+                gap='l'
+                justifyContent='space-between'
+                flex='2 1 0'
+                css={{ minWidth: 'max-content' }}
+              >
                 <Flex
-                  pl='s'
-                  gap='s'
                   alignItems='center'
-                  border='default'
-                  borderRadius='m'
+                  justifyContent='space-between'
+                  wrap='nowrap'
+                  gap='s'
+                  css={{ minWidth: 'max-content' }}
                 >
-                  <Text variant='body' size='s'>
-                    {messages.required}
-                  </Text>
+                  <Text variant='heading'>{messages.launchYourOwn}</Text>
                   <Flex
-                    ph='s'
-                    pv='xs'
-                    backgroundColor='surface2'
-                    borderLeft='default'
+                    pl='s'
+                    gap='s'
+                    alignItems='center'
+                    border='default'
+                    borderRadius='m'
+                    css={{ overflow: 'hidden' }}
                   >
-                    <IconVerified size='s' />
-                  </Flex>
-                </Flex>
-              </Flex>
-
-              <Tooltip
-                text={messages.getStartedTooltip}
-                placement='top'
-                disabled={isVerified}
-              >
-                {/* Need to wrap with Flex because disabled button doesn't capture mouse events */}
-                <Flex>
-                  <Button
-                    onClick={handleGetStarted}
-                    fullWidth
-                    disabled={!isVerified}
-                    css={{
-                      background: isVerified
-                        ? 'var(--harmony-coin-gradient)'
-                        : undefined
-                    }}
-                  >
-                    {messages.getStarted}
-                  </Button>
-                </Flex>
-              </Tooltip>
-            </Flex>
-
-            <Box
-              border='default'
-              borderRadius='m'
-              p='l'
-              backgroundColor='surface1'
-              w={CHECKLIST_WIDTH}
-            >
-              <Flex column gap='s'>
-                {messages.checklistItems.map((item) => (
-                  <Flex key={item} alignItems='center' gap='s'>
-                    <IconCheck size='s' color='default' />
-                    <Text variant='body' size='l'>
-                      {item}
+                    <Text variant='body' size='s'>
+                      {messages.required}
                     </Text>
+                    <Flex
+                      ph='s'
+                      pv='xs'
+                      backgroundColor='surface2'
+                      borderLeft='default'
+                    >
+                      <IconVerified size='s' />
+                    </Flex>
                   </Flex>
-                ))}
+                </Flex>
+
+                <Tooltip
+                  text={messages.getStartedTooltip}
+                  placement='top'
+                  // Only show tooltip if user cannot launch a coin (not verified)
+                  disabled={canLaunchCoin}
+                >
+                  {/* Need to wrap with Flex because disabled button doesn't capture mouse events */}
+                  <Flex>
+                    <Button
+                      onClick={handleGetStarted}
+                      fullWidth
+                      disabled={!canLaunchCoin}
+                      color={canLaunchCoin ? 'coinGradient' : undefined}
+                    >
+                      {messages.getStarted}
+                    </Button>
+                  </Flex>
+                </Tooltip>
               </Flex>
 
-              {/* With absolute positioning, must be rendered after the checklist items to have higher z-index */}
-              <PlainButton
-                iconLeft={IconQuestionCircle}
-                asChild
-                css={{
-                  position: 'absolute',
-                  top: spacing.l,
-                  right: spacing.l
-                }}
+              <Box
+                border='default'
+                borderRadius='m'
+                p='l'
+                backgroundColor='surface1'
+                flex='1 1 0'
+                css={{ minWidth: CHECKLIST_WIDTH }}
               >
-                <ExternalLink to='https://help.audius.co/'>
-                  {messages.help}
-                </ExternalLink>
-              </PlainButton>
-            </Box>
-          </Flex>
-        </Paper>
+                <Flex column gap='s'>
+                  {messages.checklistItems.map((item) => (
+                    <Flex key={item} alignItems='center' gap='s'>
+                      <IconCheck size='s' color='default' />
+                      <Text variant='body' size='l'>
+                        {item}
+                      </Text>
+                    </Flex>
+                  ))}
+                </Flex>
+
+                {/* With absolute positioning, must be rendered after the checklist items to have higher z-index */}
+                <PlainButton
+                  iconLeft={IconQuestionCircle}
+                  asChild
+                  css={{
+                    position: 'absolute',
+                    top: spacing.l,
+                    right: spacing.l
+                  }}
+                >
+                  <ExternalLink to='https://help.audius.co/'>
+                    {messages.help}
+                  </ExternalLink>
+                </PlainButton>
+              </Box>
+            </Flex>
+          </Paper>
+        ) : null}
 
         <ArtistCoinsTable searchQuery={searchValue} />
       </Flex>
     </Page>
+  )
+}
+
+// Main component that conditionally renders desktop or mobile version
+export const ArtistCoinsExplorePage = () => {
+  return isMobile() ? (
+    <MobileArtistCoinsExplorePage />
+  ) : (
+    <DesktopArtistCoinsExplorePage />
   )
 }

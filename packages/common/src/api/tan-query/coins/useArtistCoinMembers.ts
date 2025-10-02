@@ -8,6 +8,7 @@ import {
 
 import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models'
+import { formatNumberCommas } from '~/utils'
 
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey } from '../types'
@@ -57,12 +58,7 @@ export const useArtistCoinMembers = <TResult = CoinMember[]>(
 ) => {
   const { audiusSdk } = useQueryContext()
 
-  const { data: artistCoin } = useArtistCoin(
-    { mint: mint as string },
-    {
-      enabled: !!mint
-    }
-  )
+  const { data: artistCoin } = useArtistCoin(mint)
 
   return useInfiniteQuery({
     queryKey: getCoinLeaderboardQueryKey(
@@ -78,6 +74,7 @@ export const useArtistCoinMembers = <TResult = CoinMember[]>(
     },
     queryFn: async ({ pageParam }) => {
       if (!mint) return []
+      if (!artistCoin) return []
 
       const sdk = await audiusSdk()
 
@@ -91,7 +88,7 @@ export const useArtistCoinMembers = <TResult = CoinMember[]>(
       const response = await sdk.coins.getCoinMembers(params)
 
       const members = (response.data ?? []).map((member) => {
-        const decimals = artistCoin?.decimals
+        const decimals = artistCoin.decimals
         const balanceFD = new FixedDecimal(
           BigInt(member.balance.toString()),
           decimals
@@ -100,17 +97,19 @@ export const useArtistCoinMembers = <TResult = CoinMember[]>(
         return {
           userId: HashId.parse(member.userId),
           balance: member.balance,
-          // TODO: ideally this is a selector using logic from useTokenAmountFormatting
-          balanceLocaleString: balanceFD.toLocaleString('en-US', {
-            maximumFractionDigits: 0,
-            roundingMode: 'trunc'
-          })
+          // Need formatNumberCommas for mobile :(
+          balanceLocaleString: formatNumberCommas(
+            balanceFD.toLocaleString('en-US', {
+              maximumFractionDigits: 0,
+              roundingMode: 'trunc'
+            })
+          )
         }
       })
 
       return members
     },
     select: options?.select ?? ((data) => data.pages.flat() as TResult),
-    enabled: options?.enabled !== false && !!mint
+    enabled: options?.enabled !== false && !!mint && !!artistCoin
   })
 }

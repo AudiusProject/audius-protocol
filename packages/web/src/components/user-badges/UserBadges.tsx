@@ -67,6 +67,9 @@ type UserBadgesProps = {
   // Optional mint address for displaying specific artist coin
   // If provided, shows the artist coin badge for that token
   mint?: string
+
+  // Optional flag to hide the artist coin badge
+  hideArtistCoinBadge?: boolean
 }
 
 /**
@@ -81,7 +84,8 @@ const UserBadges = ({
   transformOrigin,
   isVerifiedOverride,
   overrideTier,
-  mint
+  mint,
+  hideArtistCoinBadge = false
 }: UserBadgesProps) => {
   const { tier: currentTier, isVerified } = useTierAndVerifiedForUser(userId)
   const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
@@ -170,6 +174,7 @@ const UserBadges = ({
   }, [tier, userId, anchorOrigin, transformOrigin, size])
 
   const shouldShowArtistCoinBadge =
+    !hideArtistCoinBadge &&
     isArtistCoinEnabled &&
     !!displayMint &&
     displayMint !== env.WAUDIO_MINT_ADDRESS
@@ -179,7 +184,6 @@ const UserBadges = ({
 
     return (
       <ArtistCoinHoverCard
-        mint={displayMint ?? ''}
         userId={userId}
         anchorOrigin={anchorOrigin}
         transformOrigin={transformOrigin}
@@ -206,7 +210,6 @@ const UserBadges = ({
     )
   }, [
     shouldShowArtistCoinBadge,
-    displayMint,
     userId,
     anchorOrigin,
     transformOrigin,

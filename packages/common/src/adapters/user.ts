@@ -98,7 +98,8 @@ export const userMetadataFromSDK = (
     artist_coin_badge: input.artistCoinBadge
       ? {
           mint: input.artistCoinBadge.mint ?? '',
-          logo_uri: input.artistCoinBadge.logoUri ?? ''
+          logo_uri: input.artistCoinBadge.logoUri ?? '',
+          ticker: input.artistCoinBadge.ticker ?? ''
         }
       : null
   }

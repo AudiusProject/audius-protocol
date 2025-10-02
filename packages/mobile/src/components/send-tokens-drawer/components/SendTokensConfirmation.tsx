@@ -27,7 +27,7 @@ export const SendTokensConfirmation = ({
 }: SendTokensConfirmationProps) => {
   const [isConfirmed, setIsConfirmed] = useState(false)
 
-  const { data: coin } = useArtistCoin({ mint })
+  const { data: coin } = useArtistCoin(mint)
   const tokenInfo = coin ? transformArtistCoinToTokenInfo(coin) : undefined
   const formatAmount = (amount: bigint) => {
     return new FixedDecimal(amount, tokenInfo?.decimals).toLocaleString(

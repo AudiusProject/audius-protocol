@@ -18,7 +18,10 @@ import { cache } from './routes/cache'
 import { feePayer } from './routes/feePayer'
 import { health } from './routes/health/health'
 import { location } from './routes/instruction/location'
-import { firstBuyQuote } from './routes/launchpad/first_buy_quote'
+import {
+  firstBuyQuote,
+  getLaunchpadConfigRoute
+} from './routes/launchpad/first_buy_quote'
 import { launchCoin } from './routes/launchpad/launch_coin'
 import { listen } from './routes/listen/listen'
 import { relay } from './routes/relay/relay'
@@ -36,13 +39,14 @@ const main = async () => {
   app.get('/solana/health_check', health)
   app.post('/solana/tracks/:trackId/listen', listen)
 
-  // launch_coin doesn't need user/discovery validation, so register it before middleware
   const upload = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: 15 * 1024 * 1024 } // 15MB limit
   })
-  app.post('/solana/launch_coin', upload.single('image'), launchCoin)
-  app.get('/solana/first_buy_quote', firstBuyQuote)
+  // launchpad endpoints don't need user/discovery validation, so register them before middleware
+  app.post('/solana/launchpad/launch_coin', upload.single('image'), launchCoin)
+  app.get('/solana/launchpad/first_buy_quote', firstBuyQuote)
+  app.get('/solana/launchpad/config', getLaunchpadConfigRoute)
 
   // Apply middleware for routes that need user/discovery validation
   app.use(userSignerRecoveryMiddleware)

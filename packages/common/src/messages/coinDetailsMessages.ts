@@ -7,7 +7,6 @@ export const coinDetailsMessages = {
   coinInfo: {
     loading: 'Loading...',
     createdBy: 'Created By',
-    whatIs: (title: string) => `What is ${title}?`,
     description1: (title: string) =>
       `${title} is a community token on the Audius platform. You can use ${title} for tipping artists, participating in community activities, and engaging with the decentralized music ecosystem.`,
     description2: (title: string) =>
@@ -27,11 +26,19 @@ export const coinDetailsMessages = {
   },
   coinInsights: {
     title: 'Insights',
-    pricePerCoin: 'Price per coin',
+    pricePerCoin: 'Price',
     holdersOnAudius: 'Holders on Audius',
     uniqueHolders: 'Unique Holders',
     volume24hr: 'Volume (24hr)',
-    totalTransfers: 'Total Transfers'
+    totalTransfers: 'Total Transfers',
+    marketCap: 'Market Cap',
+    unableToLoad: 'Unable to load insights',
+    graduated: 'Graduated',
+    preGraduation:
+      'Until graduation, the price of this coin is tied to the controlled distribution of supply.',
+    postGraduation:
+      'This coin has graduated. The price is determined by the open market.',
+    edit: 'Edit Details'
   },
   coinLeaderboard: {
     title: 'Members Leaderboard',
@@ -51,7 +58,7 @@ export const coinDetailsMessages = {
     newWalletConnected: 'New Wallet Successfully Connected!',
     error: 'Something went wrong. Please try again.',
     walletAlreadyAdded: 'No new wallets selected to connect.',
-    builtIn: 'Built-In',
+    builtIn: 'Built-In Wallet',
     toasts: {
       walletRemoved: 'Wallet removed successfully!',
       error: 'Error removing wallet'
@@ -60,6 +67,53 @@ export const coinDetailsMessages = {
   overflowMenu: {
     copyCoinAddress: 'Copy Coin Address',
     openDexscreener: 'Open Dexscreener',
-    copiedToClipboard: 'Copied Coin Address To Clipboard!'
+    details: 'Details',
+    copiedToClipboard: 'Copied Coin Address To Clipboard!',
+    shareToX: 'Share to X',
+    shareToXArtistCopy: (coinTicker: string, coinAddress: string) =>
+      `My artist coin ${coinTicker} is live on @Audius. Be the first to buy and unlock my exclusive fan club!\n\n${coinAddress}\n`,
+    shareToXUserCopy: (
+      coinTicker: string,
+      artistHandle: string,
+      coinAddress: string
+    ) =>
+      `Check out @${artistHandle}'s artist coin ${coinTicker} on @Audius!\n\n${coinAddress}\n`
+  },
+  artistCoinDetails: {
+    title: 'Artist Coin Details',
+    details: 'Details',
+    coinAddress: 'Coin Address',
+    onChainDescription: 'On-Chain Description',
+    totalSupply: 'Total Supply',
+    marketCap: 'Market Cap',
+    price: 'Current Price',
+    liquidity: 'Liquidity',
+    circulatingSupply: 'Circulating Supply',
+    close: 'Close',
+    copied: 'Copied to clipboard!',
+    tooltips: {
+      totalSupply:
+        'The total number of your artist coins that will ever exist. This amount is fixed and never changes.',
+      marketCap:
+        'The current total value of all your artist coins in circulation, calculated by multiplying the current price by the total supply.',
+      price: 'The current price of a single artist coin in USD.',
+      liquidity:
+        'The amount of funds available for trading your artist coin, which affects how easily it can be bought or sold.',
+      circulatingSupply:
+        'The number of artist coins currently available for trading, excluding any tokens that are locked or reserved.'
+    }
+  },
+  editCoinDetails: {
+    pageTitle: 'Edit Coin Page',
+    tokenDetails: 'Token Details',
+    description: 'Description',
+    socialLinks: 'Social Links',
+    socialLink: 'Link',
+    addAnotherLink: 'Add another link',
+    saveChanges: 'Save Changes',
+    optional: '(Optional)',
+    descriptionPlaceholder:
+      'Tell fans what makes your artist coin special — think early listens, exclusive drops, or fun perks for your biggest supporters.',
+    pasteLink: 'Paste a link'
   }
 }

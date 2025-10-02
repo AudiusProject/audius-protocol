@@ -15,13 +15,13 @@ import {
   User,
   isContentTokenGated
 } from '@audius/common/models'
-import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import {
   usersSocialActions as socialActions,
   tippingActions,
   usePremiumContentPurchaseModal,
   gatedContentSelectors,
-  PurchaseableContentType
+  PurchaseableContentType,
+  useBuySellModal
 } from '@audius/common/store'
 import { removeNullable, Nullable } from '@audius/common/utils'
 import { USDC } from '@audius/fixed-decimal'
@@ -43,12 +43,12 @@ import {
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router-dom-v5-compat'
-import { push } from 'redux-first-history'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
 import { UserLink } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { make, track } from 'services/analytics'
 
@@ -138,11 +138,11 @@ const LockedGatedContentSection = ({
     useModalState('LockedContent')
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
-  const { data: coin } = useArtistCoin({
-    mint: isContentTokenGated(streamConditions)
+  const { data: coin } = useArtistCoin(
+    isContentTokenGated(streamConditions)
       ? streamConditions.token_gate.token_mint
       : ''
-  })
+  )
   const tipSource = lockedContentModalVisibility
     ? 'howToUnlockModal'
     : 'howToUnlockTrackPage'
@@ -200,18 +200,19 @@ const LockedGatedContentSection = ({
     handlePurchaseViaGuestCheckout
   ])
 
+  const { onOpen: openBuySellModal } = useBuySellModal()
+
   const handlePurchaseToken = useRequiresAccountCallback(() => {
     if (!coin?.ticker) return
-
-    dispatch(push(ASSET_DETAIL_PAGE.replace(':ticker', coin.ticker)))
+    openBuySellModal({ isOpen: true, ticker: coin.ticker })
 
     if (lockedContentModalVisibility) {
       setLockedContentModalVisibility(false)
     }
   }, [
     coin?.ticker,
-    dispatch,
     lockedContentModalVisibility,
+    openBuySellModal,
     setLockedContentModalVisibility
   ])
 
@@ -418,8 +419,15 @@ const LockedGatedContentSection = ({
     return null
   }
 
+  const isMobile = useIsMobile()
+
   return (
-    <Flex w='100%' justifyContent='space-between'>
+    <Flex
+      w='100%'
+      direction={isMobile ? 'column' : 'row'}
+      gap='m'
+      justifyContent='space-between'
+    >
       <Flex gap='s' direction='column'>
         <Flex alignItems='center' gap='s'>
           <LockedStatusBadge
@@ -444,7 +452,7 @@ const LockedGatedContentSection = ({
           </Flex>
         ) : null}
       </Flex>
-      <Flex w={BUY_BUTTON_WIDTH}>{renderButton()}</Flex>
+      <Flex w={isMobile ? '100%' : BUY_BUTTON_WIDTH}>{renderButton()}</Flex>
     </Flex>
   )
 }
@@ -548,11 +556,11 @@ const UnlockedGatedContentSection = ({
   'contentId' | 'buttonClassName' | 'source'
 >) => {
   const messages = getMessages(contentType)
-  const { data: coin } = useArtistCoin({
-    mint: isContentTokenGated(streamConditions)
+  const { data: coin } = useArtistCoin(
+    isContentTokenGated(streamConditions)
       ? streamConditions.token_gate.token_mint
       : ''
-  })
+  )
 
   const renderUnlockedDescription = () => {
     if (isContentCollectibleGated(streamConditions)) {

@@ -1,5 +1,6 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useContext, useMemo } from 'react'
 
+import type { Coin } from '@audius/common/adapters'
 import {
   useArtistCoin,
   useCurrentUserId,
@@ -9,55 +10,123 @@ import {
 import { useDiscordOAuthLink } from '@audius/common/hooks'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { WidthSizes } from '@audius/common/models'
+import { removeNullable, route, shortenSPLAddress } from '@audius/common/utils'
 import {
   Flex,
-  Paper,
-  Text,
-  PlainButton,
+  IconCopy,
   IconDiscord,
-  IconGift,
   IconExternalLink,
-  ModalContent,
-  ModalHeader,
-  ModalTitle,
-  Modal
+  IconGift,
+  IconInstagram,
+  IconLink,
+  IconTikTok,
+  IconX,
+  Paper,
+  PlainButton,
+  Text,
+  useTheme
 } from '@audius/harmony'
-import { decodeHashId } from '@audius/sdk'
+import { HashId } from '@audius/sdk'
+import { useDispatch } from 'react-redux'
 
+import { ExternalLink } from 'components/link/ExternalLink'
 import Skeleton from 'components/skeleton/Skeleton'
+import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
 import { UserTokenBadge } from 'components/user-token-badge/UserTokenBadge'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
-import Tiers from 'pages/rewards-page/Tiers'
 import { env } from 'services/env'
+import { copyToClipboard } from 'utils/clipboardUtil'
+import { push } from 'utils/navigation'
 
 const messages = coinDetailsMessages.coinInfo
+const overflowMessages = coinDetailsMessages.overflowMenu
 
 const BANNER_HEIGHT = 120
 
+// Helper function to detect platform from URL
+const detectPlatform = (
+  url: string
+): 'x' | 'instagram' | 'tiktok' | 'website' => {
+  const cleanUrl = url.toLowerCase().trim()
+
+  if (cleanUrl.includes('twitter.com') || cleanUrl.includes('x.com')) {
+    return 'x'
+  }
+  if (cleanUrl.includes('instagram.com')) {
+    return 'instagram'
+  }
+  if (cleanUrl.includes('tiktok.com')) {
+    return 'tiktok'
+  }
+
+  return 'website'
+}
+
+// Get platform icon
+const getPlatformIcon = (platform: string) => {
+  switch (platform) {
+    case 'x':
+      return IconX
+    case 'instagram':
+      return IconInstagram
+    case 'tiktok':
+      return IconTikTok
+    case 'website':
+    default:
+      return IconLink
+  }
+}
+
+const SocialLinksDisplay = ({ coin }: { coin: Coin }) => {
+  const socialLinks = [coin.link1, coin.link2, coin.link3, coin.link4].filter(
+    removeNullable
+  )
+
+  if (socialLinks.length === 0) {
+    return null
+  }
+
+  return (
+    <Flex gap='l' alignItems='center'>
+      {socialLinks.map((link, index) => {
+        const platform = detectPlatform(link)
+        const IconComponent = getPlatformIcon(platform)
+
+        return (
+          <ExternalLink key={index} to={link}>
+            <PlainButton
+              size='large'
+              iconLeft={() => <IconComponent color='subdued' />}
+            />
+          </ExternalLink>
+        )
+      })}
+    </Flex>
+  )
+}
+
 const AssetInfoSectionSkeleton = () => {
+  const theme = useTheme()
+
   return (
     <Paper
       borderRadius='l'
       shadow='far'
-      direction='column'
+      column
       alignItems='flex-start'
+      border='default'
     >
       {/* Banner skeleton */}
       <Flex
-        direction='column'
+        column
         alignItems='flex-start'
         alignSelf='stretch'
+        border='default'
         h={BANNER_HEIGHT}
-        css={{ backgroundColor: '#f0f0f0' }}
+        css={{ backgroundColor: theme.color.neutral.n100 }}
       >
-        <Flex
-          direction='column'
-          alignItems='flex-start'
-          alignSelf='stretch'
-          p='l'
-          gap='s'
-        >
+        <Flex column alignItems='flex-start' alignSelf='stretch' p='l' gap='s'>
           <Skeleton width='80px' height='16px' />
           <Flex
             alignItems='center'
@@ -74,15 +143,9 @@ const AssetInfoSectionSkeleton = () => {
       </Flex>
 
       {/* Content skeleton */}
-      <Flex
-        direction='column'
-        alignItems='flex-start'
-        alignSelf='stretch'
-        p='xl'
-        gap='l'
-      >
+      <Flex column alignItems='flex-start' alignSelf='stretch' p='xl' gap='l'>
         <Skeleton width='200px' height='24px' />
-        <Flex direction='column' gap='m'>
+        <Flex column gap='m'>
           <Skeleton width='100%' height='20px' />
           <Skeleton width='90%' height='20px' />
           <Skeleton width='100%' height='20px' />
@@ -113,34 +176,28 @@ type BannerSectionProps = {
 }
 
 const BannerSection = ({ mint }: BannerSectionProps) => {
-  const { data: coin, isLoading } = useArtistCoin({ mint })
+  const { data: coin, isLoading } = useArtistCoin(mint)
+  const theme = useTheme()
+  const { ownerId: ownerIdRaw } = coin ?? {}
+  const ownerId =
+    typeof ownerIdRaw === 'string' ? HashId.parse(ownerIdRaw) : ownerIdRaw
 
-  const userId = coin?.ownerId
-    ? (decodeHashId(coin.ownerId) ?? undefined)
-    : undefined
-
-  const { data: owner } = useUser(userId)
+  const { data: owner } = useUser(ownerId)
   const { image: coverPhoto } = useCoverPhoto({
-    userId,
+    userId: ownerId,
     size: WidthSizes.SIZE_640
   })
 
   if (isLoading || !coin || !owner) {
     return (
       <Flex
-        direction='column'
+        column
         alignItems='flex-start'
         alignSelf='stretch'
         h={BANNER_HEIGHT}
-        css={{ backgroundColor: '#f0f0f0' }}
+        css={{ backgroundColor: theme.color.neutral.n100 }}
       >
-        <Flex
-          direction='column'
-          alignItems='flex-start'
-          alignSelf='stretch'
-          p='l'
-          gap='s'
-        >
+        <Flex column alignItems='flex-start' alignSelf='stretch' p='l' gap='s'>
           <Skeleton width='80px' height='16px' />
           <Flex
             alignItems='center'
@@ -160,7 +217,7 @@ const BannerSection = ({ mint }: BannerSectionProps) => {
 
   return (
     <Flex
-      direction='column'
+      column
       alignItems='flex-start'
       alignSelf='stretch'
       h={BANNER_HEIGHT}
@@ -172,18 +229,12 @@ const BannerSection = ({ mint }: BannerSectionProps) => {
         position: 'relative'
       }}
     >
-      <Flex
-        direction='column'
-        alignItems='flex-start'
-        alignSelf='stretch'
-        p='l'
-        gap='s'
-      >
+      <Flex column alignItems='flex-start' alignSelf='stretch' p='l' gap='s'>
         <Text variant='label' size='m' color='staticWhite' shadow='emphasis'>
           {messages.createdBy}
         </Text>
 
-        {userId && <UserTokenBadge userId={userId} />}
+        {ownerId && <UserTokenBadge userId={ownerId} />}
       </Flex>
     </Flex>
   )
@@ -193,10 +244,14 @@ type AssetInfoSectionProps = {
   mint: string
 }
 
-export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
-  const [isTiersModalOpen, setIsTiersModalOpen] = useState(false)
+const { REWARDS_PAGE } = route
 
-  const { data: coin, isLoading } = useArtistCoin({ mint })
+export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
+  const dispatch = useDispatch()
+  const { toast } = useContext(ToastContext)
+
+  const { data: coin, isLoading } = useArtistCoin(mint)
+
   const { data: currentUserId } = useCurrentUserId()
   const { data: userCoins } = useUserCoins({ userId: currentUserId })
   const userToken = useMemo(
@@ -217,18 +272,18 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
   }
 
   const handleBrowseRewards = useCallback(() => {
-    setIsTiersModalOpen(true)
-  }, [])
+    dispatch(push(REWARDS_PAGE))
+  }, [dispatch])
 
-  const handleCloseTiersModal = useCallback(() => {
-    setIsTiersModalOpen(false)
-  }, [])
+  const handleCopyAddress = useCallback(() => {
+    copyToClipboard(mint)
+    toast(overflowMessages.copiedToClipboard)
+  }, [mint, toast])
 
   if (isLoading || !coin) {
     return <AssetInfoSectionSkeleton />
   }
 
-  const title = coin.ticker ?? ''
   const isWAudio = coin.mint === env.WAUDIO_MINT_ADDRESS
   const CTAIcon = isWAudio ? IconGift : IconExternalLink
 
@@ -236,63 +291,47 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
     !userTokenBalance || Number(userTokenBalance) <= 0
 
   return (
-    <>
-      <Modal
-        isOpen={isTiersModalOpen}
-        onClose={handleCloseTiersModal}
-        size='large'
-        css={{ maxWidth: '90vw' }}
-      >
-        <ModalHeader>
-          <ModalTitle title={messages.rewardTiers} />
-        </ModalHeader>
-        <ModalContent css={{ padding: 0, overflow: 'auto' }}>
-          <Tiers />
-        </ModalContent>
-      </Modal>
-      <Paper
-        borderRadius='l'
-        shadow='far'
-        direction='column'
-        alignItems='flex-start'
-      >
-        <BannerSection mint={mint} />
+    <Paper
+      borderRadius='l'
+      shadow='far'
+      column
+      alignItems='flex-start'
+      border='default'
+    >
+      <BannerSection mint={mint} />
 
-        {coin.description ? (
-          <Flex
-            direction='column'
-            alignItems='flex-start'
-            alignSelf='stretch'
-            p='xl'
-            gap='l'
-          >
-            <Flex alignItems='center' alignSelf='stretch'>
-              <Text variant='heading' size='s' color='heading'>
-                {messages.whatIs(title)}
-              </Text>
-            </Flex>
+      {coin.description ? (
+        <Flex
+          column
+          alignItems='flex-start'
+          alignSelf='stretch'
+          ph='xl'
+          pv='l'
+          gap='l'
+        >
+          <Flex column gap='m'>
+            <SocialLinksDisplay coin={coin} />
+            {descriptionParagraphs.map((paragraph) => {
+              if (paragraph.trim() === '') {
+                return null
+              }
 
-            <Flex direction='column' gap='m'>
-              {descriptionParagraphs.map((paragraph) => {
-                if (paragraph.trim() === '') {
-                  return null
-                }
-
-                return (
-                  <Text
-                    key={paragraph.slice(0, 10)}
-                    variant='body'
-                    size='m'
-                    color='subdued'
-                  >
-                    {paragraph}
-                  </Text>
-                )
-              })}
-            </Flex>
+              return (
+                <Text
+                  key={paragraph.slice(0, 10)}
+                  variant='body'
+                  size='m'
+                  color='subdued'
+                >
+                  {paragraph}
+                </Text>
+              )
+            })}
           </Flex>
-        ) : null}
+        </Flex>
+      ) : null}
 
+      {isWAudio || coin.website ? (
         <Flex
           alignItems='center'
           justifyContent='space-between'
@@ -305,12 +344,13 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
               onClick={isWAudio ? handleBrowseRewards : handleLearnMore}
               iconLeft={CTAIcon}
               variant='default'
-              size='large'
             >
               {isWAudio ? messages.browseRewards : messages.learnMore}
             </PlainButton>
           </Flex>
         </Flex>
+      ) : null}
+      {userToken?.hasDiscord ? (
         <Flex
           alignItems='center'
           justifyContent='space-between'
@@ -326,7 +366,6 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
                     onClick={openDiscord}
                     iconLeft={IconDiscord}
                     variant='default'
-                    size='large'
                     disabled={isUserBalanceUnavailable}
                   >
                     {messages.openDiscord}
@@ -339,7 +378,6 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
                   onClick={openDiscord}
                   iconLeft={IconDiscord}
                   variant='default'
-                  size='large'
                   disabled={isUserBalanceUnavailable}
                 >
                   {messages.openDiscord}
@@ -348,7 +386,26 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
             )}
           </Flex>
         </Flex>
-      </Paper>
-    </>
+      ) : null}
+
+      <Flex
+        alignItems='center'
+        justifyContent='space-between'
+        alignSelf='stretch'
+        p='l'
+        borderTop='default'
+      >
+        <PlainButton
+          onClick={handleCopyAddress}
+          iconLeft={IconCopy}
+          variant='default'
+        >
+          {overflowMessages.copyCoinAddress}
+        </PlainButton>
+        <Text variant='body' size='m' color='subdued'>
+          {shortenSPLAddress(mint)}
+        </Text>
+      </Flex>
+    </Paper>
   )
 }

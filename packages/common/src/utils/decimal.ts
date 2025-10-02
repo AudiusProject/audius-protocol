@@ -164,17 +164,111 @@ export const formatCurrency = (
   }
 }
 
-export const formatCurrencyWithMax = (
+/**
+ * Formats a number with subscript notation for many leading zeros after decimal.
+ * For example: 0.000068352 → 0.0₄68352
+ *
+ * @param num - The number to format
+ * @param locale - Locale for number formatting (defaults to 'en-US')
+ * @returns Formatted string with subscript notation for leading zeros
+ */
+export const formatCurrencyWithSubscript = (
   num: number,
-  max: number,
   locale: string = 'en-US'
 ): string => {
-  if (num >= max) {
-    const formatted = numeral(num).format('0.00a').toUpperCase()
-    return formatted.includes('.00')
-      ? `$${numeral(num).format('0a').toUpperCase()}`
-      : `$${formatted}`
-  }
+  if (num === 0) return '$0.00'
 
-  return formatCurrency(num, locale)
+  try {
+    const decimalPlaces = getCurrencyDecimalPlaces(num)
+    const formatted = new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: Math.min(decimalPlaces, 2),
+      maximumFractionDigits: decimalPlaces
+    }).format(num)
+
+    // Extract the number part (remove currency symbol and commas)
+    const numberPart = formatted.replace(/[^0-9.-]/g, '').replace(/,/g, '')
+
+    // Check if there are leading zeros after decimal that should be subscripted
+    const parts = numberPart.split('.')
+    if (parts.length === 2 && parts[0] === '0') {
+      const decimalPart = parts[1]
+
+      // Find consecutive zeros after the decimal
+      const zeroMatch = decimalPart.match(/^0+/)
+      if (zeroMatch) {
+        const zeroCount = zeroMatch[0].length
+        const remainingDigits = decimalPart.substring(zeroCount)
+
+        // Only apply subscript if there are 3 or more leading zeros
+        if (zeroCount >= 3 && remainingDigits.length > 0) {
+          // Create subscript number (Unicode subscript digits)
+          const subscriptDigits = zeroCount
+            .toString()
+            .split('')
+            .map((digit) => {
+              const subscripts = [
+                '₀',
+                '₁',
+                '₂',
+                '₃',
+                '₄',
+                '₅',
+                '₆',
+                '₇',
+                '₈',
+                '₉'
+              ]
+              return subscripts[parseInt(digit)]
+            })
+            .join('')
+
+          // Format as $0.0[subscript][remaining digits]
+          return `$0.0${subscriptDigits}${remainingDigits}`
+        }
+      }
+    }
+
+    return formatted
+  } catch {
+    return `$${num.toFixed(2)}`
+  }
+}
+
+/**
+ * Formats a count into a more readable string representation.
+ * For counts over 1000, it converts the number into a format with a suffix (K for thousands, M for millions, etc.)
+ * For example:
+ * - 375 => "375"
+ * - 4,210 => "4.21K"
+ * - 443,123 => "443K"
+ * - 4,001,000 => "4M"
+ * If the count is 0, it returns "0".
+ * This function is pulled over from the common package because we don't use the common package in Harmony.
+ */
+export const formatCount = (count: number, decimals: number = 0) => {
+  if (count >= 1000) {
+    const countStr = count.toString()
+    let formatted: string
+
+    if (countStr.length % 3 === 0) {
+      formatted = numeral(count).format('0a').toUpperCase()
+    } else if (countStr.length % 3 === 1 && countStr[2] !== '0') {
+      formatted = numeral(count).format('0.00a').toUpperCase()
+    } else if (countStr.length % 3 === 1 && countStr[1] !== '0') {
+      formatted = numeral(count).format('0.0a').toUpperCase()
+    } else if (countStr.length % 3 === 2 && countStr[2] !== '0') {
+      formatted = numeral(count).format('0.0a').toUpperCase()
+    } else {
+      formatted = numeral(count).format('0a').toUpperCase()
+    }
+
+    // Strip .00 before letter suffixes
+    return formatted.replace(/\.00([A-Z])/g, '$1')
+  } else if (!count) {
+    return '0'
+  } else {
+    return `${count.toFixed(decimals)}`
+  }
 }

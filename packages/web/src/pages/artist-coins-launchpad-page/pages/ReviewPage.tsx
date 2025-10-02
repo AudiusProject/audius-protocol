@@ -1,6 +1,9 @@
+import type { LaunchpadFormValues } from '@audius/common/models'
 import {
   Artwork,
   Flex,
+  Hint,
+  IconInfo,
   Paper,
   Text,
   makeResponsiveStyles
@@ -12,7 +15,7 @@ import { useFormImageUrl } from 'hooks/useFormImageUrl'
 import { ArtistCoinsSubmitRow } from '../components/ArtistCoinsSubmitRow'
 import { StepHeader } from '../components/StepHeader'
 import { TokenInfoRow } from '../components/TokenInfoRow'
-import type { PhasePageProps, SetupFormValues } from '../components/types'
+import type { PhasePageProps } from '../components/types'
 import { AMOUNT_OF_STEPS } from '../constants'
 
 const messages = {
@@ -28,14 +31,22 @@ const messages = {
   allocation: 'Allocation',
   vesting: 'Vesting',
   tradingFees: 'Trading Fees',
-  back: 'Back'
+  back: 'Back',
+  hintMessage:
+    "Remember! This is your one and only coin and its details can't be changed later."
 }
 
 const coinDetails = {
-  initialPrice: '~$0.000415',
+  initialPrice: '~$0.0₄415',
   totalSupply: '1,000,000,000',
-  initialMarketCap: '10,000 $AUDIO',
-  graduationMarketCap: '500,000 $AUDIO',
+  initialMarketCap: {
+    usd: '(~$612)',
+    audio: '10K $AUDIO'
+  },
+  graduationMarketCap: {
+    usd: '(~$30.6K)',
+    audio: '1M $AUDIO'
+  },
   allocation: '50%',
   vesting: '5 years (Linear)',
   tradingFees: '50%'
@@ -86,7 +97,7 @@ const useStyles = makeResponsiveStyles(({ theme }) => ({
 }))
 
 export const ReviewPage = ({ onContinue, onBack }: PhasePageProps) => {
-  const { values } = useFormikContext<SetupFormValues>()
+  const { values } = useFormikContext<LaunchpadFormValues>()
   const imageUrl = useFormImageUrl(values.coinImage)
   const styles = useStyles()
 
@@ -185,13 +196,31 @@ export const ReviewPage = ({ onContinue, onBack }: PhasePageProps) => {
                   />
                   <TokenInfoRow
                     label={messages.initialMarketCap}
-                    value={coinDetails.initialMarketCap}
+                    value={
+                      <Flex gap='s' alignItems='center'>
+                        <Text variant='body' size='m' color='subdued'>
+                          {coinDetails.initialMarketCap.usd}
+                        </Text>
+                        <Text variant='body' size='m' color='default'>
+                          {coinDetails.initialMarketCap.audio}
+                        </Text>
+                      </Flex>
+                    }
                     hasTooltip
                     tooltipContent={tooltipContent.initialMarketCap}
                   />
                   <TokenInfoRow
                     label={messages.graduationMarketCap}
-                    value={coinDetails.graduationMarketCap}
+                    value={
+                      <Flex gap='s' alignItems='center'>
+                        <Text variant='body' size='m' color='subdued'>
+                          {coinDetails.graduationMarketCap.usd}
+                        </Text>
+                        <Text variant='body' size='m' color='default'>
+                          {coinDetails.graduationMarketCap.audio}
+                        </Text>
+                      </Flex>
+                    }
                     hasTooltip
                     tooltipContent={tooltipContent.graduationMarketCap}
                   />
@@ -232,12 +261,14 @@ export const ReviewPage = ({ onContinue, onBack }: PhasePageProps) => {
               </Flex>
             </Flex>
           </Flex>
+          <Hint icon={IconInfo}>{messages.hintMessage}</Hint>
         </Paper>
       </Flex>
       <ArtistCoinsSubmitRow
         cancelText={messages.back}
         backIcon
         onContinue={handleContinue}
+        isValid={true} // There are no form fields changing on this page - no need to check validation here
         onBack={handleBack}
       />
     </>

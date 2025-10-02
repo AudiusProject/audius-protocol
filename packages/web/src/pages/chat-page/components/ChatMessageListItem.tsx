@@ -23,6 +23,7 @@ import { UserGeneratedTextV2 } from 'components/user-generated-text/UserGenerate
 import ChatTail from '../../../assets/img/ChatTail.svg'
 
 import { ArtistCoinHeader } from './ArtistCoinHeader'
+import { CONTENT_EXPANDED_LISTENER_KEY } from './ChatMessageList'
 import styles from './ChatMessageListItem.module.css'
 import { ChatMessagePlaylist } from './ChatMessagePlaylist'
 import { ChatMessageTrack } from './ChatMessageTrack'
@@ -122,8 +123,16 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
   const onUnfurlSuccess = useCallback(() => {
     if (linkValue) {
       setEmptyUnfurl(false)
+      // Notify the message list that content expanded so it can adjust scroll
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent(CONTENT_EXPANDED_LISTENER_KEY, {
+            detail: { chatId }
+          })
+        )
+      }
     }
-  }, [linkValue])
+  }, [linkValue, chatId])
 
   // Only render reactions if user has message permissions
   const { canSendMessage } = useCanSendMessage(chatId)

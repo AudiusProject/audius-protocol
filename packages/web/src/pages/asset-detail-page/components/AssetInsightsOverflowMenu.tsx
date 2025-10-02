@@ -1,20 +1,29 @@
-import { useContext } from 'react'
+import { useCallback, useContext, useState } from 'react'
 
-import { useArtistCoin } from '@audius/common/api'
+import { useArtistCoin, useCurrentUserId, useUser } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
-import { route } from '@audius/common/utils'
+import { COIN_DETAIL_ROUTE } from '@audius/common/src/utils/route'
+import { formatTickerForUrl, route } from '@audius/common/utils'
 import {
   PopupMenu,
   PopupMenuItem,
   IconCopy,
   IconExternalLink,
   IconButton,
-  IconKebabHorizontal
+  IconKebabHorizontal,
+  IconInfo,
+  IconX
 } from '@audius/harmony'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
+import ActionDrawer from 'components/action-drawer/ActionDrawer'
 import { ToastContext } from 'components/toast/ToastContext'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import { copyToClipboard } from '../../../utils/clipboardUtil'
+import { openXLink } from '../../../utils/xShare'
+
+import { ArtistCoinDetailsModal } from './ArtistCoinDetailsModal'
 
 const messages = coinDetailsMessages.overflowMenu
 
@@ -28,8 +37,14 @@ type AssetInsightsOverflowMenuProps = {
 export const AssetInsightsOverflowMenu = ({
   mint
 }: AssetInsightsOverflowMenuProps) => {
+  const navigate = useNavigate()
   const { toast } = useContext(ToastContext)
-  const { data: artistCoin } = useArtistCoin({ mint })
+  const { data: artistCoin } = useArtistCoin(mint)
+  const { data: currentUserId } = useCurrentUserId()
+  const { data: artist } = useUser(artistCoin?.ownerId)
+  const isMobile = useIsMobile()
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
+  const [isMobileOverflowOpen, setIsMobileOverflowOpen] = useState(false)
 
   const onCopyCoinAddress = () => {
     if (artistCoin?.mint) {
@@ -48,16 +63,70 @@ export const AssetInsightsOverflowMenu = ({
     }
   }
 
+  const onOpenDetails = () => {
+    if (isMobile) {
+      if (artistCoin?.ticker) {
+        navigate(
+          COIN_DETAIL_ROUTE.replace(
+            ':ticker',
+            formatTickerForUrl(artistCoin.ticker)
+          )
+        )
+      }
+    } else {
+      setIsDetailsModalOpen(true)
+    }
+  }
+
+  const onShareToX = () => {
+    if (!artistCoin?.ticker || !artistCoin?.mint || !artist?.handle) return
+
+    const isArtistOwner = currentUserId === artistCoin.ownerId
+    const coinUrl =
+      window.location.origin +
+      route.COIN_DETAIL_ROUTE.replace(
+        ':ticker',
+        formatTickerForUrl(artistCoin.ticker)
+      )
+
+    const shareText = isArtistOwner
+      ? messages.shareToXArtistCopy(artistCoin.ticker, artistCoin.mint)
+      : messages.shareToXUserCopy(
+          artistCoin.ticker,
+          artist.handle,
+          artistCoin.mint
+        )
+
+    openXLink(coinUrl, shareText)
+  }
+  const onOpenMobileOverflow = useCallback(() => {
+    setIsMobileOverflowOpen(true)
+  }, [setIsMobileOverflowOpen])
+
+  const onCloseMobileOverflow = useCallback(() => {
+    setIsMobileOverflowOpen(false)
+  }, [setIsMobileOverflowOpen])
+
   const menuItems: PopupMenuItem[] = [
     {
       text: messages.copyCoinAddress,
-      icon: <IconCopy />,
+      icon: <IconCopy color='default' />,
       onClick: onCopyCoinAddress
     },
     {
       text: messages.openDexscreener,
-      icon: <IconExternalLink />,
+      icon: <IconExternalLink color='default' />,
       onClick: onOpenDexscreener
+    },
+    {
+      text: messages.details,
+      icon: <IconInfo color='default' />,
+      onClick: onOpenDetails
+    },
+    {
+      text: messages.shareToX,
+      icon: <IconX color='default' />,
+      onClick: onShareToX
     }
   ]
 
@@ -66,19 +135,52 @@ export const AssetInsightsOverflowMenu = ({
     return null
   }
 
-  return (
-    <PopupMenu
-      items={menuItems}
-      renderTrigger={(anchorRef, triggerPopup, triggerProps) => (
+  if (isMobile) {
+    return (
+      <>
         <IconButton
-          ref={anchorRef}
           icon={IconKebabHorizontal}
-          onClick={() => triggerPopup()}
+          onClick={onOpenMobileOverflow}
           aria-label='More options'
-          size='l'
-          ripple
         />
-      )}
-    />
+        <ActionDrawer
+          actions={menuItems.map((item) => ({
+            text: item.text as string,
+            icon: item.icon,
+            onClick: (e) => {
+              // @ts-ignore - Element vs HTMLElement
+              item.onClick?.(e)
+              onCloseMobileOverflow()
+            }
+          }))}
+          isOpen={isMobileOverflowOpen}
+          onClose={onCloseMobileOverflow}
+        />
+      </>
+    )
+  }
+
+  return (
+    <>
+      <PopupMenu
+        items={menuItems}
+        renderTrigger={(anchorRef, triggerPopup, triggerProps) => (
+          <IconButton
+            ref={anchorRef}
+            icon={IconKebabHorizontal}
+            onClick={() => triggerPopup()}
+            aria-label='More options'
+            size='l'
+            ripple
+          />
+        )}
+      />
+
+      <ArtistCoinDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={() => setIsDetailsModalOpen(false)}
+        mint={mint}
+      />
+    </>
   )
 }

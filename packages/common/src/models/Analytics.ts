@@ -11,6 +11,7 @@ import {
 import { Nullable } from '~/utils/typeUtils'
 
 import { Chain } from './Chain'
+import { LaunchCoinResponse, LaunchpadFormValues } from './Launchpad'
 import { PlaylistLibraryKind } from './PlaylistLibrary'
 import { PurchaseMethod } from './PurchaseContent'
 import { AccessConditions, TrackAccessType } from './Track'
@@ -105,6 +106,7 @@ export enum Name {
   SIGN_IN_START = 'Sign In: Start',
   SIGN_IN_FINISH = 'Sign In: Finish',
   SIGN_IN_WITH_INCOMPLETE_ACCOUNT = 'Sign In: Incomplete Account',
+  SIGN_IN_WITH_DEACTIVATED_ACCOUNT = 'Sign In: Deactivated Account',
 
   // Settings
   SETTINGS_CHANGE_THEME = 'Settings: Change Theme',
@@ -587,7 +589,37 @@ export enum Name {
   // Android App Lifecycle
   ANDROID_APP_RESTART_HEARTBEAT = 'Android App: Restart Due to Heartbeat',
   ANDROID_APP_RESTART_STALE = 'Android App: Restart Due to Stale Time',
-  ANDROID_APP_RESTART_FORCE_QUIT = 'Android App: Restart Due to Force Quit'
+  ANDROID_APP_RESTART_FORCE_QUIT = 'Android App: Restart Due to Force Quit',
+
+  // Artist Coin Launchpad
+  LAUNCHPAD_SPLASH_GET_STARTED = 'Launchpad: Get Started Clicked',
+  LAUNCHPAD_SPLASH_LEARN_MORE_CLICKED = 'Launchpad: Learn More Clicked',
+  LAUNCHPAD_WALLET_CONNECT_SUCCESS = 'Launchpad: Wallet Connect Success',
+  LAUNCHPAD_WALLET_CONNECT_ERROR = 'Launchpad: Wallet Connect Error',
+  LAUNCHPAD_WALLET_INSUFFICIENT_BALANCE = 'Launchpad: Wallet Insufficient Balance',
+  LAUNCHPAD_SETUP_CONTINUE = 'Launchpad: Setup Continue',
+  LAUNCHPAD_FORM_BACK = 'Launchpad: Back To Previous Step',
+  LAUNCHPAD_FORM_INPUT_CHANGE = 'Launchpad: Form Input Change',
+  LAUNCHPAD_REVIEW_CONTINUE = 'Launchpad: Review Continue',
+  LAUNCHPAD_COIN_CREATION_STARTED = 'Launchpad: Coin Creation Started',
+  LAUNCHPAD_COIN_CREATION_SUCCESS = 'Launchpad: Coin Creation Success',
+  LAUNCHPAD_COIN_CREATION_FAILURE = 'Launchpad: Coin Creation Failure',
+  LAUNCHPAD_FIRST_BUY_STARTED = 'Launchpad: First Buy Started',
+  LAUNCHPAD_FIRST_BUY_SUCCESS = 'Launchpad: First Buy Success',
+  LAUNCHPAD_FIRST_BUY_FAILURE = 'Launchpad: First Buy Failure',
+  LAUNCHPAD_FIRST_BUY_RETRY = 'Launchpad: First Buy Retry',
+  LAUNCHPAD_FIRST_BUY_MAX_BUTTON = 'Launchpad: First Buy Max Button Clicked',
+  LAUNCHPAD_FIRST_BUY_QUOTE_RECEIVED = 'Launchpad: First Buy Quote Received',
+  LAUNCHPAD_BUY_MODAL_OPEN = 'Launchpad: Buy Audio Modal Open',
+  LAUNCHPAD_BUY_MODAL_CLOSE = 'Launchpad: Buy Audio Modal Close',
+  LAUNCHPAD_BUY_MODAL_SUBMIT = 'Launchpad: Buy Audio Modal Submit',
+  LAUNCHPAD_BUY_MODAL_SUCCESS = 'Launchpad: Buy Audio Modal Success',
+  LAUNCHPAD_BUY_MODAL_FAILURE = 'Launchpad: Buy Audio Modal Failure',
+  LAUNCHPAD_BUY_MODAL_CHANGE_CURRENCY = 'Launchpad: Buy Audio Modal Change Currency',
+  LAUNCHPAD_BUY_MODAL_FORM_CHANGE = 'Launchpad: Buy Audio Modal Form Change',
+  LAUNCHPAD_BUY_MODAL_MAX_BUTTON = 'Launchpad: Buy Audio Modal Max Button Clicked',
+  LAUNCHPAD_BUY_MODAL_CONTINUE = 'Launchpad: Buy Audio Modal Continue Clicked',
+  LAUNCHPAD_BUY_MODAL_BACK = 'Launchpad: Buy Audio Modal Back Clicked'
 }
 
 type PageView = {
@@ -2833,6 +2865,163 @@ export type AndroidAppRestartForceQuit = {
   eventName: Name.ANDROID_APP_RESTART_FORCE_QUIT
 }
 
+// Artist Coin Launchpad
+export type LaunchpadSplashGetStarted = {
+  eventName: Name.LAUNCHPAD_SPLASH_GET_STARTED
+}
+
+export type LaunchpadSplashLearnMoreClicked = {
+  eventName: Name.LAUNCHPAD_SPLASH_LEARN_MORE_CLICKED
+}
+
+export type LaunchpadFormBack = {
+  eventName: Name.LAUNCHPAD_FORM_BACK
+}
+
+export type LaunchpadFormInputChange = {
+  eventName: Name.LAUNCHPAD_FORM_INPUT_CHANGE
+  input: string
+  newValue: string
+}
+
+export type LaunchpadWalletConnectSuccess = {
+  eventName: Name.LAUNCHPAD_WALLET_CONNECT_SUCCESS
+  walletAddress: string
+  walletSolBalance: number
+}
+
+export type LaunchpadWalletConnectError = {
+  eventName: Name.LAUNCHPAD_WALLET_CONNECT_ERROR
+  error: string
+}
+
+export type LaunchpadWalletInsufficientBalance = {
+  eventName: Name.LAUNCHPAD_WALLET_INSUFFICIENT_BALANCE
+  walletAddress: string
+  walletSolBalance: number
+}
+
+export type LaunchpadSetupContinue = {
+  eventName: Name.LAUNCHPAD_SETUP_CONTINUE
+} & Partial<LaunchpadFormValues>
+
+export type LaunchpadReviewContinue = {
+  eventName: Name.LAUNCHPAD_REVIEW_CONTINUE
+} & Partial<LaunchpadFormValues>
+
+export type LaunchpadCoinCreationStarted = {
+  eventName: Name.LAUNCHPAD_COIN_CREATION_STARTED
+  coinName: string
+  coinSymbol: string
+  walletAddress: string
+  initialBuyAmount?: string
+}
+
+export type LaunchpadCoinCreationSuccess = {
+  eventName: Name.LAUNCHPAD_COIN_CREATION_SUCCESS
+  launchCoinResponse: LaunchCoinResponse
+}
+
+export type LaunchpadCoinCreationFailure = {
+  eventName: Name.LAUNCHPAD_COIN_CREATION_FAILURE
+  errorState:
+    | 'poolCreateFailed'
+    | 'sdkCoinFailed'
+    | 'firstBuyFailed'
+    | 'unknownError'
+  launchCoinResponse: LaunchCoinResponse
+}
+
+export type LaunchpadFirstBuyStarted = {
+  eventName: Name.LAUNCHPAD_FIRST_BUY_STARTED
+  coinSymbol: string
+  mintAddress: string
+  payAmount: string
+  receiveAmount: string
+}
+
+export type LaunchpadFirstBuySuccess = {
+  eventName: Name.LAUNCHPAD_FIRST_BUY_SUCCESS
+  coinSymbol: string
+  mintAddress: string
+  payAmount: string
+  receiveAmount: string
+}
+
+export type LaunchpadFirstBuyFailure = {
+  eventName: Name.LAUNCHPAD_FIRST_BUY_FAILURE
+  coinSymbol: string
+  mintAddress: string
+  payAmount: string
+  error: string
+}
+
+export type LaunchpadFirstBuyRetry = {
+  eventName: Name.LAUNCHPAD_FIRST_BUY_RETRY
+  launchCoinResponse: LaunchCoinResponse
+}
+
+export type LaunchpadFirstBuyMaxButton = {
+  eventName: Name.LAUNCHPAD_FIRST_BUY_MAX_BUTTON
+  maxValue?: string
+} & Partial<LaunchpadFormValues>
+
+export type LaunchpadFirstBuyQuoteReceived = {
+  eventName: Name.LAUNCHPAD_FIRST_BUY_QUOTE_RECEIVED
+  payAmount: string
+  receiveAmount: string
+  usdcValue: string
+}
+
+export type LaunchpadBuyModalOpen = {
+  eventName: Name.LAUNCHPAD_BUY_MODAL_OPEN
+}
+
+export type LaunchpadBuyModalClose = {
+  eventName: Name.LAUNCHPAD_BUY_MODAL_CLOSE
+}
+
+export type LaunchpadBuyModalContinue = {
+  eventName: Name.LAUNCHPAD_BUY_MODAL_CONTINUE
+}
+
+export type LaunchpadBuyModalBack = {
+  eventName: Name.LAUNCHPAD_BUY_MODAL_BACK
+}
+
+export type LaunchpadBuyModalSubmit = {
+  eventName: Name.LAUNCHPAD_BUY_MODAL_SUBMIT
+  inputAmount: string
+  outputAmount: string
+  inputTokenSymbol: string
+  outputTokenSymbol: string
+  walletAddress: string
+}
+
+export type LaunchpadBuyModalSuccess = {
+  eventName: Name.LAUNCHPAD_BUY_MODAL_SUCCESS
+}
+
+export type LaunchpadBuyModalFailure = {
+  eventName: Name.LAUNCHPAD_BUY_MODAL_FAILURE
+  error: any
+}
+
+export type LaunchpadBuyModalChangeCurrency = {
+  eventName: Name.LAUNCHPAD_BUY_MODAL_CHANGE_CURRENCY
+  newCurrencySymbol: string
+}
+
+export type LaunchpadBuyModalFormChange = {
+  eventName: Name.LAUNCHPAD_BUY_MODAL_FORM_CHANGE
+  inputChanged: string
+  newValue: string
+}
+
+export type LaunchpadBuyModalMaxButton = {
+  eventName: Name.LAUNCHPAD_BUY_MODAL_MAX_BUTTON
+}
+
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
 
 export type AllTrackingEvents =
@@ -3213,3 +3402,31 @@ export type AllTrackingEvents =
   | AndroidAppRestartHeartbeat
   | AndroidAppRestartStale
   | AndroidAppRestartForceQuit
+  | LaunchpadSplashGetStarted
+  | LaunchpadSplashLearnMoreClicked
+  | LaunchpadWalletConnectSuccess
+  | LaunchpadWalletInsufficientBalance
+  | LaunchpadSetupContinue
+  | LaunchpadReviewContinue
+  | LaunchpadCoinCreationStarted
+  | LaunchpadCoinCreationSuccess
+  | LaunchpadCoinCreationFailure
+  | LaunchpadFirstBuyStarted
+  | LaunchpadFirstBuySuccess
+  | LaunchpadFirstBuyFailure
+  | LaunchpadFirstBuyRetry
+  | LaunchpadFormInputChange
+  | LaunchpadFormBack
+  | LaunchpadWalletConnectError
+  | LaunchpadFirstBuyMaxButton
+  | LaunchpadFirstBuyQuoteReceived
+  | LaunchpadBuyModalOpen
+  | LaunchpadBuyModalClose
+  | LaunchpadBuyModalSubmit
+  | LaunchpadBuyModalSuccess
+  | LaunchpadBuyModalFailure
+  | LaunchpadBuyModalChangeCurrency
+  | LaunchpadBuyModalFormChange
+  | LaunchpadBuyModalMaxButton
+  | LaunchpadBuyModalContinue
+  | LaunchpadBuyModalBack

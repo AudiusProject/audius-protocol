@@ -23,6 +23,7 @@ from src.models.events.event import Event, EventEntityType
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.indexing.revert_block import RevertBlock
+from src.models.indexing.skipped_transaction import SkippedTransaction
 from src.models.moderation.muted_user import MutedUser
 from src.models.notifications.notification import NotificationSeen, PlaylistSeen
 from src.models.playlists.playlist import Playlist
@@ -39,14 +40,6 @@ from src.models.users.collectibles import Collectibles
 from src.models.users.email import EmailAccess, EncryptedEmail
 from src.models.users.user import User
 from src.models.users.user_events import UserEvent
-from src.queries.confirm_indexing_transaction_error import (
-    confirm_indexing_transaction_error,
-)
-from src.queries.get_skipped_transactions import (
-    clear_indexing_error,
-    save_and_get_skip_tx_hash,
-    set_indexing_error,
-)
 from src.tasks.entity_manager.entities.comment import (
     create_comment,
     delete_comment,
@@ -509,9 +502,7 @@ def entity_manager_update(
                         logger.error(
                             f"entity_manager.py | Indexing error {e}", exc_info=True
                         )
-                        create_and_raise_indexing_error(
-                            indexing_error, update_task.redis, session
-                        )
+                        create_and_raise_indexing_error(indexing_error, session)
                         logger.error(f"skipping transaction hash {indexing_error}")
 
             # compile records_to_save
@@ -1673,28 +1664,16 @@ def get_entity_manager_events_tx(update_task, tx_receipt: TxReceipt):
     return [tx_receipt]
 
 
-def create_and_raise_indexing_error(err, redis, session):
+def create_and_raise_indexing_error(err, session):
     logger.error(
         f"Error in the indexing task at"
         f" block={err.blocknumber} and hash={err.txhash}"
     )
-    # set indexing error
-    set_indexing_error(redis, err.blocknumber, err.blockhash, err.txhash, err.message)
 
-    # seek consensus
-    has_consensus = confirm_indexing_transaction_error(
-        redis, err.blocknumber, err.blockhash, err.txhash, err.message
+    # Record skipped transaction to db
+    skipped_tx = SkippedTransaction(
+        blocknumber=err.blocknumber,
+        blockhash=err.blockhash,
+        txhash=err.txhash,
     )
-    if not has_consensus:
-        # escalate error and halt indexing until there's consensus
-        error_message = "Indexing halted due to lack of consensus"
-        raise Exception(error_message) from err
-
-    # try to insert into skip tx table
-    skip_tx_hash = save_and_get_skip_tx_hash(session, redis)
-
-    if not skip_tx_hash:
-        error_message = "Reached max transaction skips"
-        raise Exception(error_message) from err
-
-    clear_indexing_error(redis)
+    session.add(skipped_tx)

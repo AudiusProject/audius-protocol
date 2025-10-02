@@ -81,7 +81,7 @@ export const DogEar = (props: DogEarProps) => {
           height: '100%',
           color: tagColor,
           ...(type === DogEarType.TOKEN_GATED && {
-            fill: 'url(#coinGradient)',
+            fill: `url(#coinGradient)`,
             '& path:nth-child(1)': {
               fill: 'inherit'
             }

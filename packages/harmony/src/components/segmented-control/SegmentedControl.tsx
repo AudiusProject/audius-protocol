@@ -145,6 +145,12 @@ export const SegmentedControl = <T extends string>(
                   : undefined
               }
             >
+              {option.leftIcon && (
+                <option.leftIcon
+                  size='s'
+                  color={isSelected ? 'default' : 'subdued'}
+                />
+              )}
               {option.icon}
               <input
                 type='radio'

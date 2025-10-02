@@ -1,14 +1,10 @@
-import React, { useMemo, useRef } from 'react'
+import React, { useRef } from 'react'
 
-import {
-  transformArtistCoinsToTokenInfoMap,
-  useArtistCoin,
-  useArtistCoins
-} from '@audius/common/api'
+import { useArtistCoin } from '@audius/common/api'
 import type { TokenInfo, TokenPair } from '@audius/common/store'
 import { useTokenSwapForm } from '@audius/common/store'
 
-import { Box, Flex, Skeleton, Text } from '@audius/harmony-native'
+import { Box, Flex, Skeleton } from '@audius/harmony-native'
 import { InputTokenSection } from 'app/components/buy-sell/InputTokenSection'
 import { OutputTokenSection } from 'app/components/buy-sell/OutputTokenSection'
 
@@ -66,6 +62,8 @@ type SellScreenProps = {
   errorMessage?: string
   initialInputValue?: string
   onInputValueChange?: (value: string) => void
+  onInputTokenChange?: (token: TokenInfo) => void
+  availableInputTokens?: TokenInfo[]
 }
 
 export const SellScreen = ({
@@ -74,11 +72,11 @@ export const SellScreen = ({
   error,
   errorMessage,
   initialInputValue,
-  onInputValueChange
+  onInputValueChange,
+  onInputTokenChange,
+  availableInputTokens
 }: SellScreenProps) => {
-  const { data: tokenPriceData } = useArtistCoin({
-    mint: tokenPair?.baseToken?.address
-  })
+  const { data: tokenPriceData } = useArtistCoin(tokenPair?.baseToken?.address)
 
   const tokenPrice = tokenPriceData?.price?.toString() ?? null
 
@@ -105,11 +103,6 @@ export const SellScreen = ({
   if (currentExchangeRate !== null) {
     hasRateEverBeenFetched.current = true
   }
-
-  const { data: coins } = useArtistCoins()
-  const availableInputTokens: TokenInfo[] = useMemo(() => {
-    return Object.values(transformArtistCoinsToTokenInfoMap(coins ?? []))
-  }, [coins])
 
   if (!tokenPair) return null
 
@@ -138,6 +131,7 @@ export const SellScreen = ({
             error={error}
             errorMessage={errorMessage}
             availableTokens={availableInputTokens}
+            onTokenChange={onInputTokenChange}
           />
           <OutputTokenSection
             tokenInfo={quoteToken}
@@ -151,10 +145,6 @@ export const SellScreen = ({
           />
         </>
       )}
-      <Flex row gap='xs'>
-        <Text color='subdued'>Rate</Text>
-        <Text>{`1 ${baseToken.symbol} ≈ ${Number(tokenPrice).toFixed(8)} ${quoteToken.symbol}`}</Text>
-      </Flex>
     </Flex>
   )
 }

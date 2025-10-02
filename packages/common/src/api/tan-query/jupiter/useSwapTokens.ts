@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import {
   getUserCoinQueryKey,
+  getUserQueryKey,
   useCurrentAccountUser,
   useQueryContext
 } from '~/api'
@@ -12,8 +13,7 @@ import { JupiterQuoteResult } from '~/services/Jupiter'
 
 import { useTokens } from '../tokens/useTokens'
 
-import { executeDirectSwap } from './directSwap'
-import { executeIndirectSwap } from './indirectSwapViaAudio'
+import { SwapOrchestrator } from './orchestrator'
 import {
   SwapDependencies,
   SwapErrorType,
@@ -21,13 +21,14 @@ import {
   SwapTokensParams,
   SwapTokensResult
 } from './types'
-import { getSwapErrorResponse, isDirectRouteAvailable } from './utils'
+import { getSwapErrorResponse } from './utils'
 
 const initializeSwapDependencies = async (
   solanaWalletService: QueryContextType['solanaWalletService'],
   audiusSdk: QueryContextType['audiusSdk'],
   queryClient: ReturnType<typeof useQueryClient>,
-  user: User | undefined
+  user: User | undefined,
+  audioMint: string
 ): Promise<SwapDependencies | { error: SwapTokensResult }> => {
   try {
     const [sdk, keypair] = await Promise.all([
@@ -70,7 +71,8 @@ const initializeSwapDependencies = async (
       feePayer,
       ethAddress,
       queryClient,
-      user
+      user,
+      audioMint
     }
   } catch (error) {
     return {
@@ -91,15 +93,13 @@ const initializeSwapDependencies = async (
  */
 export const useSwapTokens = () => {
   const queryClient = useQueryClient()
-  const { solanaWalletService, reportToSentry, audiusSdk } = useQueryContext()
+  const { solanaWalletService, reportToSentry, audiusSdk, env } =
+    useQueryContext()
   const { data: user } = useCurrentAccountUser()
   const { tokens } = useTokens()
 
   return useMutation<SwapTokensResult, Error, SwapTokensParams>({
     mutationFn: async (params): Promise<SwapTokensResult> => {
-      const { inputMint: inputMintUiAddress, outputMint: outputMintUiAddress } =
-        params
-
       let errorStage = 'UNKNOWN'
       let firstQuoteResult: JupiterQuoteResult | undefined
       let secondQuoteResult: JupiterQuoteResult | undefined
@@ -112,7 +112,8 @@ export const useSwapTokens = () => {
           solanaWalletService,
           audiusSdk,
           queryClient,
-          user
+          user,
+          env.WAUDIO_MINT_ADDRESS
         )
 
         if ('error' in dependenciesResult) {
@@ -121,59 +122,37 @@ export const useSwapTokens = () => {
 
         const dependencies = dependenciesResult
 
-        errorStage = 'DIRECT_QUOTE_CHECK'
-        const hasDirectPath = await isDirectRouteAvailable(
-          inputMintUiAddress,
-          outputMintUiAddress,
-          params.amountUi,
+        errorStage = 'SWAP_EXECUTION'
+        const orchestrator = new SwapOrchestrator()
+        const result = await orchestrator.executeSwap(
+          params,
+          dependencies,
           tokens
         )
 
-        if (hasDirectPath) {
-          const result = await executeDirectSwap(params, dependencies, tokens)
-          if (result.status === SwapStatus.ERROR && result.errorStage) {
+        if (result.status === SwapStatus.ERROR) {
+          if (result.errorStage) {
             errorStage = result.errorStage
           }
-          if (result.status === SwapStatus.ERROR) {
-            reportToSentry({
-              name: `JupiterSwap${result.errorStage || errorStage}Error`,
-              error: new Error(
-                result.error?.message || 'Unknown direct swap error'
-              ),
-              feature: Feature.TanQuery,
-              additionalInfo: {
-                params,
-                signature,
-                errorStage: result.errorStage || errorStage,
-                firstQuoteResponse: firstQuoteResult?.quote,
-                secondQuoteResponse: secondQuoteResult?.quote
-              }
-            })
-          }
-          return result
-        } else {
-          const result = await executeIndirectSwap(params, dependencies, tokens)
-          if (result.status === SwapStatus.ERROR && result.errorStage) {
-            errorStage = result.errorStage
-          }
-          if (result.status === SwapStatus.ERROR) {
-            reportToSentry({
-              name: `JupiterSwap${result.errorStage || errorStage}Error`,
-              error: new Error(
-                result.error?.message || 'Unknown indirect swap error'
-              ),
-              feature: Feature.TanQuery,
-              additionalInfo: {
-                params,
-                signature,
-                errorStage: result.errorStage || errorStage,
-                firstQuoteResponse: firstQuoteResult?.quote,
-                secondQuoteResponse: secondQuoteResult?.quote
-              }
-            })
-          }
-          return result
+
+          reportToSentry({
+            name: `JupiterSwap${result.errorStage || errorStage}Error`,
+            error: new Error(result.error?.message || 'Unknown swap error'),
+            feature: Feature.TanQuery,
+            additionalInfo: {
+              params,
+              signature,
+              errorStage: result.errorStage || errorStage,
+              firstQuoteResponse: firstQuoteResult?.quote,
+              secondQuoteResponse: secondQuoteResult?.quote
+            }
+          })
+
+          // Throw error so React Query calls onError instead of onSuccess
+          throw new Error(result.error?.message || 'Swap failed')
         }
+
+        return result
       } catch (error: unknown) {
         reportToSentry({
           name: `JupiterSwap${errorStage}Error`,
@@ -248,6 +227,11 @@ export const useSwapTokens = () => {
           }
         )
       }
+
+      // Invalidate user query to ensure user data is fresh after swap
+      queryClient.invalidateQueries({
+        queryKey: getUserQueryKey(user?.user_id)
+      })
     },
     onMutate: () => {
       return { status: SwapStatus.SENDING_TRANSACTION }

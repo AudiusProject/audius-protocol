@@ -16,7 +16,7 @@ import { useFlag } from 'hooks/useRemoteConfig'
 
 import { InputTokenSection } from './components/InputTokenSection'
 import { OutputTokenSection } from './components/OutputTokenSection'
-import { SwapFormSkeleton } from './components/SwapSkeletons'
+import { TabContentSkeleton } from './components/SwapSkeletons'
 import type { BuyTabProps } from './types'
 
 export const BuyTab = ({
@@ -36,18 +36,18 @@ export const BuyTab = ({
 
   // Sync selectedOutputToken with baseToken when tokenPair changes
   useEffect(() => {
-    setSelectedOutputToken(baseToken)
-  }, [baseToken])
+    setSelectedOutputToken((prev) =>
+      prev?.symbol === baseToken.symbol ? prev : baseToken
+    )
+  }, [baseToken.symbol, baseToken])
 
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
-    useArtistCoin({ mint: selectedOutputToken.address })
-
-  const tokenPrice = tokenPriceData?.price?.toString() ?? null
+    useArtistCoin(selectedOutputToken.address)
 
   const decimalPlaces = useMemo(() => {
-    if (!tokenPrice) return 2
-    return getCurrencyDecimalPlaces(parseFloat(tokenPrice))
-  }, [tokenPrice])
+    if (!tokenPriceData?.price) return 2
+    return getCurrencyDecimalPlaces(tokenPriceData.price)
+  }, [tokenPriceData?.price])
 
   const {
     inputAmount,
@@ -95,7 +95,7 @@ export const BuyTab = ({
   return (
     <Flex direction='column' gap='xl'>
       {isInitialLoading ? (
-        <SwapFormSkeleton />
+        <TabContentSkeleton />
       ) : (
         <>
           <InputTokenSection
@@ -107,6 +107,7 @@ export const BuyTab = ({
             availableBalance={availableBalance}
             error={error}
             errorMessage={errorMessage}
+            hideTokenDisplay={true}
           />
           <OutputTokenSection
             tokenInfo={selectedOutputToken}
@@ -114,7 +115,7 @@ export const BuyTab = ({
             onAmountChange={handleOutputAmountChange}
             availableBalance={0}
             exchangeRate={currentExchangeRate}
-            tokenPrice={tokenPrice}
+            tokenPrice={tokenPriceData?.price.toString() ?? null}
             isTokenPriceLoading={isTokenPriceLoading}
             tokenPriceDecimalPlaces={decimalPlaces}
             availableTokens={artistCoins}

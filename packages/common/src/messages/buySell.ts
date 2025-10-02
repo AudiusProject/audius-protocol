@@ -1,9 +1,11 @@
 import { USDC } from '@audius/fixed-decimal'
 
 import { formatTokenPrice } from '../api/tan-query/jupiter/utils'
+import { getCurrencyDecimalPlaces } from '../utils/decimal'
 
 export const buySellMessages = {
   title: 'BUY / SELL',
+  buyAudioTitle: 'Buy $AUDIO',
   buy: 'Buy',
   sell: 'Sell',
   convert: 'Convert',
@@ -32,6 +34,7 @@ export const buySellMessages = {
   sellSuccess: 'Successfully sold AUDIO!',
   transactionSuccess: 'Transaction successful!',
   transactionFailed: 'Transaction failed. Please try again.',
+  transactionCancelled: 'Transaction cancelled',
   insufficientUSDC:
     "You don't have the available balance required to complete this purchase.",
   insufficientAUDIOForSale:
@@ -39,7 +42,7 @@ export const buySellMessages = {
   modalSuccessTitle: 'SUCCESS!',
   transactionComplete: 'Your transaction is complete!',
   done: 'Done',
-  yourCoins: 'Your Coins',
+  coins: 'Coins',
   buySell: 'Buy/Sell',
   emptyAmount: 'Please enter an amount',
   insufficientBalance: (symbol: string) => `Insufficient ${symbol} balance`,
@@ -70,7 +73,14 @@ export const buySellMessages = {
     inputSymbol: string,
     outputSymbol: string,
     rate: number
-  ) => `1 ${inputSymbol} ≈ ${rate} ${outputSymbol}`,
+  ) => {
+    const decimalPlaces = getCurrencyDecimalPlaces(rate)
+    const formattedRate = new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: decimalPlaces
+    }).format(rate)
+    return `1 ${inputSymbol} ≈ ${formattedRate} ${outputSymbol}`
+  },
   formattedAvailableBalance: (
     formattedBalance: string,
     _symbol: string,

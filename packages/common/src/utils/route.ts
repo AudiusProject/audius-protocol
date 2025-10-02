@@ -70,6 +70,7 @@ export const SALES_PAGE = '/payments/sales'
 export const WITHDRAWALS_PAGE = '/payments/withdrawals'
 export const TRANSACTION_HISTORY_PAGE = '/wallet/transaction-history'
 export const ASSET_DETAIL_PAGE = '/coins/:ticker'
+export const EDIT_COIN_DETAILS_PAGE = '/coins/:ticker/edit'
 export const WALLET_PAGE = '/wallet'
 export const WALLET_GUIDE_PAGE = '/wallet/guide'
 export const COINS_CREATE_PAGE = '/coins/create'
@@ -153,6 +154,8 @@ export const REPOSTING_USERS_ROUTE = '/reposting_users'
 export const FAVORITING_USERS_ROUTE = '/favoriting_users'
 export const FOLLOWING_USERS_ROUTE = '/following'
 export const FOLLOWERS_USERS_ROUTE = '/followers'
+export const LEADERBOARD_USERS_ROUTE = '/leaderboard'
+export const COIN_DETAIL_ROUTE = '/coins/:ticker/details'
 export const SUPPORTING_USERS_ROUTE = '/supporting'
 export const TOP_SUPPORTERS_USERS_ROUTE = '/top-supporters'
 export const ACCOUNT_SETTINGS_PAGE = '/settings/account'
@@ -289,6 +292,7 @@ export const orderedRoutes = [
   AUDIO_PAGE,
   WALLET_AUDIO_PAGE,
   ASSET_DETAIL_PAGE,
+  EDIT_COIN_DETAILS_PAGE,
   WALLET_PAGE,
   COINS_EXPLORE_PAGE,
   COINS_CREATE_PAGE,

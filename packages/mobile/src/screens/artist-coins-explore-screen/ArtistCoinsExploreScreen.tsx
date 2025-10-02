@@ -1,15 +1,14 @@
 import { useState, useEffect, useCallback } from 'react'
 
+import type { Coin } from '@audius/common/adapters'
 import {
   useArtistCoins,
   GetCoinsSortMethodEnum,
   GetCoinsSortDirectionEnum
 } from '@audius/common/api'
 import { walletMessages } from '@audius/common/messages'
-import type { Coin } from '@audius/sdk'
-import { HashId } from '@audius/sdk'
 import { useRoute } from '@react-navigation/native'
-import { ImageBackground, TouchableOpacity } from 'react-native'
+import { ImageBackground, ScrollView, TouchableOpacity } from 'react-native'
 import { useDebounce } from 'react-use'
 
 import {
@@ -26,8 +25,11 @@ import {
   useTheme
 } from '@audius/harmony-native'
 import imageSearchHeaderBackground from 'app/assets/images/imageCoinsBackgroundImage.webp'
+import { PlayBarChin } from 'app/components/core/PlayBarChin'
 import { UserLink } from 'app/components/user-link'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useStatusBarStyle } from 'app/hooks/useStatusBarStyle'
+import { env } from 'app/services/env'
 
 import { GradientText, TokenIcon, Screen } from '../../components/core'
 
@@ -37,7 +39,7 @@ type CoinRowProps = {
 }
 
 const CoinRow = ({ coin, onPress }: CoinRowProps) => {
-  const ownerId = HashId.parse(coin.ownerId)
+  const { ownerId } = coin
 
   return (
     <TouchableOpacity onPress={onPress}>
@@ -54,7 +56,12 @@ const CoinRow = ({ coin, onPress }: CoinRowProps) => {
             </Text>
           </Flex>
 
-          <UserLink userId={ownerId} size='xs' badgeSize='2xs' />
+          <UserLink
+            userId={ownerId}
+            size='xs'
+            badgeSize='2xs'
+            hideArtistCoinBadge
+          />
         </Flex>
       </Flex>
     </TouchableOpacity>
@@ -120,14 +127,20 @@ export const ArtistCoinsExploreScreen = () => {
     GetCoinsSortDirectionEnum.Desc
   )
 
+  // Set status bar to light content for dark header
+  useStatusBarStyle('light-content')
+
   // Debounce search value to avoid excessive API calls
   useDebounce(() => setDebouncedSearchValue(searchValue), 300, [searchValue])
 
-  const { data: coins, isPending } = useArtistCoins({
+  const { data: coinsData, isPending } = useArtistCoins({
     sortMethod,
     sortDirection,
     query: debouncedSearchValue
   })
+  const coins = coinsData?.filter(
+    (coin) => coin.mint !== env.WAUDIO_MINT_ADDRESS
+  )
 
   const handleCoinPress = useCallback(
     (ticker: string) => {
@@ -161,7 +174,7 @@ export const ArtistCoinsExploreScreen = () => {
         <Header searchValue={searchValue} setSearchValue={setSearchValue} />
       )}
     >
-      <Paper mh='l' mt='xl'>
+      <Paper mh='l' mv='xl' border='default' borderRadius='m' flex={1}>
         <Flex
           row
           ph='l'
@@ -190,24 +203,27 @@ export const ArtistCoinsExploreScreen = () => {
           </TouchableOpacity>
         </Flex>
         <Divider orientation='horizontal' />
-        {isPending ? (
-          <Flex justifyContent='center' alignItems='center' p='4xl'>
-            <LoadingSpinner />
-          </Flex>
-        ) : shouldShowNoCoinsContent ? (
-          <NoCoinsContent />
-        ) : (
-          <Flex pt='s'>
-            {coins.map((coin) => (
-              <CoinRow
-                key={coin.mint}
-                coin={coin}
-                onPress={() => handleCoinPress(coin.mint ?? '')}
-              />
-            ))}
-          </Flex>
-        )}
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {isPending ? (
+            <Flex justifyContent='center' alignItems='center' p='4xl'>
+              <LoadingSpinner />
+            </Flex>
+          ) : shouldShowNoCoinsContent ? (
+            <NoCoinsContent />
+          ) : (
+            <Flex pt='s'>
+              {coins.map((coin) => (
+                <CoinRow
+                  key={coin.mint}
+                  coin={coin}
+                  onPress={() => handleCoinPress(coin.mint ?? '')}
+                />
+              ))}
+            </Flex>
+          )}
+        </ScrollView>
       </Paper>
+      <PlayBarChin />
     </Screen>
   )
 }

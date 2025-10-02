@@ -14,19 +14,17 @@ import {
   useQueryContext,
   type QueryContextType
 } from '~/api/tan-query/utils/QueryContext'
-import { Chain } from '~/models'
+import { Chain, ID } from '~/models'
 import { Feature } from '~/models/ErrorReporting'
 import { toErrorWithMessage } from '~/utils/error'
 
 import { QUERY_KEYS } from '../queryKeys'
 import { queryCurrentUserId, queryUser } from '../saga-utils'
+import { QueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { useUser } from '../users/useUser'
 
-import {
-  getConnectedWalletsQueryOptions,
-  useConnectedWallets
-} from './useConnectedWallets'
+import { getConnectedWalletsQueryOptions } from './useConnectedWallets'
 
 type UseWalletAudioBalanceParams = {
   /** Ethereum or Solana wallet address */
@@ -36,7 +34,7 @@ type UseWalletAudioBalanceParams = {
   includeStaked?: boolean
 }
 
-const getWalletAudioBalanceQueryKey = ({
+export const getWalletAudioBalanceQueryKey = ({
   address,
   includeStaked,
   chain
@@ -165,21 +163,30 @@ export const useWalletAudioBalances = (
   })
 }
 
-type UseAudioBalanceOptions = {
+type UseAudioBalanceParams = {
   /** Whether to include connected/linked wallets in the balance calculation. Defaults to true. */
   includeConnectedWallets?: boolean
   includeStaked?: boolean
+  userId?: ID
 }
 
 /**
  * Hook for getting the AUDIO balance of the current user, optionally including connected wallets.
  */
-export const useAudioBalance = (options: UseAudioBalanceOptions = {}) => {
-  const { includeConnectedWallets = true, includeStaked = false } = options
+export const useAudioBalance = (
+  params: UseAudioBalanceParams = {},
+  options?: QueryOptions
+) => {
+  const {
+    includeConnectedWallets = true,
+    includeStaked = false,
+    userId: userIdParam
+  } = params
 
   // Get account balances
   const { data: currentUserId } = useCurrentUserId()
-  const { data, isSuccess: isUserFetched } = useUser(currentUserId)
+  const userId = userIdParam ?? currentUserId
+  const { data, isSuccess: isUserFetched } = useUser(userId)
   const accountBalances = useWalletAudioBalances(
     {
       wallets: [
@@ -204,17 +211,28 @@ export const useAudioBalance = (options: UseAudioBalanceOptions = {}) => {
   }
 
   // Get linked/connected wallets balances
+  const context = useQueryContext()
+  const connectedWalletsQuery = useQuery({
+    ...getConnectedWalletsQueryOptions(context, { userId }),
+    enabled: !!userId && includeConnectedWallets
+  })
   const {
     data: connectedWallets = [],
     isFetched: isConnectedWalletsFetched,
     isError: isConnectedWalletsError
-  } = useConnectedWallets()
+  } = connectedWalletsQuery
   const connectedWalletsBalances = useWalletAudioBalances(
     {
       wallets: connectedWallets,
       includeStaked
     },
-    { enabled: isConnectedWalletsFetched && includeConnectedWallets }
+    {
+      ...options,
+      enabled:
+        isConnectedWalletsFetched &&
+        includeConnectedWallets &&
+        options?.enabled !== false
+    }
   )
   let connectedWalletsBalance = AUDIO(0).value
   const isConnectedWalletsBalanceLoading = includeConnectedWallets

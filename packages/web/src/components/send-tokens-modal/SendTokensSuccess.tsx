@@ -42,8 +42,12 @@ const SendTokensSuccess = ({
   onClose
 }: SendTokensSuccessProps) => {
   const { isMobile } = useMedia()
-  const { data: coin } = useArtistCoin({ mint })
-  const { data: tokenBalance } = useTokenBalance({ mint })
+  const { data: coin } = useArtistCoin(mint)
+  const { data: tokenBalance } = useTokenBalance({
+    mint,
+    includeExternalWallets: false,
+    includeStaked: false
+  })
   const tokenInfo = coin ? transformArtistCoinToTokenInfo(coin) : undefined
   const currentBalance = tokenBalance?.balance
     ? tokenBalance.balance.value
@@ -85,6 +89,7 @@ const SendTokensSuccess = ({
       {/* Token Balance Section */}
       <CryptoBalanceSection
         tokenInfo={tokenInfo}
+        name={tokenInfo.name}
         amount={formatBalance(currentBalance)}
       />
 

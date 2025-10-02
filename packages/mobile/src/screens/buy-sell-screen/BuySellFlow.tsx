@@ -1,63 +1,36 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { useTokenPair, useTokens } from '@audius/common/api'
-import { useBuySellAnalytics } from '@audius/common/hooks'
+import { useArtistCoin, useTokenPair, useTokens } from '@audius/common/api'
+import { useBuySellAnalytics, useOwnedTokens } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
 import type { BuySellTab, TokenInfo } from '@audius/common/store'
 import {
+  AUDIO_TICKER,
+  getSwapTokens,
+  useAddCashModal,
   useBuySellScreen,
   useBuySellSwap,
   useBuySellTabs,
+  useBuySellTabsArray,
+  useBuySellTokenFilters,
   useBuySellTransactionData,
+  useCurrentTokenPair,
+  useSafeTokenPair,
   useSwapDisplayData,
-  useAddCashModal,
-  getSwapTokens,
-  AUDIO_TICKER,
-  USDC_SYMBOL
+  useTokenStates
 } from '@audius/common/store'
-import { Portal } from '@gorhom/portal'
 import { useFocusEffect } from '@react-navigation/native'
 
-import { Button, Flex, Hint, Text, TextLink } from '@audius/harmony-native'
-import { SegmentedControl, TokenIcon } from 'app/components/core'
+import { Button, Flex, Hint, TextLink } from '@audius/harmony-native'
+import { SegmentedControl } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
-import type { ListSelectionData } from 'app/screens/list-selection-screen'
-import { ListSelectionScreen } from 'app/screens/list-selection-screen'
 
-import { BuyScreen, SellScreen } from './components'
+import { BuyScreen, ConvertScreen, SellScreen } from './components'
 
 type BuySellFlowProps = {
   onClose: () => void
   initialTab?: BuySellTab
   coinTicker?: string
-}
-
-const WALLET_GUIDE_URL = 'https://help.audius.co/product/wallet-guide'
-
-const TokenSelectItem = ({
-  token,
-  item
-}: {
-  token: TokenInfo
-  item: ListSelectionData
-}) => {
-  return (
-    <Flex row alignItems='center' gap='s' flex={1}>
-      <Flex borderRadius='s' style={{ overflow: 'hidden' }}>
-        <TokenIcon logoURI={token.logoURI} size={24} />
-      </Flex>
-      <Text
-        variant='title'
-        size='l'
-        strength='weak'
-        style={{ flex: 1 }}
-        numberOfLines={1}
-        ellipsizeMode='tail'
-      >
-        {item.label}
-      </Text>
-    </Flex>
-  )
 }
 
 export const BuySellFlow = ({
@@ -68,40 +41,16 @@ export const BuySellFlow = ({
   const navigation = useNavigation()
   const { onOpen: openAddCashModal } = useAddCashModal()
   const { trackSwapRequested, trackAddFundsClicked } = useBuySellAnalytics()
-  const [selectedBaseToken, setSelectedBaseToken] = useState<string>(coinTicker)
-  const [selectedQuoteToken] = useState<string>(USDC_SYMBOL)
+
+  // Get token pair for the initial coin, fallback to AUDIO/USDC
+  const { data: selectedPair } = useTokenPair({
+    baseSymbol: coinTicker,
+    quoteSymbol: 'USDC'
+  })
 
   const { currentScreen, setCurrentScreen } = useBuySellScreen({
     initialScreen: 'input'
   })
-
-  const { tokens } = useTokens()
-  const availableBaseTokens: TokenInfo[] = useMemo(() => {
-    return Object.values(tokens).filter(
-      (token) => token.symbol !== selectedQuoteToken
-    )
-  }, [tokens, selectedQuoteToken])
-
-  const baseTokenOptions = useMemo(
-    () =>
-      availableBaseTokens.map((token) => ({
-        label: token.symbol,
-        value: token.symbol
-      })),
-    [availableBaseTokens]
-  )
-
-  const baseTokensMap: { [key: string]: TokenInfo } = useMemo(
-    () =>
-      availableBaseTokens.reduce(
-        (acc, token) => {
-          acc[token.symbol] = token
-          return acc
-        },
-        {} as { [key: string]: TokenInfo }
-      ),
-    [availableBaseTokens]
-  )
 
   const {
     transactionData,
@@ -114,6 +63,48 @@ export const BuySellFlow = ({
     setCurrentScreen,
     resetTransactionData,
     initialTab
+  })
+
+  // Use custom hooks for token state management
+  const {
+    getCurrentTabTokens,
+    handleInputTokenChange: handleInputTokenChangeInternal,
+    handleOutputTokenChange: handleOutputTokenChangeInternal,
+    handleSwapDirection
+  } = useTokenStates(selectedPair)
+
+  // Get current tab's token symbols
+  const currentTabTokens = getCurrentTabTokens(activeTab)
+  const baseTokenSymbol = currentTabTokens.baseToken
+  const quoteTokenSymbol = currentTabTokens.quoteToken
+
+  const { tokens, isLoading: tokensLoading } = useTokens()
+
+  // Get all available tokens
+  const availableTokens: TokenInfo[] = useMemo(() => {
+    return tokensLoading ? [] : Object.values(tokens)
+  }, [tokens, tokensLoading])
+
+  const { ownedTokens } = useOwnedTokens(availableTokens)
+
+  // Create a helper to check if user has positive balance for a token
+  const hasPositiveBalance = useCallback(
+    (tokenAddress: string): boolean => {
+      return ownedTokens.some((token) => token.address === tokenAddress)
+    },
+    [ownedTokens]
+  )
+
+  // Use shared token filtering logic
+  const {
+    availableInputTokensForSell,
+    availableInputTokensForConvert,
+    availableOutputTokensForConvert
+  } = useBuySellTokenFilters({
+    availableTokens,
+    baseTokenSymbol,
+    quoteTokenSymbol,
+    hasPositiveBalance
   })
 
   // Reset screen state to 'input' when this screen comes into focus
@@ -149,18 +140,54 @@ export const BuySellFlow = ({
     }))
   }
 
-  // Get token pair for the specific coin with USDC, fallback to AUDIO/USDC
-  const { data: selectedPair } = useTokenPair({
-    baseSymbol: coinTicker,
-    quoteSymbol: 'USDC'
+  // Update input value for convert tab
+  const handleConvertInputValueChange = (value: string) => {
+    setTabInputValues((prev) => ({
+      ...prev,
+      convert: value
+    }))
+  }
+
+  // Handle token changes with transaction reset
+  const handleInputTokenChange = useCallback(
+    (symbol: string) => {
+      handleInputTokenChangeInternal(symbol, activeTab)
+      resetTransactionData()
+    },
+    [handleInputTokenChangeInternal, activeTab, resetTransactionData]
+  )
+
+  const handleOutputTokenChange = useCallback(
+    (symbol: string) => {
+      handleOutputTokenChangeInternal(symbol, activeTab)
+      resetTransactionData()
+    },
+    [handleOutputTokenChangeInternal, activeTab, resetTransactionData]
+  )
+
+  // Handle swap direction change for convert tab
+  const handleChangeSwapDirection = useCallback(() => {
+    handleSwapDirection(activeTab)
+    resetTransactionData()
+  }, [handleSwapDirection, activeTab, resetTransactionData])
+
+  // Get token pair for the current tab's tokens using the same approach as web
+  const currentTabTokenPair = useCurrentTokenPair({
+    baseTokenSymbol,
+    quoteTokenSymbol,
+    availableTokens,
+    selectedPair
   })
+
+  // Use shared safe token pair logic
+  const safeSelectedPair = useSafeTokenPair(currentTabTokenPair)
 
   const { handleShowConfirmation, isContinueButtonLoading } = useBuySellSwap({
     transactionData,
     currentScreen,
     setCurrentScreen,
     activeTab,
-    selectedPair,
+    selectedPair: safeSelectedPair,
     onClose
   })
 
@@ -168,8 +195,8 @@ export const BuySellFlow = ({
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
 
   const swapTokens = useMemo(
-    () => getSwapTokens(activeTab, selectedPair),
-    [activeTab, selectedPair]
+    () => getSwapTokens(activeTab, safeSelectedPair),
+    [activeTab, safeSelectedPair]
   )
 
   const currentExchangeRate = useMemo(
@@ -183,13 +210,20 @@ export const BuySellFlow = ({
     transactionData,
     swapResult: null, // Not needed in this component
     activeTab,
-    selectedPair
+    selectedPair: safeSelectedPair
   })
 
-  const tabs = [
-    { key: 'buy' as BuySellTab, text: messages.buy },
-    { key: 'sell' as BuySellTab, text: messages.sell }
-  ]
+  const { data: outputCoin } = useArtistCoin(
+    swapTokens.outputTokenInfo?.address
+  )
+  const pricePerBaseToken = useMemo(() => {
+    return outputCoin?.price
+      ? outputCoin?.price
+      : (outputCoin?.dynamicBondingCurve.priceUSD ?? 0)
+  }, [outputCoin])
+
+  // Use shared tabs array logic
+  const tabs = useBuySellTabsArray()
 
   const handleContinueClick = useCallback(() => {
     setHasAttemptedSubmit(true)
@@ -208,21 +242,28 @@ export const BuySellFlow = ({
       // Navigate to confirmation screen with the data
       if (confirmationScreenData) {
         navigation.navigate('ConfirmSwapScreen', {
-          confirmationData: confirmationScreenData
+          confirmationData: confirmationScreenData,
+          activeTab,
+          selectedPair: safeSelectedPair,
+          pricePerBaseToken
         })
       }
     }
   }, [
-    setHasAttemptedSubmit,
+    transactionData?.isValid,
+    transactionData?.inputAmount,
+    transactionData?.outputAmount,
     isContinueButtonLoading,
+    trackSwapRequested,
+    activeTab,
+    swapTokens.inputToken,
+    swapTokens.outputToken,
+    currentExchangeRate,
     handleShowConfirmation,
     confirmationScreenData,
     navigation,
-    activeTab,
-    transactionData,
-    swapTokens,
-    currentExchangeRate,
-    trackSwapRequested
+    safeSelectedPair,
+    pricePerBaseToken
   ])
 
   useEffect(() => {
@@ -261,22 +302,6 @@ export const BuySellFlow = ({
     transactionData
   ])
 
-  const [selectedBaseTokenValue, setSelectedBaseTokenValue] = useState<string>(
-    selectedBaseToken ?? ''
-  )
-  const handleBaseTokenValChange = useCallback(
-    (value: string) => {
-      setSelectedBaseTokenValue(value ?? '')
-    },
-    [setSelectedBaseTokenValue]
-  )
-
-  const handleBaseTokenChange = useCallback(() => {
-    if (selectedBaseTokenValue !== selectedBaseToken) {
-      setSelectedBaseToken(selectedBaseTokenValue)
-    }
-  }, [selectedBaseToken, selectedBaseTokenValue])
-
   const handleAddCash = useCallback(() => {
     openAddCashModal()
     trackAddFundsClicked('insufficient_balance_hint')
@@ -286,7 +311,6 @@ export const BuySellFlow = ({
     !!displayErrorMessage ||
     (activeTab === 'buy' && !hasSufficientBalance && !!tabInputValues.buy)
 
-  // Always show the input screen in mobile - other screens are separate
   return {
     content: (
       <Flex direction='column' gap='xl'>
@@ -302,9 +326,9 @@ export const BuySellFlow = ({
 
         {/* Tab Content */}
         <Flex style={{ display: activeTab === 'buy' ? 'flex' : 'none' }}>
-          {selectedPair ? (
+          {safeSelectedPair ? (
             <BuyScreen
-              tokenPair={selectedPair}
+              tokenPair={safeSelectedPair}
               onTransactionDataChange={
                 activeTab === 'buy' ? handleTransactionDataChange : undefined
               }
@@ -312,13 +336,16 @@ export const BuySellFlow = ({
               errorMessage={displayErrorMessage}
               initialInputValue={tabInputValues.buy}
               onInputValueChange={handleBuyInputValueChange}
+              onOutputTokenChange={(token) =>
+                handleOutputTokenChange(token.symbol)
+              }
             />
           ) : null}
         </Flex>
         <Flex style={{ display: activeTab === 'sell' ? 'flex' : 'none' }}>
-          {selectedPair ? (
+          {safeSelectedPair ? (
             <SellScreen
-              tokenPair={selectedPair}
+              tokenPair={safeSelectedPair}
               onTransactionDataChange={
                 activeTab === 'sell' ? handleTransactionDataChange : undefined
               }
@@ -326,27 +353,34 @@ export const BuySellFlow = ({
               errorMessage={displayErrorMessage}
               initialInputValue={tabInputValues.sell}
               onInputValueChange={handleSellInputValueChange}
+              onInputTokenChange={(token) =>
+                handleInputTokenChange(token.symbol)
+              }
+              availableInputTokens={availableInputTokensForSell}
             />
           ) : null}
         </Flex>
-
-        {/* Portal for base token select */}
-        <Portal hostName='BaseTokenDropdownSelectPortal'>
-          <ListSelectionScreen
-            screenTitle='Select Token'
-            value={selectedBaseTokenValue}
-            data={baseTokenOptions}
-            searchText='Search for tokens'
-            itemContentStyles={{ flexGrow: 1 }}
-            renderItem={({ item }) => {
-              const token = baseTokensMap[item.value]
-              return <TokenSelectItem token={token} item={item} />
-            }}
-            onChange={handleBaseTokenValChange}
-            onSubmit={handleBaseTokenChange}
-            clearable={false}
-          />
-        </Portal>
+        <Flex style={{ display: activeTab === 'convert' ? 'flex' : 'none' }}>
+          {safeSelectedPair ? (
+            <ConvertScreen
+              tokenPair={safeSelectedPair}
+              onTransactionDataChange={
+                activeTab === 'convert'
+                  ? handleTransactionDataChange
+                  : undefined
+              }
+              error={shouldShowError}
+              errorMessage={displayErrorMessage}
+              initialInputValue={tabInputValues.convert}
+              onInputValueChange={handleConvertInputValueChange}
+              availableInputTokens={availableInputTokensForConvert}
+              availableOutputTokens={availableOutputTokensForConvert}
+              onInputTokenChange={handleInputTokenChange}
+              onOutputTokenChange={handleOutputTokenChange}
+              onChangeSwapDirection={handleChangeSwapDirection}
+            />
+          ) : null}
+        </Flex>
 
         {/* Insufficient Balance Message for Buy */}
         {activeTab === 'buy' &&
@@ -362,16 +396,6 @@ export const BuySellFlow = ({
               {messages.insufficientUSDC}
             </Hint>
           )}
-
-        {/* Help Center Hint */}
-        {hasSufficientBalance && (
-          <Hint>
-            {messages.helpCenter}{' '}
-            <TextLink showUnderline variant='visible' url={WALLET_GUIDE_URL}>
-              {messages.walletGuide}
-            </TextLink>
-          </Hint>
-        )}
       </Flex>
     ),
     footer: (

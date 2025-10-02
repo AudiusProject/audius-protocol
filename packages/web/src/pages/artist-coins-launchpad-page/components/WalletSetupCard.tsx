@@ -1,5 +1,7 @@
 import { Flex, IconCheck, Paper, Text, TextLink } from '@audius/harmony'
 
+import { useLaunchpadAnalytics } from '../utils'
+
 const messages = {
   title: 'How to Get Ready',
   subtitle: 'Go through this checklist to prepare for launch.',
@@ -10,7 +12,7 @@ const messages = {
     },
     {
       id: 'have-sol',
-      text: 'Have a little SOL (~.015) ready to cover setup costs.'
+      text: 'Have a little SOL (~.03) ready to cover setup costs.'
     },
     {
       id: 'add-funds',
@@ -22,6 +24,7 @@ const messages = {
 }
 
 export const WalletSetupCard = () => {
+  const { trackSplashLearnMoreClicked } = useLaunchpadAnalytics()
   return (
     <Paper p='2xl' gap='xl' direction='column' w='100%'>
       <Flex direction='column' gap='s'>
@@ -55,7 +58,11 @@ export const WalletSetupCard = () => {
 
       <Flex alignItems='center' gap='xs'>
         <Text size='m'>{messages.newtoWallets}</Text>
-        <TextLink size='m' variant='active'>
+        <TextLink
+          size='m'
+          variant='active'
+          onClick={trackSplashLearnMoreClicked}
+        >
           {messages.learnMore}
         </TextLink>
       </Flex>

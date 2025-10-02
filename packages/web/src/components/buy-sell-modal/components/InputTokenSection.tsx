@@ -4,7 +4,10 @@ import { useDebouncedCallback } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
 import type { TokenInfo } from '@audius/common/store'
 import { useTokenAmountFormatting } from '@audius/common/store'
-import { sanitizeNumericInput } from '@audius/common/utils'
+import {
+  sanitizeNumericInput,
+  formatTokenInputWithSmartDecimals
+} from '@audius/common/utils'
 import {
   Button,
   Flex,
@@ -37,6 +40,7 @@ type InputTokenSectionProps = {
   tokenPriceDecimalPlaces?: number
   availableTokens?: TokenInfo[]
   onTokenChange?: (token: TokenInfo) => void
+  hideTokenDisplay?: boolean
 }
 
 export const InputTokenSection = ({
@@ -51,7 +55,8 @@ export const InputTokenSection = ({
   error,
   errorMessage,
   availableTokens,
-  onTokenChange
+  onTokenChange,
+  hideTokenDisplay = false
 }: InputTokenSectionProps) => {
   const { symbol, isStablecoin } = tokenInfo
   const [localAmount, setLocalAmount] = useState(amount || '')
@@ -67,9 +72,12 @@ export const InputTokenSection = ({
 
   const shouldDisplayTokenDropdown = availableTokens?.length
 
-  // Sync local state with prop changes
+  // Sync local state with prop changes and apply smart decimal formatting
   useEffect(() => {
-    setLocalAmount(amount ?? '')
+    const formattedAmount = amount
+      ? formatTokenInputWithSmartDecimals(amount)
+      : ''
+    setLocalAmount(formattedAmount)
   }, [amount])
 
   const debouncedOnAmountChange = useDebouncedCallback(
@@ -81,8 +89,9 @@ export const InputTokenSection = ({
   const handleTextChange = useCallback(
     (text: string) => {
       const sanitizedText = sanitizeNumericInput(text)
-      setLocalAmount(sanitizedText)
-      debouncedOnAmountChange(sanitizedText)
+      const formattedText = formatTokenInputWithSmartDecimals(sanitizedText)
+      setLocalAmount(formattedText)
+      debouncedOnAmountChange(formattedText)
     },
     [debouncedOnAmountChange]
   )
@@ -124,7 +133,7 @@ export const InputTokenSection = ({
               hideLabel
               placeholder={placeholder}
               startAdornmentText={isStablecoin ? '$' : ''}
-              endAdornmentText={symbol}
+              endAdornmentText={symbol === 'USDC' ? 'USD' : symbol}
               value={localAmount}
               onChange={(e) => handleTextChange(e.target.value)}
               type='number'
@@ -133,7 +142,7 @@ export const InputTokenSection = ({
             />
           </Flex>
 
-          {shouldDisplayTokenDropdown ? (
+          {!hideTokenDisplay && shouldDisplayTokenDropdown ? (
             <Flex css={(theme) => ({ minWidth: theme.spacing.unit15 })}>
               <TokenDropdown
                 selectedToken={tokenInfo}
@@ -141,11 +150,11 @@ export const InputTokenSection = ({
                 onTokenChange={onTokenChange}
               />
             </Flex>
-          ) : (
+          ) : !hideTokenDisplay ? (
             <Flex css={(theme) => ({ minWidth: theme.spacing.unit15 })}>
               <StaticTokenDisplay tokenInfo={tokenInfo} />
             </Flex>
-          )}
+          ) : null}
 
           {onMaxClick ? (
             <Button variant='secondary' size='large' onClick={onMaxClick}>

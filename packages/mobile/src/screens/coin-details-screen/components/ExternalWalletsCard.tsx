@@ -68,7 +68,7 @@ const HasBalanceContent = ({
         </Text>
       </Flex>
       <Divider />
-      <Flex column pv='l' ph='xl'>
+      <Flex column gap='m' pv='l' ph='xl'>
         {accounts.map((account) => (
           <WalletRow
             key={account.owner}

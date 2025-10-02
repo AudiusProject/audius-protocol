@@ -1,4 +1,4 @@
-import { USDC, UsdcWei } from '@audius/fixed-decimal'
+import { USDC } from '@audius/fixed-decimal'
 import type { AudiusSdk } from '@audius/sdk'
 import { SwapInstructionsResponse, SwapRequest } from '@jup-ag/api'
 import {
@@ -8,19 +8,23 @@ import {
   getAccount,
   getAssociatedTokenAddressSync
 } from '@solana/spl-token'
+import type { Commitment, Keypair } from '@solana/web3.js'
 import {
   PublicKey,
   TransactionInstruction,
   VersionedTransaction
 } from '@solana/web3.js'
-import type { Commitment, Keypair } from '@solana/web3.js'
 import { useQueryClient } from '@tanstack/react-query'
 
 import type { User } from '~/models/User'
 import {
-  jupiterInstance,
-  getJupiterQuoteByMintWithRetry
+  getJupiterQuoteByMintWithRetry,
+  jupiterInstance
 } from '~/services/Jupiter'
+import {
+  INTERNAL_TRANSFER_MEMO_STRING,
+  MEMO_PROGRAM_ID
+} from '~/services/audius-backend/solana'
 import { TokenInfo } from '~/store/ui/buy-sell/types'
 
 import { QUERY_KEYS } from '../queryKeys'
@@ -32,6 +36,8 @@ import {
   SwapTokensResult,
   UserBankManagedTokenInfo
 } from './types'
+
+const USDC_MINT_ADDRESS = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
 
 export async function addTransferFromUserBankInstructions({
   tokenInfo,
@@ -82,6 +88,15 @@ export async function addTransferFromUserBankInstructions({
     })
 
   instructions.push(secpTransferInstruction, transferInstruction)
+  if (tokenInfo.mintAddress === USDC_MINT_ADDRESS) {
+    instructions.push(
+      new TransactionInstruction({
+        keys: [{ pubkey: ata, isSigner: false, isWritable: true }],
+        programId: MEMO_PROGRAM_ID,
+        data: Buffer.from(INTERNAL_TRANSFER_MEMO_STRING)
+      })
+    )
+  }
   return ata
 }
 
@@ -227,83 +242,6 @@ export function getSwapErrorResponse(params: {
         message: error?.message ?? 'An unknown error occurred'
       }
     }
-  }
-}
-
-/**
- * Formats a numeric value as USDC.
- * Uses floor(2) rounding to ensure consistent display across the application.
- *
- * @param value - The numeric value to format (can be number or string)
- * @param options - Formatting options
- * @returns Formatted USDC string
- */
-export function formatUSDCValue(
-  value?: number | string,
-  options: {
-    /** Whether to include the $ prefix (default: false) */
-    includeDollarSign?: boolean
-    /** Whether to use toFixed format instead of toLocaleString (default: true) */
-    useFixed?: boolean
-  } = {}
-) {
-  const { includeDollarSign = false, useFixed = true } = options
-
-  // Handle null, undefined, or empty string cases
-  if (!value && value !== 0) {
-    return null
-  }
-
-  const numericValue =
-    typeof value === 'string' ? parseFloat(value.replace(/,/g, '')) : value
-
-  if (isNaN(numericValue) || !isFinite(numericValue)) {
-    return null
-  }
-
-  // Add early validation for extremely large numbers to prevent overflow
-  // This corresponds to ~1 trillion USDC, which is well above any realistic amount
-  const MAX_SAFE_USDC_VALUE = 1000000000000
-  if (Math.abs(numericValue) > MAX_SAFE_USDC_VALUE) {
-    console.warn('USDC value too large for safe formatting:', numericValue)
-    return null
-  }
-
-  // Use the same rounding logic as CashWallet.tsx
-  // Convert to wei (multiply by 1,000,000) and ensure it's an integer
-  const weiValue = Math.floor(Math.abs(numericValue) * 1000000)
-
-  // Ensure weiValue is valid for BigInt constructor
-  if (weiValue < 0 || !Number.isInteger(weiValue)) {
-    return null
-  }
-
-  // Additional safety check for BigInt constructor limits
-  if (weiValue > Number.MAX_SAFE_INTEGER) {
-    console.warn('Wei value exceeds MAX_SAFE_INTEGER:', weiValue)
-    return null
-  }
-
-  try {
-    const usdcValue = USDC(BigInt(weiValue) as UsdcWei).floor(2)
-
-    if (useFixed) {
-      const formatted = usdcValue.toFixed(2).replace('$', '')
-      return includeDollarSign ? `$${formatted}` : formatted
-    } else {
-      return usdcValue.toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      })
-    }
-  } catch (error) {
-    console.warn('Error formatting USDC value:', {
-      value,
-      numericValue,
-      weiValue,
-      error
-    })
-    return null
   }
 }
 

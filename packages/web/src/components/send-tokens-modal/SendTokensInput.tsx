@@ -61,12 +61,13 @@ const SendTokensInput = ({
   const [addressError, setAddressError] = useState<ValidationError | null>(null)
 
   // Get the coin data and balance using the same hooks as ReceiveTokensModal
-  const { data: coin } = useArtistCoin({ mint })
-  const { data: tokenBalance } = useTokenBalance({ mint })
+  const { data: coin } = useArtistCoin(mint)
+  const { data: tokenBalance } = useTokenBalance({
+    mint,
+    includeExternalWallets: false,
+    includeStaked: false
+  })
   const tokenInfo = coin ? transformArtistCoinToTokenInfo(coin) : undefined
-  const currentBalance = tokenBalance?.balance
-    ? tokenBalance.balance.value
-    : BigInt(0)
 
   const handleAmountChange = useCallback((value: string, weiAmount: bigint) => {
     setAmount(value)
@@ -89,7 +90,10 @@ const SendTokensInput = ({
       setAmountError('AMOUNT_REQUIRED')
       isValid = false
     } else {
-      const amountWei = new FixedDecimal(amount, tokenInfo?.decimals).value
+      const currentBalance = tokenBalance?.balance
+        ? tokenBalance.balance.value
+        : BigInt(0)
+      const amountWei = new FixedDecimal(amount, tokenBalance?.decimals).value
       if (amountWei > currentBalance) {
         setAmountError('INSUFFICIENT_BALANCE')
         isValid = false
@@ -154,19 +158,17 @@ const SendTokensInput = ({
     )
   }
 
-  // Format balance for display
-  const formattedBalance = new FixedDecimal(
-    currentBalance,
-    tokenInfo.decimals
-  ).toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  })
+  // Use the pre-formatted balance from the tokenBalance hook
+  const formattedBalance = tokenBalance?.balanceLocaleString ?? ''
 
   return (
     <Flex direction='column' gap='xl' p='xl'>
       {/* Token Balance Section */}
-      <CryptoBalanceSection tokenInfo={tokenInfo} amount={formattedBalance} />
+      <CryptoBalanceSection
+        tokenInfo={tokenInfo}
+        name={tokenInfo.name}
+        amount={formattedBalance}
+      />
 
       <Divider orientation='horizontal' color='default' />
 

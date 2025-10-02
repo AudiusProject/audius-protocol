@@ -121,5 +121,8 @@ export const QUERY_KEYS = {
   userbank: 'userbank',
   tokenExchangeRate: 'tokenExchangeRate',
   tokenPair: 'tokenPair',
-  firstBuyQuote: 'firstBuyQuote'
+  firstBuyQuote: 'firstBuyQuote',
+  walletSolBalance: 'walletSolBalance',
+  launchpadConfig: 'launchpadConfig',
+  externalWalletBalance: 'externalWalletBalance'
 } as const

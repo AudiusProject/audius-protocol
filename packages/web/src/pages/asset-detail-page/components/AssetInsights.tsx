@@ -1,12 +1,24 @@
-import { useArtistCoinInsights } from '@audius/common/api'
+import type { Coin } from '@audius/common/adapters'
+import { useArtistCoin } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { createCoinMetrics, MetricData } from '@audius/common/utils'
-import { Flex, IconSortDown, IconSortUp, Paper, Text } from '@audius/harmony'
+import {
+  Flex,
+  IconInfo,
+  IconSortDown,
+  IconSortUp,
+  Paper,
+  Text
+} from '@audius/harmony'
+
+import { Tooltip } from 'components/tooltip'
+import { env } from 'services/env'
 
 import { componentWithErrorBoundary } from '../../../components/error-wrapper/componentWithErrorBoundary'
 import Skeleton from '../../../components/skeleton/Skeleton'
 
 import { AssetInsightsOverflowMenu } from './AssetInsightsOverflowMenu'
+import { GraduationProgressBar } from './GraduationProgressBar'
 
 const messages = coinDetailsMessages.coinInsights
 
@@ -51,12 +63,102 @@ const AssetInsightsSkeleton = () => {
   )
 }
 
-const MetricRowComponent = ({ metric }: { metric: MetricData }) => {
-  const changeColor = metric.change?.isPositive ? 'premium' : 'subdued'
+const GraduatedPill = () => {
+  return (
+    <Flex
+      alignItems='center'
+      justifyContent='center'
+      pv='2xs'
+      ph='s'
+      borderRadius='l'
+      css={{
+        backgroundColor:
+          'color-mix(in srgb, var(--harmony-focus), transparent 90%)'
+      }}
+    >
+      <Text variant='label' size='s' color='accent' textTransform='uppercase'>
+        {messages.graduated}
+      </Text>
+    </Flex>
+  )
+}
+
+const GraduationProgressMetricRowComponent = ({
+  metric,
+  coin
+}: {
+  metric: MetricData
+  coin?: any
+}) => {
+  const progress = coin?.dynamicBondingCurve?.curveProgress ?? 0
+  const progressPercentage = Math.round(progress * 100)
+  const hasGraduated = progress >= 1
+
+  const tooltipContent = (
+    <Flex direction='column' gap='s' p='s'>
+      <Text variant='body' size='s'>
+        {hasGraduated ? messages.postGraduation : messages.preGraduation}
+      </Text>
+    </Flex>
+  )
 
   return (
     <Flex
-      direction='row'
+      column
+      alignItems='flex-start'
+      gap='s'
+      flex={1}
+      borderTop='default'
+      pv='m'
+      ph='l'
+      w='100%'
+    >
+      <Flex alignItems='center' justifyContent='space-between' w='100%'>
+        <Text variant='heading' size='xl'>
+          {metric.value}
+        </Text>
+        {hasGraduated ? <GraduatedPill /> : null}
+      </Flex>
+      <Flex alignItems='center' gap='s'>
+        <Text variant='title' size='m' color='subdued'>
+          {metric.label}
+        </Text>
+        <Tooltip text={tooltipContent} mount='body'>
+          <IconInfo size='s' color='subdued' />
+        </Tooltip>
+      </Flex>
+      <GraduationProgressBar value={progressPercentage} min={0} max={100} />
+    </Flex>
+  )
+}
+
+const GraduationProgressMetricRow = componentWithErrorBoundary(
+  GraduationProgressMetricRowComponent,
+  {
+    fallback: null,
+    name: 'GraduationProgressMetricRow'
+  }
+)
+
+const MetricRowComponent = ({
+  metric,
+  coin
+}: {
+  metric: MetricData
+  coin?: Coin
+}) => {
+  const changeColor = metric.change?.isPositive ? 'premium' : 'subdued'
+  const isGraduationProgress = metric.label === 'Graduation Progress'
+
+  if (isGraduationProgress) {
+    return env.WAUDIO_MINT_ADDRESS === coin?.mint ? null : (
+      <GraduationProgressMetricRow metric={metric} coin={coin} />
+    )
+  }
+
+  return (
+    <Flex
+      row
       alignItems='flex-start'
       justifyContent='space-between'
       borderTop='default'
@@ -64,7 +166,7 @@ const MetricRowComponent = ({ metric }: { metric: MetricData }) => {
       ph='l'
       w='100%'
     >
-      <Flex direction='column' alignItems='flex-start' gap='xs' flex={1}>
+      <Flex column alignItems='flex-start' gap='xs' flex={1}>
         <Text variant='heading' size='xl'>
           {metric.value}
         </Text>
@@ -74,7 +176,7 @@ const MetricRowComponent = ({ metric }: { metric: MetricData }) => {
       </Flex>
 
       {metric.change ? (
-        <Flex direction='row' alignItems='center' gap='xs'>
+        <Flex row alignItems='center' gap='xs'>
           <Text
             variant='label'
             size='s'
@@ -110,17 +212,13 @@ type AssetInsightsProps = {
 }
 
 export const AssetInsights = ({ mint }: AssetInsightsProps) => {
-  const {
-    data: coinInsights,
-    isPending,
-    error
-  } = useArtistCoinInsights({ mint })
+  const { data: coin, isPending, error } = useArtistCoin(mint)
 
-  if (isPending || !coinInsights) {
+  if (isPending || !coin) {
     return <AssetInsightsSkeleton />
   }
 
-  if (error || !coinInsights) {
+  if (error || !coin) {
     return (
       <Paper
         direction='column'
@@ -143,14 +241,14 @@ export const AssetInsights = ({ mint }: AssetInsightsProps) => {
         </Flex>
         <Flex pv='xl' ph='l' w='100%' justifyContent='center'>
           <Text variant='body' color='subdued'>
-            Unable to load insights
+            {messages.unableToLoad}
           </Text>
         </Flex>
       </Paper>
     )
   }
 
-  const metrics = createCoinMetrics(coinInsights)
+  const metrics = createCoinMetrics(coin)
 
   return (
     <Paper
@@ -175,7 +273,7 @@ export const AssetInsights = ({ mint }: AssetInsightsProps) => {
       </Flex>
 
       {metrics.map((metric) => (
-        <MetricRow key={metric.label} metric={metric} />
+        <MetricRow key={metric.label} metric={metric} coin={coin} />
       ))}
     </Paper>
   )

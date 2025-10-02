@@ -1,10 +1,10 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
 import { useTokenBalance } from '@audius/common/api'
 import { AudioTiers, BadgeTier, ID } from '@audius/common/models'
 import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
-import { AUDIO_TICKER, TOKEN_LISTING_MAP } from '@audius/common/store'
-import { formatCount } from '@audius/common/utils'
+import { AUDIO_TICKER } from '@audius/common/store'
+import { formatCount, formatTickerForUrl } from '@audius/common/utils'
 import {
   HoverCard,
   HoverCardHeader,
@@ -19,6 +19,8 @@ import {
   useTheme
 } from '@audius/harmony'
 import { useNavigate } from 'react-router-dom-v5-compat'
+
+import { env } from 'services/env'
 
 import { HoverCardBody } from './HoverCardBody'
 
@@ -70,9 +72,17 @@ export const AudioHoverCard = ({
   const navigate = useNavigate()
   const { cornerRadius } = useTheme()
 
+  // Track hover state to conditionally fetch token balance
+  const [isHovered, setIsHovered] = useState(false)
+
+  const handleHover = useCallback((hovered: boolean) => {
+    setIsHovered(hovered)
+  }, [])
+
   const { data: tokenBalance } = useTokenBalance({
-    mint: TOKEN_LISTING_MAP.AUDIO.address,
-    userId
+    mint: env.WAUDIO_MINT_ADDRESS,
+    userId,
+    enabled: isHovered
   })
 
   const formattedBalance = tokenBalance
@@ -81,8 +91,11 @@ export const AudioHoverCard = ({
 
   const handleClick = useCallback(() => {
     onClick?.()
-    navigate(ASSET_DETAIL_PAGE.replace(':ticker', AUDIO_TICKER))
-  }, [navigate, onClick])
+    onClose?.()
+    navigate(
+      ASSET_DETAIL_PAGE.replace(':ticker', formatTickerForUrl(AUDIO_TICKER))
+    )
+  }, [navigate, onClick, onClose])
 
   return (
     <HoverCard
@@ -103,7 +116,7 @@ export const AudioHoverCard = ({
                 hex
               />
             }
-            amount={formattedBalance ?? ''}
+            amount={formattedBalance}
           />
         </>
       }
@@ -111,6 +124,7 @@ export const AudioHoverCard = ({
       transformOrigin={transformOrigin}
       onClick={handleClick}
       triggeredBy={triggeredBy}
+      onHover={handleHover}
     >
       {children}
     </HoverCard>

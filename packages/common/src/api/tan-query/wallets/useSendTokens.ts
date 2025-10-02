@@ -34,7 +34,11 @@ export const useSendTokens = ({ mint }: { mint: string }) => {
   const { data: walletAddresses } = useWalletAddresses()
   const { data: currentUser } = useCurrentAccountUser()
 
-  const { data: tokenBalance } = useTokenBalance({ mint })
+  const { data: tokenBalance } = useTokenBalance({
+    mint,
+    includeExternalWallets: false,
+    includeStaked: false
+  })
 
   return useMutation({
     mutationFn: async ({

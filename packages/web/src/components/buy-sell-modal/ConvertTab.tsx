@@ -10,13 +10,13 @@ import { FeatureFlags } from '@audius/common/services'
 import type { TokenInfo } from '@audius/common/store'
 import { useTokenSwapForm } from '@audius/common/store'
 import { getCurrencyDecimalPlaces } from '@audius/common/utils'
-import { Flex } from '@audius/harmony'
+import { Divider, Flex, IconButton, IconTransaction } from '@audius/harmony'
 
 import { useFlag } from 'hooks/useRemoteConfig'
 
 import { InputTokenSection } from './components/InputTokenSection'
 import { OutputTokenSection } from './components/OutputTokenSection'
-import { SwapFormSkeleton } from './components/SwapSkeletons'
+import { TabContentSkeleton } from './components/SwapSkeletons'
 import { ConvertTabProps } from './types'
 
 export const ConvertTab = ({
@@ -45,14 +45,12 @@ export const ConvertTab = ({
   }, [baseToken, quoteToken])
 
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
-    useArtistCoin({ mint: selectedOutputToken.address })
-
-  const tokenPrice = tokenPriceData?.price?.toString() ?? null
+    useArtistCoin(selectedOutputToken.address)
 
   const decimalPlaces = useMemo(() => {
-    if (!tokenPrice) return 2
-    return getCurrencyDecimalPlaces(parseFloat(tokenPrice))
-  }, [tokenPrice])
+    if (!tokenPriceData?.price) return 2
+    return getCurrencyDecimalPlaces(tokenPriceData.price)
+  }, [tokenPriceData?.price])
 
   const {
     inputAmount,
@@ -78,16 +76,18 @@ export const ConvertTab = ({
   }, [coins])
 
   const totalAvailableTokens = useMemo(() => {
-    const allTokens = [
-      ...(availableInputTokens ?? []),
-      ...(availableOutputTokens ?? []),
-      ...artistCoins
-    ]
-    return allTokens.filter(
+    return [...(availableOutputTokens ?? []), ...artistCoins].filter(
       (token, index, arr) =>
         arr.findIndex((t) => t.symbol === token.symbol) === index
     ) // Remove duplicates
-  }, [availableInputTokens, availableOutputTokens, artistCoins])
+  }, [availableOutputTokens, artistCoins])
+
+  // Filter out the currently selected input token from available output tokens
+  const filteredAvailableOutputTokens = useMemo(() => {
+    return totalAvailableTokens.filter(
+      (token) => token.symbol !== selectedInputToken.symbol
+    )
+  }, [totalAvailableTokens, selectedInputToken.symbol])
 
   // Generic token change handler with automatic swapping when only 2 tokens are available
   const createTokenChangeHandler = useCallback(
@@ -158,7 +158,7 @@ export const ConvertTab = ({
   return (
     <Flex direction='column' gap='xl'>
       {isInitialLoading ? (
-        <SwapFormSkeleton />
+        <TabContentSkeleton />
       ) : (
         <>
           <InputTokenSection
@@ -170,19 +170,42 @@ export const ConvertTab = ({
             availableBalance={availableBalance}
             error={error}
             errorMessage={errorMessage}
-            availableTokens={totalAvailableTokens}
+            availableTokens={availableInputTokens}
             onTokenChange={handleInputTokenChange}
           />
+
+          {/* Swap Direction Divider */}
+          <Flex alignItems='center' justifyContent='center' gap='s' w='full'>
+            <Divider />
+            <IconButton
+              icon={IconTransaction}
+              size='s'
+              color='subdued'
+              onClick={onChangeSwapDirection}
+              aria-label='Swap token direction'
+              css={{
+                transform: 'rotate(90deg)',
+                '&:hover svg': {
+                  transform: 'rotate(90deg) scale(1.1)'
+                },
+                '&:active svg': {
+                  transform: 'rotate(90deg) scale(0.98)'
+                }
+              }}
+            />
+            <Divider />
+          </Flex>
+
           <OutputTokenSection
             tokenInfo={selectedOutputToken}
             amount={outputAmount}
             onAmountChange={handleOutputAmountChange}
             availableBalance={0}
             exchangeRate={currentExchangeRate}
-            tokenPrice={tokenPrice}
+            tokenPrice={tokenPriceData?.price.toString() ?? null}
             isTokenPriceLoading={isTokenPriceLoading}
             tokenPriceDecimalPlaces={decimalPlaces}
-            availableTokens={totalAvailableTokens}
+            availableTokens={filteredAvailableOutputTokens}
             onTokenChange={handleOutputTokenChange}
             isArtistCoinsEnabled={isArtistCoinsEnabled}
           />

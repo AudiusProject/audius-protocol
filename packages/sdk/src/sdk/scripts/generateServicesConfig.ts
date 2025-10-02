@@ -108,18 +108,18 @@ const stagingConfig: SdkServicesConfig = {
 const developmentConfig: SdkServicesConfig = {
   network: {
     minVersion: '0.0.0',
-    apiEndpoint: 'http://audius-protocol-api',
+    apiEndpoint: 'http://audius-api',
     storageNodes: [
       {
         delegateOwnerWallet: '0x0D38e653eC28bdea5A2296fD5940aaB2D0B8875c',
-        endpoint: 'http://audius-protocol-creator-node-1'
+        endpoint: 'http://audius-creator-node-1'
       }
     ],
     antiAbuseOracleNodes: {
-      endpoints: ['http://audius-protocol-anti-abuse-oracle-1:8000'],
+      endpoints: ['http://audius-anti-abuse-oracle-1:8000'],
       registeredAddresses: ['0xF0D5BC18421fa04D0a2A2ef540ba5A9f04014BE3']
     },
-    identityService: 'http://audius-protocol-identity-service-1'
+    identityService: 'http://audius-identity-service-1'
   },
   acdc: {
     entityManagerContractAddress: '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B',
@@ -132,7 +132,7 @@ const developmentConfig: SdkServicesConfig = {
     rewardManagerStateAddress: 'DJPzVothq58SmkpRb1ATn5ddN2Rpv1j2TcGvM3XsHf1c',
     paymentRouterProgramAddress: 'apaySbqV1XAmuiGszeN4NyWrXkkMrnuJVoNhzmS1AMa',
     stakingBridgeProgramAddress: '',
-    rpcEndpoint: 'http://audius-protocol-solana-test-validator-1',
+    rpcEndpoint: 'http://audius-solana-test-validator-1',
     usdcTokenMint: '26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y',
     wAudioTokenMint: '37RCjhgV1qGV2Q54EHFScdxZ22ydRMdKMtVgod47fDP3',
     bonkTokenMint: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',
@@ -140,7 +140,7 @@ const developmentConfig: SdkServicesConfig = {
       'GNHKVSmHvoRBt1JJCxz7RSMfzDQGDGhGEjmhHyxb3K5J'
   },
   ethereum: {
-    rpcEndpoint: 'http://audius-protocol-eth-ganache-1',
+    rpcEndpoint: 'http://audius-eth-ganache-1',
     addresses: {
       ethRewardsManagerAddress: '0x',
       serviceProviderFactoryAddress: '0x',

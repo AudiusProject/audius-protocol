@@ -2,7 +2,7 @@ import { Fragment, useCallback, useContext } from 'react'
 
 import {
   UserCoin,
-  useArtistCoins,
+  useArtistCoin,
   useCurrentUserId,
   useQueryContext,
   useUserCoins
@@ -12,23 +12,23 @@ import {
   useFormattedTokenBalance,
   useIsManagedAccount
 } from '@audius/common/hooks'
-import { buySellMessages } from '@audius/common/messages'
+import { buySellMessages, walletMessages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
 import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import { useBuySellModal } from '@audius/common/store'
+import { route, ownedCoinsFilter } from '@audius/common/utils'
 import {
   Box,
   Button,
-  Divider,
   Flex,
   Paper,
   Text,
   useMedia,
-  useTheme
+  useTheme,
+  IconCaretRight
 } from '@audius/harmony'
 import type { CSSObject } from '@emotion/react'
-import { useDispatch } from 'react-redux'
-import { push } from 'redux-first-history'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { roundedHexClipPath } from '~harmony/icons/SVGDefs'
 
 import { useBuySellRegionSupport } from 'components/buy-sell-modal'
@@ -38,6 +38,34 @@ import Tooltip from 'components/tooltip/Tooltip'
 
 import { AudioCoinCard } from './AudioCoinCard'
 import { CoinCard } from './CoinCard'
+
+const { COINS_EXPLORE_PAGE } = route
+
+const DiscoverArtistCoinsCard = ({ onClick }: { onClick: () => void }) => {
+  const { color } = useTheme()
+
+  return (
+    <Flex
+      alignItems='center'
+      justifyContent='space-between'
+      p='l'
+      h={96}
+      flex={1}
+      onClick={onClick}
+      css={{
+        cursor: 'pointer',
+        '&:hover': { backgroundColor: color.background.surface2 }
+      }}
+    >
+      <Text variant='heading' size='s'>
+        {walletMessages.artistCoins.title}
+      </Text>
+      <Flex alignItems='center' gap='m'>
+        <IconCaretRight size='l' color='subdued' />
+      </Flex>
+    </Flex>
+  )
+}
 
 // Helper function to determine if an item should have a right border
 const shouldShowRightBorder = (
@@ -61,6 +89,7 @@ const shouldShowRightBorder = (
 const getCoinItemStyles = (
   shouldSpanFullWidth: boolean,
   shouldHaveRightBorder: boolean,
+  shouldHaveTopBorder: boolean,
   borderColor: string
 ): CSSObject => {
   const baseStyles: CSSObject = {
@@ -70,6 +99,9 @@ const getCoinItemStyles = (
 
   if (shouldSpanFullWidth) {
     baseStyles.gridColumn = '1 / -1'
+    if (shouldHaveTopBorder) {
+      baseStyles.borderTop = `1px solid ${borderColor}`
+    }
   } else if (shouldHaveRightBorder) {
     baseStyles.borderRight = `1px solid ${borderColor}`
     baseStyles.paddingRight = '0'
@@ -103,11 +135,6 @@ const YourCoinsSkeleton = () => {
             <Skeleton width='100px' height='24px' />
           </Flex>
         </Flex>
-      </Flex>
-      <Divider />
-      <Flex gap='m' p='xl' flex={1} direction='column'>
-        <Skeleton width='180px' height='28px' />
-        <Skeleton width='300px' height='22px' />
       </Flex>
     </Paper>
   )
@@ -145,7 +172,7 @@ const YourCoinsHeader = ({ isLoading }: { isLoading: boolean }) => {
       borderBottom='default'
     >
       <Text variant='heading' size='m' color='heading'>
-        {messages.yourCoins}
+        {messages.coins}
       </Text>
       {isWalletUIBuySellEnabled && !isLoading ? (
         <Tooltip
@@ -172,28 +199,28 @@ const YourCoinsHeader = ({ isLoading }: { isLoading: boolean }) => {
 }
 
 const CoinCardWithBalance = ({ coin }: { coin: UserCoin }) => {
-  const dispatch = useDispatch()
+  const navigate = useNavigate()
 
   const tokenSymbol = coin.ticker
 
   const handleCoinClick = useCallback(
     (ticker: string) => {
-      dispatch(push(ASSET_DETAIL_PAGE.replace(':ticker', ticker)))
+      navigate(ASSET_DETAIL_PAGE.replace(':ticker', ticker))
     },
-    [dispatch]
+    [navigate]
   )
 
   const {
     tokenBalanceFormatted,
     tokenDollarValue,
     isTokenBalanceLoading,
-    isTokenPriceLoading
+    isTokenPriceLoading,
+    formattedHeldValue
   } = useFormattedTokenBalance(coin.mint)
 
-  const { data: coinsData, isPending: coinsDataLoading } = useArtistCoins({
-    mint: [coin.mint]
-  })
-  const coinData = coinsData?.[0] ?? null
+  const { data: coinData, isPending: coinsDataLoading } = useArtistCoin(
+    coin.mint
+  )
 
   const isLoading =
     isTokenBalanceLoading || isTokenPriceLoading || coinsDataLoading
@@ -203,6 +230,7 @@ const CoinCardWithBalance = ({ coin }: { coin: UserCoin }) => {
       icon={coinData?.logoUri}
       symbol={tokenSymbol ?? ''}
       balance={tokenBalanceFormatted || ''}
+      heldValue={formattedHeldValue}
       dollarValue={tokenDollarValue || ''}
       loading={isLoading}
       name={coinData?.name ?? ''}
@@ -218,6 +246,7 @@ export const YourCoins = () => {
     FeatureFlags.ARTIST_COINS
   )
   const { color } = useTheme()
+  const navigate = useNavigate()
 
   const { data: artistCoins, isPending: isLoadingCoins } = useUserCoins({
     userId: currentUserId
@@ -225,82 +254,92 @@ export const YourCoins = () => {
 
   const { isLarge } = useMedia()
 
-  // Filter coins using the same logic as useGroupCoinPairs
   const filteredCoins =
-    artistCoins?.filter((coin) => {
-      if (!isArtistCoinsEnabled) {
-        return coin.mint === env.WAUDIO_MINT_ADDRESS
-      }
-      return (
-        coin.ticker !== 'USDC' &&
-        (coin.balance > 0 || coin.mint === env.WAUDIO_MINT_ADDRESS)
-      )
-    }) || []
+    artistCoins?.filter(
+      ownedCoinsFilter(!!isArtistCoinsEnabled, env.WAUDIO_MINT_ADDRESS)
+    ) ?? []
 
   // Show audio coin card when no coins are available
   const showAudioCoin = filteredCoins.length === 0
-  const allCoins = showAudioCoin ? ['audio-coin' as const] : filteredCoins
+  const baseCoins = showAudioCoin ? ['audio-coin' as const] : filteredCoins
+
+  // Add discover artist coins card at the end if feature is enabled
+  const allCoins = isArtistCoinsEnabled
+    ? [...baseCoins, 'discover-artist-coins' as const]
+    : baseCoins
 
   const isSingleColumn = isLarge
+
+  const handleDiscoverArtistCoins = useCallback(() => {
+    navigate(COINS_EXPLORE_PAGE)
+  }, [navigate])
 
   return (
     <Paper column shadow='far' borderRadius='l' css={{ overflow: 'hidden' }}>
       <YourCoinsHeader isLoading={isLoadingCoins} />
       <Flex column>
-        {isLoadingCoins || !currentUserId ? <YourCoinsSkeleton /> : null}
-        <Box
-          css={{
-            display: 'grid',
-            gridTemplateColumns: isSingleColumn ? '1fr' : '1fr 1fr',
-            gap: '0'
-          }}
-        >
-          {allCoins.map((item, index) => {
-            const key = typeof item === 'string' ? item : item.mint
-            const isLastItem = index === allCoins.length - 1
-            const isOddCount = !isSingleColumn && allCoins.length % 2 === 1
-            const shouldSpanFullWidth = isOddCount && isLastItem
-            const isLastInRow = isSingleColumn ? true : index % 2 === 1
-            const isLastRow =
-              index >= allCoins.length - (isSingleColumn ? 1 : 2)
+        {isLoadingCoins || !currentUserId ? (
+          <YourCoinsSkeleton />
+        ) : (
+          <Box
+            css={{
+              display: 'grid',
+              gridTemplateColumns: isSingleColumn ? '1fr' : '1fr 1fr',
+              gap: '0'
+            }}
+          >
+            {allCoins.map((item, index) => {
+              const key = typeof item === 'string' ? item : item.mint
+              const isLastItem = index === allCoins.length - 1
+              const isOddCount = !isSingleColumn && allCoins.length % 2 === 1
+              const shouldSpanFullWidth = isOddCount && isLastItem
+              const isLastInRow = isSingleColumn ? true : index % 2 === 1
+              const isLastRow =
+                index >= allCoins.length - (isSingleColumn ? 1 : 2)
 
-            // Use helper functions for cleaner logic
-            const shouldHaveRightBorder = shouldShowRightBorder(
-              index,
-              isSingleColumn,
-              shouldSpanFullWidth,
-              isOddCount,
-              allCoins.length
-            )
+              // Use helper functions for cleaner logic
+              const shouldHaveRightBorder = shouldShowRightBorder(
+                index,
+                isSingleColumn,
+                shouldSpanFullWidth,
+                isOddCount,
+                allCoins.length
+              )
 
-            const itemStyles = getCoinItemStyles(
-              shouldSpanFullWidth,
-              shouldHaveRightBorder,
-              color.border.default
-            )
+              const itemStyles = getCoinItemStyles(
+                shouldSpanFullWidth,
+                shouldHaveRightBorder,
+                shouldSpanFullWidth, // Add top border when spanning full width (odd count last item)
+                color.border.default
+              )
 
-            return (
-              <Fragment key={key}>
-                <Box css={itemStyles}>
-                  {item === 'audio-coin' ? (
-                    <AudioCoinCard />
-                  ) : (
-                    <CoinCardWithBalance coin={item as UserCoin} />
+              return (
+                <Fragment key={key}>
+                  <Box css={itemStyles}>
+                    {item === 'discover-artist-coins' ? (
+                      <DiscoverArtistCoinsCard
+                        onClick={handleDiscoverArtistCoins}
+                      />
+                    ) : item === 'audio-coin' ? (
+                      <AudioCoinCard />
+                    ) : (
+                      <CoinCardWithBalance coin={item as UserCoin} />
+                    )}
+                  </Box>
+                  {/* Horizontal divider after each row except the last */}
+                  {!isLastRow && isLastInRow && (
+                    <Box
+                      css={{
+                        gridColumn: '1 / -1',
+                        borderBottom: `1px solid ${color.border.default}`
+                      }}
+                    />
                   )}
-                </Box>
-                {/* Horizontal divider after each row except the last */}
-                {!isLastRow && isLastInRow && (
-                  <Box
-                    css={{
-                      gridColumn: '1 / -1',
-                      borderBottom: `1px solid ${color.border.default}`
-                    }}
-                  />
-                )}
-              </Fragment>
-            )
-          })}
-        </Box>
+                </Fragment>
+              )
+            })}
+          </Box>
+        )}
       </Flex>
     </Paper>
   )

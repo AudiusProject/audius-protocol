@@ -3,6 +3,7 @@ import type { ViewStyle } from 'react-native'
 import { View } from 'react-native'
 
 import {
+  IconArtistCoin,
   IconCart,
   IconCollectible,
   IconReceive,
@@ -13,6 +14,8 @@ import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 import { zIndex } from 'app/utils/zIndex'
+
+import { CoinGradientDogEarSvg } from './CoinGradientDogEarSvg'
 
 const useStyles = makeStyles(({ spacing }) => ({
   container: {
@@ -72,6 +75,9 @@ export const DogEar = (props: DogEarProps) => {
       icon: IconSparkles,
       colors: [accentBlue, accentBlue]
     },
+    [DogEarType.TOKEN_GATED]: {
+      icon: IconArtistCoin
+    },
     [DogEarType.USDC_PURCHASE]: {
       icon: IconCart,
       colors: [specialLightGreen, specialLightGreen]
@@ -88,7 +94,11 @@ export const DogEar = (props: DogEarProps) => {
 
   return (
     <View style={[styles.container, borderOffsetStyle, style]}>
-      <DogEarRectangle fill={colors[0]} style={styles.rectangle} />
+      {type === DogEarType.TOKEN_GATED ? (
+        <CoinGradientDogEarSvg style={styles.rectangle} />
+      ) : (
+        <DogEarRectangle fill={colors[0]} style={styles.rectangle} />
+      )}
       <Icon
         width={spacing(4)}
         height={spacing(4)}

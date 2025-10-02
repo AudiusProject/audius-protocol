@@ -2,7 +2,6 @@ import { CSSProperties, forwardRef } from 'react'
 
 import { CSSObject, useTheme } from '@emotion/react'
 
-import { toCSSVariableName } from '../../../utils/styles'
 import { BaseButton } from '../BaseButton/BaseButton'
 
 import { ButtonProps } from './types'
@@ -22,6 +21,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const {
       color,
       hexColor,
+      hoverColor,
       variant = 'primary',
       size = 'default',
       disabled,
@@ -157,7 +157,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       boxShadow: shadows.mid,
       '&::before': {
         background: 'rgba(255, 255, 255, 0.2)'
-      }
+      },
+      ...(hoverColor && {
+        background: themeColors.special[hoverColor]
+      })
     }
     const activeStyles: CSSObject = {
       boxShadow: 'none',
@@ -221,8 +224,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       variant === 'primary' && !disabled
         ? {
             background:
-              hexColor ||
-              (color ? `var(${toCSSVariableName(color)})` : undefined)
+              hexColor || (color ? themeColors.special[color] : undefined)
           }
         : {}
 

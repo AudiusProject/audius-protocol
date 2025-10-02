@@ -3,7 +3,11 @@ import {
   getUserCreatedCoinsQueryKey,
   useQueryContext
 } from '@audius/common/api'
-import { Feature } from '@audius/common/models'
+import {
+  Feature,
+  LaunchCoinErrorMetadata,
+  LaunchCoinResponse
+} from '@audius/common/models'
 import { Id } from '@audius/sdk'
 import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react'
 import { PublicKey, VersionedTransaction } from '@solana/web3.js'
@@ -20,16 +24,11 @@ export type LaunchCoinParams = {
   symbol: string
   description: string
   walletPublicKey: string
-  initialBuyAmountSolLamports?: number
+  initialBuyAmountAudio?: string
   image: Blob
 }
 
-export type LaunchCoinResponse = {
-  newMint: string
-  logoUri: string
-}
-
-const COIN_DECIMALS = 9 // All our launched coins will have 9 decimals
+export const LAUNCHPAD_COIN_DECIMALS = 9 // All our launched coins will have 9 decimals
 
 /**
  * Hook for launching a new coin on the launchpad with bonding curve.
@@ -46,19 +45,32 @@ export const useLaunchCoin = () => {
       symbol,
       description,
       walletPublicKey: walletPublicKeyStr,
-      initialBuyAmountSolLamports,
+      initialBuyAmountAudio,
       image
     }: LaunchCoinParams): Promise<LaunchCoinResponse> => {
-      try {
-        console.log('Launching coin...', {
-          userId,
+      const symbolUpper = symbol.toUpperCase()
+      const errorMetadata: LaunchCoinErrorMetadata = {
+        userId,
+        lastStep: '',
+        relayResponseReceived: false,
+        poolCreateConfirmed: false,
+        sdkCoinAdded: false,
+        firstBuyConfirmed: false,
+        requestedFirstBuy: !!initialBuyAmountAudio,
+        createPoolTx: '',
+        firstBuyTx: '',
+        initialBuyAmountAudio,
+        coinMetadata: {
+          mint: '',
+          imageUri: '',
           name,
-          symbol,
+          symbol: symbolUpper,
           description,
-          walletPublicKeyStr,
-          initialBuyAmountSolLamports
-        })
-        const symbolUpper = symbol.toUpperCase()
+          walletAddress: walletPublicKeyStr
+        }
+      }
+
+      try {
         const sdk = await audiusSdk()
         const solanaProvider = appkitModal.getProvider<SolanaProvider>('solana')
         if (!solanaProvider) {
@@ -74,104 +86,102 @@ export const useLaunchCoin = () => {
             Buffer.from(transactionSerialized, 'base64')
           )
 
-          // Sends the transaction to the 3rd party wallet to sign & sends directly to solana from there
-          const txSignature =
+          // Triggers 3rd party wallet to sign the transaction, doesnt send to Solana just yet
+          const signature =
             await solanaProvider.signAndSendTransaction(deserializedTx)
-
-          // Wait for confirmation
           await sdk.services.solanaClient.connection.confirmTransaction(
-            txSignature,
+            signature,
             'confirmed'
           )
-
-          return txSignature
+          return signature
         }
 
         const walletPublicKey = new PublicKey(walletPublicKeyStr)
 
-        console.log('Sending request to relay to launch coin...')
         // Sets up coin TXs and on-chain metadata on relay side
         const res = await sdk.services.solanaRelay.launchCoin({
           name,
           symbol: symbolUpper,
           description,
           walletPublicKey,
-          initialBuyAmountSolLamports,
+          initialBuyAmountAudio,
           image
         })
         const {
           createPoolTx: createPoolTxSerialized,
           firstBuyTx: firstBuyTxSerialized,
-          solToAudioTx: solToAudioTxSerialized,
-          metadataUri,
           mintPublicKey,
           imageUri
         } = res
+        errorMetadata.createPoolTx = createPoolTxSerialized
+        errorMetadata.firstBuyTx = firstBuyTxSerialized
+        errorMetadata.coinMetadata.mint = mintPublicKey
+        errorMetadata.coinMetadata.imageUri = imageUri
 
-        console.log('Relay launch_coin response received!', {
-          createPoolTxSerialized,
-          firstBuyTxSerialized,
-          solToAudioTxSerialized,
-          metadataUri,
-          mintPublicKey
-        })
+        errorMetadata.relayResponseReceived = true
+        errorMetadata.lastStep = 'relayResponseReceived'
 
-        // Sign pool tx
-        console.log('Signing pool tx')
-        const createPoolTxSignature = await signAndSendTx(
-          createPoolTxSerialized
-        )
-        console.log(
-          'Pool created successfully! createPoolTxSignature',
-          createPoolTxSignature
-        )
+        /**
+         * Pool creation - sign & send TX
+         */
+        await signAndSendTx(createPoolTxSerialized)
+        errorMetadata.poolCreateConfirmed = true
+        errorMetadata.lastStep = 'poolCreateConfirmed'
 
+        /*
+         * Add coin to Audius database
+         * its in a separate try/catch because it's technically non-blocking
+         */
         try {
           // Create coin in Audius database
-          console.log('Adding coin to Audius database')
-          const coinRes = await sdk.coins.createCoin({
+          await sdk.coins.createCoin({
             userId: Id.parse(userId),
             createCoinRequest: {
               mint: mintPublicKey,
               ticker: `$${symbolUpper}`,
-              decimals: COIN_DECIMALS,
+              decimals: LAUNCHPAD_COIN_DECIMALS,
               name,
               logoUri: imageUri,
               description
             }
           })
-          console.log('Coin added to Audius database', coinRes)
+          errorMetadata.sdkCoinAdded = true
+          errorMetadata.lastStep = 'sdkCoinAdded'
         } catch (e) {
-          console.error('Error adding coin to Audius database', e)
+          if (reportToSentry) {
+            reportToSentry({
+              error: e instanceof Error ? e : new Error(e as string),
+              name: 'SDK Create Coin Failure',
+              feature: Feature.ArtistCoins,
+              additionalInfo: errorMetadata
+            })
+          }
         }
 
         // Perform sol->audio swap & first buy
-        if (
-          firstBuyTxSerialized &&
-          solToAudioTxSerialized &&
-          initialBuyAmountSolLamports &&
-          initialBuyAmountSolLamports > 0
-        ) {
-          // Sol to audio swap
-          console.log('Sending sol to audio swap tx to user to sign')
-          const solToAudioTx = await signAndSendTx(solToAudioTxSerialized)
-          console.log('Jupiter first buy tx signed', solToAudioTx)
-
+        if (firstBuyTxSerialized && initialBuyAmountAudio) {
           // First buy
-          console.log('Sending first buy tx to user to sign')
-          const firstBuyTxSignature = await signAndSendTx(firstBuyTxSerialized)
-          console.log('First buy tx signed', firstBuyTxSignature)
+          await signAndSendTx(firstBuyTxSerialized)
+          errorMetadata.firstBuyConfirmed = true
+          errorMetadata.lastStep = 'firstBuyConfirmed'
         }
 
         return {
+          isError: false,
           newMint: mintPublicKey,
-          logoUri: imageUri
+          logoUri: imageUri,
+          errorMetadata
         }
       } catch (error) {
-        console.error('Error launching coin:', error)
-        throw error instanceof Error
-          ? error
-          : new Error('Failed to launch coin')
+        if (reportToSentry) {
+          reportToSentry({
+            error: error instanceof Error ? error : new Error(error as string),
+            name: 'Launch Coin Failure',
+            feature: Feature.ArtistCoins,
+            additionalInfo: errorMetadata
+          })
+        }
+        return { isError: true, errorMetadata, newMint: '', logoUri: '' }
       }
     },
     onSuccess: (_result, params, _context) => {
@@ -192,7 +202,7 @@ export const useLaunchCoin = () => {
           additionalInfo: {
             coinName: params.name,
             coinSymbol: params.symbol,
-            initialBuyAmount: params.initialBuyAmountSolLamports ?? 0
+            initialBuyAmount: params.initialBuyAmountAudio ?? 0
           }
         })
       }

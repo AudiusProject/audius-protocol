@@ -1,15 +1,48 @@
 import {
   queryOptions,
   useQuery,
+  useQueryClient,
   type QueryFunctionContext
 } from '@tanstack/react-query'
 
+import { coinFromSdk } from '~/adapters/coin'
 import {
   useQueryContext,
   type QueryContextType
 } from '~/api/tan-query/utils/QueryContext'
 
 import { QUERY_KEYS } from '../queryKeys'
+
+import { useArtistCoin, getArtistCoinQueryKey } from './useArtistCoin'
+
+/**
+ * Function to check if a coin ticker is available for use.
+ * Returns true if available, false if taken.
+ * Handles 404 errors gracefully without reporting them to Sentry.
+ */
+export const fetchCoinTickerAvailability = async (
+  ticker: string,
+  { audiusSdk }: Pick<QueryContextType, 'audiusSdk'>
+) => {
+  if (!ticker || ticker.length < 2) {
+    return { available: false }
+  }
+
+  const sdk = await audiusSdk()
+  try {
+    // Use getCoinByTicker - if it returns a coin, the ticker is taken
+    await sdk.coins.getCoinByTicker({ ticker: `$${ticker}` })
+    // If we get a coin back, the ticker is not available
+    return { available: false }
+  } catch (error: any) {
+    // The API returns 404 if ticker is available (no coin found with that ticker)
+    if ('response' in error && error.response.status === 404) {
+      return { available: true }
+    }
+    // For other errors, throw them so they can be handled by React Query
+    throw error
+  }
+}
 
 export interface UseArtistCoinByTickerParams {
   ticker: string
@@ -18,7 +51,9 @@ export interface UseArtistCoinByTickerParams {
 const getArtistCoinByTickerQueryKey = (ticker: string) =>
   [QUERY_KEYS.coinByTicker, ticker] as const
 
-type FetchArtistCoinByTickerContext = Pick<QueryContextType, 'audiusSdk'>
+type FetchArtistCoinByTickerContext = Pick<QueryContextType, 'audiusSdk'> & {
+  queryClient: any
+}
 
 const getArtistCoinByTickerQueryFn =
   (context: FetchArtistCoinByTickerContext) =>
@@ -33,7 +68,14 @@ const getArtistCoinByTickerQueryFn =
     const response = await sdk.coins.getCoinByTicker({
       ticker
     })
-    return response.data
+    const coin = coinFromSdk(response.data)
+
+    // Prime the artist coin query key if we have the mint
+    if (coin?.mint) {
+      context.queryClient.setQueryData(getArtistCoinQueryKey(coin.mint), coin)
+    }
+
+    return coin?.mint
   }
 
 /**
@@ -56,8 +98,12 @@ export const useArtistCoinByTicker = (
   options?: Partial<ReturnType<typeof getArtistCoinByTickerOptions>>
 ) => {
   const context = useQueryContext()
-  return useQuery({
+  const queryClient = useQueryClient()
+
+  const { data: mint } = useQuery({
     ...options,
-    ...getArtistCoinByTickerOptions(context, params)
+    ...getArtistCoinByTickerOptions({ ...context, queryClient }, params)
   })
+
+  return useArtistCoin(mint!)
 }

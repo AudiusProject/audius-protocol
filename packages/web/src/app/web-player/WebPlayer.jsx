@@ -53,7 +53,9 @@ import { MAIN_CONTENT_ID, MainContentContext } from 'pages/MainContentContext'
 import { AiAttributedTracksPage } from 'pages/ai-attributed-tracks-page'
 import { ArtistCoinsExplorePage } from 'pages/artist-coins-explore-page/ArtistCoinsExplorePage'
 import { LaunchpadPage } from 'pages/artist-coins-launchpad-page'
+import { MobileArtistCoinsSortPage } from 'pages/artist-coins-sort-page/MobileArtistCoinsSortPage'
 import { AssetDetailPage } from 'pages/asset-detail-page/AssetDetailPage'
+import { ArtistCoinDetailsPage } from 'pages/asset-detail-page/components/mobile/ArtistCoinDetailsPage'
 import { AudioPage } from 'pages/audio-page/AudioPage'
 import { ChatPageProvider } from 'pages/chat-page/ChatPageProvider'
 import CollectionPage from 'pages/collection-page/CollectionPage'
@@ -63,6 +65,7 @@ import { DeactivateAccountPage } from 'pages/deactivate-account-page/DeactivateA
 import DevTools from 'pages/dev-tools/DevTools'
 import SolanaToolsPage from 'pages/dev-tools/SolanaToolsPage'
 import UserIdParserPage from 'pages/dev-tools/UserIdParserPage'
+import { EditCoinDetailsPage } from 'pages/edit-coin-details-page/EditCoinDetailsPage'
 import { EditCollectionPage } from 'pages/edit-collection-page'
 import EmptyPage from 'pages/empty-page/EmptyPage'
 import { ExplorePage } from 'pages/explore-page/ExplorePage'
@@ -72,6 +75,7 @@ import FeedPage from 'pages/feed-page/FeedPage'
 import FollowersPage from 'pages/followers-page/FollowersPage'
 import FollowingPage from 'pages/following-page/FollowingPage'
 import HistoryPage from 'pages/history-page/HistoryPage'
+import { LeaderboardPage } from 'pages/leaderboard-page/LeaderboardPage'
 import LibraryPage from 'pages/library-page/LibraryPage'
 import { NotFoundPage } from 'pages/not-found-page/NotFoundPage'
 import { NotificationUsersPage } from 'pages/notification-users-page/NotificationUsersPage'
@@ -130,6 +134,7 @@ const {
   NOT_FOUND_PAGE,
   SEARCH_PAGE,
   PLAYLIST_PAGE,
+
   ALBUM_PAGE,
   TRACK_PAGE,
   TRACK_COMMENTS_PAGE,
@@ -149,6 +154,8 @@ const {
   ABOUT_SETTINGS_PAGE,
   FOLLOWING_USERS_ROUTE,
   FOLLOWERS_USERS_ROUTE,
+  LEADERBOARD_USERS_ROUTE,
+  COIN_DETAIL_ROUTE,
   TRENDING_GENRES,
   APP_REDIRECT,
   TRACK_ID_PAGE,
@@ -188,6 +195,7 @@ const {
   WALLET_PAGE,
   COINS_CREATE_PAGE,
   COINS_EXPLORE_PAGE,
+  EDIT_COIN_DETAILS_PAGE,
   DEV_TOOLS_PAGE,
   SOLANA_TOOLS_PAGE,
   USER_ID_PARSER_PAGE
@@ -713,6 +721,14 @@ const WebPlayer = (props) => {
               {isArtistCoinsEnabled ? (
                 <Route
                   exact
+                  path='/coins/sort'
+                  isMobile={isMobile}
+                  component={MobileArtistCoinsSortPage}
+                />
+              ) : null}
+              {isArtistCoinsEnabled ? (
+                <Route
+                  exact
                   path={COINS_CREATE_PAGE}
                   isMobile={isMobile}
                   component={LaunchpadPage}
@@ -729,6 +745,12 @@ const WebPlayer = (props) => {
                     <AudioPage {...props} />
                   )
                 }}
+              />
+              <Route
+                exact
+                path={EDIT_COIN_DETAILS_PAGE}
+                isMobile={isMobile}
+                render={(props) => <EditCoinDetailsPage {...props} />}
               />
               <Route
                 exact
@@ -934,6 +956,18 @@ const WebPlayer = (props) => {
                 path={FOLLOWERS_USERS_ROUTE}
                 isMobile={isMobile}
                 component={FollowersPage}
+              />
+              <MobileRoute
+                exact
+                path={LEADERBOARD_USERS_ROUTE}
+                isMobile={isMobile}
+                component={LeaderboardPage}
+              />
+              <MobileRoute
+                exact
+                path={COIN_DETAIL_ROUTE}
+                isMobile={isMobile}
+                component={ArtistCoinDetailsPage}
               />
               <MobileRoute
                 exact

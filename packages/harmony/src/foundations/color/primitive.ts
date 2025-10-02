@@ -52,7 +52,10 @@ export const primitiveTheme = {
       gradientStop2: '#A22FEBFF',
       gradient: 'linear-gradient(315deg, #5B23E1FF 0%, #A22FEBFF 100%)',
       coinGradient:
-        'linear-gradient(85deg, #CC0FE0 -4.82%, #7E1BCC 49.8%, #1BA1F1 104.43%)',
+        'linear-gradient(85deg, #CC0FE0FF -4.82%, #7E1BCCFF 49.8%, #1BA1F1FF 104.43%)',
+      coinGradientColor1: '#CC0FE0FF',
+      coinGradientColor2: '#7E1BCCFF',
+      coinGradientColor3: '#1BA1F1FF',
       green: '#0F9E48FF',
       lightGreen: '#13C65AFF',
       orange: '#FF9400FF',
@@ -115,9 +118,11 @@ export const primitiveTheme = {
       gradientStop1: '#9469EEFF',
       gradientStop2: '#C781FCFF',
       gradient: 'linear-gradient(315deg, #9469EEFF 0%, #C781FCFF 100%)',
-      // TODO - KJ: Check if the dark version should have a different gradient
       coinGradient:
-        'linear-gradient(85deg, #CC0FE0 -4.82%, #7E1BCC 49.8%, #1BA1F1 104.43%)',
+        'linear-gradient(85deg, #D767E1FF -4.82%, #C67CFFFF 49.8%, #58B9F4FF 104.43%)',
+      coinGradientColor1: '#D767E1FF',
+      coinGradientColor2: '#C67CFFFF',
+      coinGradientColor3: '#58B9F4FF',
       green: '#6CDF44FF',
       lightGreen: '#15D864FF',
       orange: '#EFA947FF',
@@ -180,9 +185,11 @@ export const primitiveTheme = {
       gradientStop1: '#6CDF44FF',
       gradientStop2: '#13C65AFF',
       gradient: 'linear-gradient(315deg, #6CDF44FF 0%, #13C65AFF 100%)',
-      // TODO - KJ: Check if the matrix version should have a different gradient
       coinGradient:
-        'linear-gradient(85deg, #CC0FE0 -4.82%, #7E1BCC 49.8%, #1BA1F1 104.43%)',
+        'linear-gradient(85deg, #0BD90BFF -4.82%, #00E252FF 49.8%, #20E290FF 104.43%)',
+      coinGradientColor1: '#0BD90BFF',
+      coinGradientColor2: '#00E252FF',
+      coinGradientColor3: '#20E290FF',
       green: '#2EB954FF',
       lightGreen: '#0BF90BFF',
       orange: '#FFA524FF',

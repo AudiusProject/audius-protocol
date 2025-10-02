@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 
-import { useUser, useArtistCoin } from '@audius/common/api'
+import { useArtistCoin, useUser } from '@audius/common/api'
 import { useUIAudio } from '@audius/common/hooks'
-import { TOKEN_LISTING_MAP } from '@audius/common/store'
 import type { TipSendNotification } from '@audius/common/store'
 import { Platform, View } from 'react-native'
+import { env } from 'services/env'
 
 import { IconTipping } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
@@ -12,11 +12,11 @@ import { EventNames } from 'app/types/analytics'
 
 import {
   NotificationHeader,
+  NotificationProfilePicture,
   NotificationText,
   NotificationTile,
   NotificationTitle,
-  NotificationXButton,
-  NotificationProfilePicture
+  NotificationXButton
 } from '../Notification'
 import { TipText } from '../Notification/TipText'
 import { UserNameLink } from '../Notification/UserNameLink'
@@ -52,9 +52,7 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
   const { amount } = notification
   const uiAmount = useUIAudio(amount)
   const navigation = useNotificationNavigation()
-  const { data: tokenPriceData } = useArtistCoin({
-    mint: TOKEN_LISTING_MAP.AUDIO.address
-  })
+  const { data: tokenPriceData } = useArtistCoin(env.WAUDIO_MINT_ADDRESS)
 
   const tokenPrice = tokenPriceData?.price?.toString()
 

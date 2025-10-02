@@ -3,11 +3,14 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { useDebouncedCallback } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
 import type { TokenInfo } from '@audius/common/store'
-import { sanitizeNumericInput } from '@audius/common/utils'
+import {
+  sanitizeNumericInput,
+  formatTokenInputWithSmartDecimals
+} from '@audius/common/utils'
 
 import { Flex, Text, TextInput } from '@audius/harmony-native'
 
-import { TokenDropdownSelect } from './TokenDropdownSelect'
+import { TokenSelectButton } from './TokenSelectButton'
 
 type OutputTokenSectionProps = {
   tokenInfo: TokenInfo
@@ -30,14 +33,18 @@ export const OutputTokenSection = ({
   placeholder = '0.00',
   error,
   onAmountChange,
-  availableTokens
+  availableTokens,
+  onTokenChange
 }: OutputTokenSectionProps) => {
   const { symbol, isStablecoin } = tokenInfo
   const [localAmount, setLocalAmount] = useState(amount || '')
 
-  // Sync local state with prop changes
+  // Sync local state with prop changes and apply smart decimal formatting
   useEffect(() => {
-    setLocalAmount(amount || '')
+    const formattedAmount = amount
+      ? formatTokenInputWithSmartDecimals(amount)
+      : ''
+    setLocalAmount(formattedAmount)
   }, [amount])
 
   const debouncedOnAmountChange = useDebouncedCallback(
@@ -49,8 +56,9 @@ export const OutputTokenSection = ({
   const handleTextChange = useCallback(
     (text: string) => {
       const sanitizedText = sanitizeNumericInput(text)
-      setLocalAmount(sanitizedText)
-      debouncedOnAmountChange(sanitizedText)
+      const formattedText = formatTokenInputWithSmartDecimals(sanitizedText)
+      setLocalAmount(formattedText)
+      debouncedOnAmountChange(formattedText)
     },
     [debouncedOnAmountChange]
   )
@@ -69,18 +77,20 @@ export const OutputTokenSection = ({
             hideLabel
             placeholder={placeholder}
             startAdornmentText={isStablecoin ? '$' : ''}
-            endAdornmentText={symbol}
+            endAdornmentText={symbol === 'USDC' ? 'USD' : symbol}
             value={localAmount}
             onChangeText={handleTextChange}
             keyboardType='numeric'
             error={error}
           />
         </Flex>
-        {availableTokens && availableTokens.length > 0 && (
+        {availableTokens && availableTokens.length > 0 && onTokenChange && (
           <Flex flex={1}>
-            <TokenDropdownSelect
+            <TokenSelectButton
               selectedToken={tokenInfo}
-              navigationRoute='BaseTokenDropdownSelect'
+              availableTokens={availableTokens}
+              onTokenChange={onTokenChange}
+              title={messages.youReceive}
             />
           </Flex>
         )}

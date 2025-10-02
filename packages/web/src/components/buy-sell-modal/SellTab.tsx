@@ -1,22 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import {
-  transformArtistCoinsToTokenInfoMap,
-  useArtistCoin,
-  useArtistCoins
-} from '@audius/common/api'
+import { useArtistCoin } from '@audius/common/api'
 import { buySellMessages } from '@audius/common/messages'
-import { FeatureFlags } from '@audius/common/services'
 import type { TokenInfo } from '@audius/common/store'
 import { useTokenSwapForm } from '@audius/common/store'
 import { getCurrencyDecimalPlaces } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
 
-import { useFlag } from 'hooks/useRemoteConfig'
-
 import { InputTokenSection } from './components/InputTokenSection'
 import { OutputTokenSection } from './components/OutputTokenSection'
-import { SwapFormSkeleton } from './components/SwapSkeletons'
+import { TabContentSkeleton } from './components/SwapSkeletons'
 import type { SellTabProps } from './types'
 
 export const SellTab = ({
@@ -30,24 +23,23 @@ export const SellTab = ({
   onInputTokenChange
 }: SellTabProps) => {
   const { baseToken, quoteToken } = tokenPair
-  const { isEnabled: isArtistCoinsEnabled } = useFlag(FeatureFlags.ARTIST_COINS)
 
   // State for token selection
   const [selectedInputToken, setSelectedInputToken] = useState(baseToken)
 
   useEffect(() => {
-    setSelectedInputToken(baseToken)
-  }, [baseToken])
+    setSelectedInputToken((prev) =>
+      prev?.symbol === baseToken.symbol ? prev : baseToken
+    )
+  }, [baseToken.symbol, baseToken])
 
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
-    useArtistCoin({ mint: selectedInputToken.address })
-
-  const tokenPrice = tokenPriceData?.price?.toString() ?? null
+    useArtistCoin(selectedInputToken.address)
 
   const decimalPlaces = useMemo(() => {
-    if (!tokenPrice) return 2
-    return getCurrencyDecimalPlaces(parseFloat(tokenPrice))
-  }, [tokenPrice])
+    if (!tokenPriceData?.price) return 2
+    return getCurrencyDecimalPlaces(tokenPriceData.price)
+  }, [tokenPriceData?.price])
 
   const {
     inputAmount,
@@ -66,11 +58,6 @@ export const SellTab = ({
     initialInputValue,
     onInputValueChange
   })
-
-  const { data: coins } = useArtistCoins()
-  const artistCoins: TokenInfo[] = useMemo(() => {
-    return Object.values(transformArtistCoinsToTokenInfoMap(coins ?? []))
-  }, [coins])
 
   // Token change handlers
   const handleInputTokenChange = (token: TokenInfo) => {
@@ -95,7 +82,7 @@ export const SellTab = ({
   return (
     <Flex direction='column' gap='xl'>
       {isInitialLoading ? (
-        <SwapFormSkeleton />
+        <TabContentSkeleton />
       ) : (
         <>
           <InputTokenSection
@@ -107,7 +94,7 @@ export const SellTab = ({
             availableBalance={availableBalance}
             error={error}
             errorMessage={errorMessage}
-            availableTokens={isArtistCoinsEnabled ? artistCoins : undefined}
+            availableTokens={availableInputTokens}
             onTokenChange={handleInputTokenChange}
           />
           <OutputTokenSection
@@ -116,7 +103,7 @@ export const SellTab = ({
             onAmountChange={handleOutputAmountChange}
             availableBalance={0}
             exchangeRate={currentExchangeRate}
-            tokenPrice={tokenPrice}
+            tokenPrice={tokenPriceData?.price.toString() ?? null}
             isTokenPriceLoading={isTokenPriceLoading}
             tokenPriceDecimalPlaces={decimalPlaces}
             hideTokenDisplay={true} // Hide token display completely in sell tab output

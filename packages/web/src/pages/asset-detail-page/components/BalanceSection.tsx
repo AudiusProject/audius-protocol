@@ -1,10 +1,16 @@
+import { useCallback, useState } from 'react'
+
 import {
-  useArtistCoins,
+  useArtistCoin,
   useTokenBalance,
   useUSDCBalance
 } from '@audius/common/api'
-import { useFormattedTokenBalance } from '@audius/common/hooks'
+import {
+  useFormattedTokenBalance,
+  useIsManagedAccount
+} from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
+import { APP_REDIRECT } from '@audius/common/src/utils/route'
 import {
   useAddCashModal,
   useBuySellModal,
@@ -20,14 +26,24 @@ import {
   Text,
   useTheme
 } from '@audius/harmony'
+import { useHistory } from 'react-router-dom'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { useBuySellRegionSupport } from 'components/buy-sell-modal'
+import Drawer from 'components/drawer/Drawer'
 import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import Skeleton from 'components/skeleton/Skeleton'
 import Tooltip from 'components/tooltip/Tooltip'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
+import { getPathname } from 'utils/route'
+import { zIndex } from 'utils/zIndex'
+
+const messages = {
+  openTheApp: 'Open The App',
+  drawerDescription:
+    "You'll need to make this purchase in the app or on the web."
+}
 
 type BalanceStateProps = {
   ticker: string
@@ -40,7 +56,7 @@ type BalanceStateProps = {
 const BalanceSectionSkeleton = () => {
   return (
     <Paper ph='xl' pv='l'>
-      <Flex direction='column' gap='l' w='100%'>
+      <Flex column gap='l' w='100%'>
         <Flex gap='s' alignItems='center'>
           <Skeleton width='64px' height='64px' />
           <Skeleton width='120px' height='24px' />
@@ -77,6 +93,7 @@ const ZeroBalanceState = ({
   onReceive,
   isBuySellSupported
 }: BalanceStateProps & { isBuySellSupported: boolean }) => {
+  const isManagerMode = useIsManagedAccount()
   return (
     <>
       <Flex gap='s' alignItems='center'>
@@ -92,6 +109,7 @@ const ZeroBalanceState = ({
         border='default'
         direction='column'
         gap='xs'
+        shadow='flat'
       >
         <Text variant='heading' size='s'>
           {walletMessages.becomeMemberTitle}
@@ -102,8 +120,12 @@ const ZeroBalanceState = ({
       </Paper>
       <Flex gap='s'>
         <Tooltip
-          disabled={isBuySellSupported}
-          text={walletMessages.buySellNotSupported}
+          disabled={isBuySellSupported && !isManagerMode}
+          text={
+            isManagerMode
+              ? walletMessages.buySellNotSupportedManagerMode
+              : walletMessages.buySellNotSupported
+          }
           color='secondary'
           placement='top'
           shouldWrapContent={false}
@@ -113,7 +135,7 @@ const ZeroBalanceState = ({
               variant='primary'
               fullWidth
               onClick={onBuy}
-              disabled={!isBuySellSupported}
+              disabled={!isBuySellSupported || isManagerMode}
             >
               {walletMessages.buy}
             </Button>
@@ -134,12 +156,18 @@ const HasBalanceState = ({
   onSend,
   onReceive,
   mint,
-  isBuySellSupported
-}: BalanceStateProps & { mint: string; isBuySellSupported: boolean }) => {
+  isBuySellSupported,
+  coinName
+}: BalanceStateProps & {
+  mint: string
+  isBuySellSupported: boolean
+  coinName: string
+}) => {
+  const isManagerMode = useIsManagedAccount()
   const { motion } = useTheme()
   const {
     tokenBalanceFormatted,
-    tokenDollarValue,
+    formattedHeldValue,
     isTokenBalanceLoading,
     isTokenPriceLoading
   } = useFormattedTokenBalance(mint)
@@ -148,33 +176,45 @@ const HasBalanceState = ({
 
   return (
     <>
-      <Flex gap='s' alignItems='center'>
-        <TokenIcon logoURI={logoURI} />
-        <Flex
-          direction='column'
-          gap='xs'
-          css={{
-            opacity: isLoading ? 0 : 1,
-            transition: `opacity ${motion.expressive}`
-          }}
-        >
-          <Flex gap='xs'>
-            <Text variant='heading' size='l' color='default'>
-              {tokenBalanceFormatted}
+      <Flex alignItems='center' justifyContent='space-between' flex={1}>
+        <Flex alignItems='center' gap='l'>
+          <TokenIcon logoURI={logoURI} />
+          <Flex
+            direction='column'
+            gap='2xs'
+            flex={1}
+            css={{
+              opacity: isLoading ? 0 : 1,
+              transition: `opacity ${motion.expressive}`
+            }}
+          >
+            <Text variant='heading' size='s'>
+              {coinName}
             </Text>
-            <Text variant='heading' size='l' color='subdued'>
-              {ticker}
-            </Text>
+            <Flex gap='xs' alignItems='center'>
+              <Text variant='title' size='l'>
+                {tokenBalanceFormatted}
+              </Text>
+              <Text variant='title' size='l' color='subdued'>
+                {ticker}
+              </Text>
+            </Flex>
           </Flex>
-          <Text variant='heading' size='s' color='subdued'>
-            {tokenDollarValue}
+        </Flex>
+        <Flex alignItems='center' gap='m'>
+          <Text variant='title' size='l' color='default'>
+            {formattedHeldValue}
           </Text>
         </Flex>
       </Flex>
       <Flex direction='column' gap='s'>
         <Tooltip
-          disabled={isBuySellSupported}
-          text={walletMessages.buySellNotSupported}
+          disabled={isBuySellSupported && !isManagerMode}
+          text={
+            isManagerMode
+              ? walletMessages.buySellNotSupportedManagerMode
+              : walletMessages.buySellNotSupported
+          }
           color='secondary'
           placement='top'
           shouldWrapContent={false}
@@ -184,14 +224,19 @@ const HasBalanceState = ({
               variant='secondary'
               fullWidth
               onClick={onBuy}
-              disabled={!isBuySellSupported}
+              disabled={!isBuySellSupported || isManagerMode}
             >
               {walletMessages.buySell}
             </Button>
           </Box>
         </Tooltip>
         <Flex gap='s'>
-          <Button variant='secondary' fullWidth onClick={onSend}>
+          <Button
+            disabled={isManagerMode}
+            variant='secondary'
+            fullWidth
+            onClick={onSend}
+          >
             {walletMessages.send}
           </Button>
           <Button variant='secondary' fullWidth onClick={onReceive}>
@@ -208,13 +253,10 @@ type AssetDetailProps = {
 }
 
 const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
-  const { data: coinInsights, isPending: coinsLoading } = useArtistCoins({
-    mint: [mint]
-  })
+  const { data: coin, isPending: coinsLoading } = useArtistCoin(mint)
   const { data: tokenBalance } = useTokenBalance({ mint })
   const { data: usdcBalance } = useUSDCBalance()
 
-  const coin = coinInsights?.[0]
   const { isBuySellSupported } = useBuySellRegionSupport()
 
   // Modal hooks
@@ -223,8 +265,24 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
   const [, openTransferDrawer] = useModalState('TransferAudioMobileWarning')
   const { onOpen: openReceiveTokensModal } = useReceiveTokensModal()
   const { onOpen: openSendTokensModal } = useSendTokensModal()
-
   const isMobile = useIsMobile()
+  const [isOpenAppDrawerOpen, setIsOpenAppDrawerOpen] = useState(false)
+
+  const history = useHistory()
+
+  const handleOpenAppClick = useCallback(() => {
+    const pathname = getPathname(history.location)
+    const redirectHref = `https://redirect.audius.co${APP_REDIRECT}${pathname}`
+    window.location.href = redirectHref
+  }, [history.location])
+
+  const onOpenOpenAppDrawer = useCallback(() => {
+    setIsOpenAppDrawerOpen(true)
+  }, [setIsOpenAppDrawerOpen])
+
+  const onCloseOpenAppDrawer = useCallback(() => {
+    setIsOpenAppDrawerOpen(false)
+  }, [setIsOpenAppDrawerOpen])
 
   // Handler functions with account requirements - defined before early return
   const handleBuySell = useRequiresAccountCallback(() => {
@@ -266,16 +324,17 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
 
   const ticker = coin.ticker ?? ''
   const logoURI = coin.logoUri
+  const coinName = coin.name ?? ''
 
   return (
-    <Paper ph='xl' pv='l'>
-      <Flex direction='column' gap='l' w='100%'>
+    <Paper ph='xl' pv='l' border='default'>
+      <Flex column gap='l' w='100%'>
         {!tokenBalance?.balance ||
         Number(tokenBalance.balance.toString()) === 0 ? (
           <ZeroBalanceState
             ticker={ticker}
             logoURI={logoURI}
-            onBuy={handleAddCash}
+            onBuy={isMobile ? onOpenOpenAppDrawer : handleAddCash}
             onReceive={handleReceive}
             isBuySellSupported={isBuySellSupported}
           />
@@ -283,12 +342,41 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
           <HasBalanceState
             ticker={ticker}
             logoURI={logoURI}
-            onBuy={handleBuySell}
+            onBuy={isMobile ? onOpenOpenAppDrawer : handleBuySell}
             onSend={handleSend}
             onReceive={handleReceive}
             mint={mint}
             isBuySellSupported={isBuySellSupported}
+            coinName={coinName}
           />
+        )}
+        {isMobile && (
+          <Drawer
+            zIndex={zIndex.BUY_SELL_MODAL}
+            isOpen={isOpenAppDrawerOpen}
+            onClose={onCloseOpenAppDrawer}
+            shouldClose={!isOpenAppDrawerOpen}
+          >
+            <Flex direction='column' p='l' pb='2xl' w='100%'>
+              <Box pv='s'>
+                <Text
+                  variant='label'
+                  size='xl'
+                  strength='strong'
+                  color='subdued'
+                  textAlign='center'
+                >
+                  {messages.openTheApp}
+                </Text>
+              </Box>
+              <Box pv='l'>
+                <Text>{messages.drawerDescription}</Text>
+              </Box>
+              <Button variant='secondary' onClick={handleOpenAppClick}>
+                {messages.openTheApp}
+              </Button>
+            </Flex>
+          </Drawer>
         )}
       </Flex>
     </Paper>
@@ -300,8 +388,8 @@ export const BalanceSection = componentWithErrorBoundary(
   {
     name: 'BalanceSection',
     fallback: (
-      <Paper ph='xl' pv='l'>
-        <Flex direction='column' gap='l' w='100%'>
+      <Paper ph='xl' pv='l' border='default'>
+        <Flex column gap='l' w='100%'>
           <Text variant='body' size='m' color='subdued'>
             {walletMessages.errors.unableToLoadBalance}
           </Text>

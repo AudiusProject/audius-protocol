@@ -1,9 +1,11 @@
 import {
-  useArtistCoinInsights,
+  useArtistCoin,
   useArtistCoinMembers,
   useUsers
 } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
+import { LEADERBOARD_USERS_ROUTE } from '@audius/common/src/utils/route'
+import { coinLeaderboardUserListActions } from '@audius/common/store'
 import {
   Flex,
   Paper,
@@ -17,6 +19,7 @@ import {
 import { useDispatch } from 'react-redux'
 
 import { UserProfilePictureList } from 'components/user-profile-picture-list'
+import { useIsMobile } from 'hooks/useIsMobile'
 import {
   setUsers,
   setVisibility
@@ -25,6 +28,7 @@ import {
   UserListEntityType,
   UserListType
 } from 'store/application/ui/userListModal/types'
+import { push } from 'utils/navigation'
 
 const messages = coinDetailsMessages.coinLeaderboard
 
@@ -57,19 +61,25 @@ export const AssetLeaderboardCard = ({ mint }: AssetLeaderboardCardProps) => {
   const { data: users, isPending: isUsersPending } = useUsers(
     leaderboardUsers?.map((user) => user.userId)
   )
-  const coinInsights = useArtistCoinInsights({ mint })
+  const coinData = useArtistCoin(mint)
   const dispatch = useDispatch()
   const isPending = isLeaderboardPending || isUsersPending
+  const isMobile = useIsMobile()
 
   const handleViewLeaderboard = () => {
-    dispatch(
-      setUsers({
-        userListType: UserListType.COIN_LEADERBOARD,
-        entityType: UserListEntityType.USER,
-        entity: mint
-      })
-    )
-    dispatch(setVisibility(true))
+    if (isMobile) {
+      dispatch(coinLeaderboardUserListActions.setCoinLeaderboard(mint))
+      dispatch(push(LEADERBOARD_USERS_ROUTE))
+    } else {
+      dispatch(
+        setUsers({
+          userListType: UserListType.COIN_LEADERBOARD,
+          entityType: UserListEntityType.USER,
+          entity: mint
+        })
+      )
+      dispatch(setVisibility(true))
+    }
   }
 
   if (leaderboardUsers?.length === 0) {
@@ -80,8 +90,9 @@ export const AssetLeaderboardCard = ({ mint }: AssetLeaderboardCardProps) => {
     <Paper
       borderRadius='l'
       shadow='far'
-      direction='column'
+      column
       alignItems='flex-start'
+      border='default'
     >
       <Flex alignItems='center' gap='xs' pv='l' ph='xl'>
         <Text variant='heading' size='s' color='heading'>
@@ -95,6 +106,9 @@ export const AssetLeaderboardCard = ({ mint }: AssetLeaderboardCardProps) => {
         justifyContent='space-between'
         alignItems='center'
         w='100%'
+        onClick={handleViewLeaderboard}
+        css={{ cursor: 'pointer' }}
+        role='button'
       >
         {isPending ? (
           <Flex alignItems='center'>
@@ -108,16 +122,10 @@ export const AssetLeaderboardCard = ({ mint }: AssetLeaderboardCardProps) => {
             <AvatarSkeleton />
           </Flex>
         ) : (
-          <Flex
-            onClick={(e) => {
-              handleViewLeaderboard()
-            }}
-            css={{ cursor: 'pointer' }}
-            role='button'
-          >
+          <Flex>
             <UserProfilePictureList
               users={users ?? []}
-              totalUserCount={coinInsights?.data?.holder}
+              totalUserCount={coinData?.data?.holder}
               limit={isSmallScreen ? 6 : 8}
               disableProfileClick={true}
               disablePopover={true}

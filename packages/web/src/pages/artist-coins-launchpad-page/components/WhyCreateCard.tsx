@@ -21,12 +21,14 @@ export const FeatureCard = ({
       borderRadius='m'
     >
       <Artwork src={imageSrc} w='xl' h='xl' borderWidth={0} />
-      <Text variant='title' color='default' size='m'>
-        {title}
-      </Text>
-      <Text variant='body' color='subdued' size='m'>
-        {description}
-      </Text>
+      <Flex direction='column' gap='xs'>
+        <Text variant='title' color='default' size='m'>
+          {title}
+        </Text>
+        <Text variant='body' color='subdued' size='m'>
+          {description}
+        </Text>
+      </Flex>
     </Flex>
   )
 }

@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 
 import {
   type ConnectedWallet,
@@ -89,7 +89,7 @@ export const useConnectAndAssociateWallets = (
     analytics: { track, make }
   } = useAppContext()
   const theme = useTheme()
-  const { open } = useAppKit()
+  const { open: openAppKitModal, close: closeAppKitModal } = useAppKit()
   const { signMessageAgnostic } = useSignMessageAgnostic()
   const { data: currentUser } = useCurrentAccountUser()
   const { data: connectedWallets } = useConnectedWallets()
@@ -98,8 +98,8 @@ export const useConnectAndAssociateWallets = (
 
   // The state goes from modal open => connecting => associating
   const { open: isAppKitModalOpen } = useAppKitState()
-  const isConnectingRef = useRef(false)
-  const isAssociatingRef = useRef(false)
+  const [isConnecting, setIsConnecting] = useState(false)
+  const [isAssociating, setIsAssociating] = useState(false)
 
   // Keep track of any existing connected external wallets
   const { isConnected, connector, chainId } = useAccount()
@@ -119,18 +119,21 @@ export const useConnectAndAssociateWallets = (
    * - Ensures all existing connections are disconnected
    * - Ensures that the network is set to mainnet (for Eth)
    */
-  const openAppKitModal = useRequiresAccountCallback(async () => {
-    // If previously connected, disconnect to give a "fresh" view of options
-    if (isConnected) {
-      await disconnect()
-    }
-    appkitModal.updateFeatures({ socials: false, email: false })
-    appkitModal.setThemeMode(theme.type === 'day' ? 'light' : 'dark')
-    // If the user is signed in using an external wallet, they'll be connected
-    // to the audiusChain network. Reset that to mainnet to connect properly.
-    await appkitModal.switchNetwork(mainnet)
-    await open({ view: 'Connect' })
-  }, [disconnect, isConnected, open, theme.type])
+  const openAppKitModalCallback = useRequiresAccountCallback(
+    async (namespace?: keyof NamespaceTypeMap) => {
+      // If previously connected, disconnect to give a "fresh" view of options
+      if (isConnected) {
+        await disconnect()
+      }
+      appkitModal.updateFeatures({ socials: false, email: false })
+      appkitModal.setThemeMode(theme.type === 'day' ? 'light' : 'dark')
+      // If the user is signed in using an external wallet, they'll be connected
+      // to the audiusChain network. Reset that to mainnet to connect properly.
+      await appkitModal.switchNetwork(mainnet)
+      await openAppKitModal({ view: 'Connect', namespace })
+    },
+    [disconnect, isConnected, openAppKitModal, theme.type]
+  )
 
   /**
    * Reconnects to the external auth wallet connector if the user wallet isn't
@@ -163,7 +166,7 @@ export const useConnectAndAssociateWallets = (
    */
   const associateConnectedWallets = useCallback(async () => {
     try {
-      isAssociatingRef.current = true
+      setIsAssociating(true)
       track(make({ eventName: Name.CONNECT_WALLET_NEW_WALLET_START }))
       const activeAccount = appkitModal.getAccount()
       const originalAddress = currentUser?.wallet
@@ -255,7 +258,7 @@ export const useConnectAndAssociateWallets = (
       track(make({ eventName: Name.CONNECT_WALLET_ERROR, error: String(e) }))
       onError?.(e)
     } finally {
-      isAssociatingRef.current = false
+      setIsAssociating(false)
       await reconnectExternalAuthWallet()
     }
   }, [
@@ -282,23 +285,29 @@ export const useConnectAndAssociateWallets = (
   useEffect(() => {
     return appkitModal.subscribeEvents(async (event) => {
       if (event.data.event === 'SELECT_WALLET') {
-        isConnectingRef.current = true
+        setIsConnecting(true)
       } else if (event.data.event === 'MODAL_CLOSE') {
-        if (!isConnectingRef.current && !isAssociatingRef.current) {
+        if (!isConnecting && !isAssociating) {
           await reconnectExternalAuthWallet()
         }
       } else if (event.data.event === 'CONNECT_SUCCESS') {
-        isConnectingRef.current = false
+        setIsConnecting(false)
         await associateConnectedWallets()
+        closeAppKitModal()
       } else if (event.data.event === 'CONNECT_ERROR') {
-        isConnectingRef.current = false
+        setIsConnecting(false)
       }
     })
-  }, [associateConnectedWallets, reconnectExternalAuthWallet])
+  }, [
+    associateConnectedWallets,
+    reconnectExternalAuthWallet,
+    isConnecting,
+    isAssociating,
+    closeAppKitModal
+  ])
 
   return {
-    isPending:
-      isAppKitModalOpen || isConnectingRef.current || isAssociatingRef.current,
-    openAppKitModal
+    isPending: isAppKitModalOpen || isConnecting || isAssociating,
+    openAppKitModal: openAppKitModalCallback
   }
 }

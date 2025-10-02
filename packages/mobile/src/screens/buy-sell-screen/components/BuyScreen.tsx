@@ -64,6 +64,7 @@ type BuyScreenProps = {
   errorMessage?: string
   initialInputValue?: string
   onInputValueChange?: (value: string) => void
+  onOutputTokenChange?: (token: TokenInfo) => void
 }
 
 export const BuyScreen = ({
@@ -72,17 +73,16 @@ export const BuyScreen = ({
   error,
   errorMessage,
   initialInputValue,
-  onInputValueChange
+  onInputValueChange,
+  onOutputTokenChange
 }: BuyScreenProps) => {
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
-    useArtistCoin({ mint: tokenPair?.baseToken?.address })
-
-  const tokenPrice = tokenPriceData?.price?.toString() ?? null
+    useArtistCoin(tokenPair?.baseToken?.address)
 
   const decimalPlaces = useMemo(() => {
-    if (!tokenPrice) return 2
-    return getCurrencyDecimalPlaces(parseFloat(tokenPrice))
-  }, [tokenPrice])
+    if (!tokenPriceData?.price) return 2
+    return getCurrencyDecimalPlaces(tokenPriceData.price)
+  }, [tokenPriceData?.price])
 
   const {
     inputAmount,
@@ -103,7 +103,7 @@ export const BuyScreen = ({
   })
 
   const { data: coins } = useArtistCoins()
-  const availableOutputTokens: TokenInfo[] = useMemo(() => {
+  const artistCoins: TokenInfo[] = useMemo(() => {
     return Object.values(transformArtistCoinsToTokenInfoMap(coins ?? []))
   }, [coins])
 
@@ -145,10 +145,11 @@ export const BuyScreen = ({
             onAmountChange={handleOutputAmountChange}
             availableBalance={0}
             exchangeRate={currentExchangeRate}
-            tokenPrice={tokenPrice}
+            tokenPrice={tokenPriceData?.price.toString() ?? null}
             isTokenPriceLoading={isTokenPriceLoading}
             tokenPriceDecimalPlaces={decimalPlaces}
-            availableTokens={availableOutputTokens}
+            availableTokens={artistCoins}
+            onTokenChange={onOutputTokenChange}
           />
         </>
       )}

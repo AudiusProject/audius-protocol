@@ -13,7 +13,7 @@ import { ExternalWalletsCard } from './components/ExternalWalletsCard'
 
 export const CoinDetailsScreen = () => {
   const { mint } = useRoute().params as { mint: string }
-  const { data: coin } = useArtistCoin({ mint })
+  const { data: coin } = useArtistCoin(mint)
   const { ticker } = coin ?? {}
 
   return (

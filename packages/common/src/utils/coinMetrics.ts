@@ -1,7 +1,6 @@
-import { CoinInsights } from '@audius/sdk'
+import { Coin } from '~/adapters/coin'
 
-import { formatCurrencyWithMax } from './decimal'
-import { formatCount } from './formatUtil'
+import { formatCurrencyWithSubscript, formatCount } from './decimal'
 
 export type MetricData = {
   value: string
@@ -13,14 +12,14 @@ export type MetricData = {
 }
 
 const messages = {
-  pricePerCoin: 'Price per coin',
+  pricePerCoin: 'Price',
   holdersOnAudius: 'Holders on Audius',
   uniqueHolders: 'Unique Holders',
   volume24hr: 'Volume (24hr)',
-  totalTransfers: 'Total Transfers'
+  totalTransfers: 'Total Transfers',
+  marketCap: 'Market Cap',
+  graduationProgress: 'Graduation Progress'
 }
-
-const CURRENCY_FORMAT_MAX = 100_000
 
 const formatPercentage = (num: number): string => {
   return `${num >= 0 ? '+' : ''}${num.toFixed(2)}%`
@@ -52,28 +51,33 @@ const createMetric = (
   }
 }
 
-export const createCoinMetrics = (coinInsights: CoinInsights): MetricData[] => {
+export const createCoinMetrics = (coin: Coin): MetricData[] => {
+  // Birdeye price may not be available right after launch. Fall back to dynamic bonding curve price if so.
+  const price =
+    coin.price === 0 ? coin.dynamicBondingCurve.priceUSD : coin.price
   const potentialMetrics = [
     createMetric(
-      formatCurrencyWithMax(coinInsights.price, CURRENCY_FORMAT_MAX),
+      formatCurrencyWithSubscript(price),
       messages.pricePerCoin,
-      coinInsights.priceChange24hPercent
+      coin.priceChange24hPercent
     ),
+    createMetric(`$${formatCount(coin.marketCap, 2)}`, messages.marketCap),
     createMetric(
-      formatCount(coinInsights.holder || 0),
+      formatCount(coin.holder),
       messages.uniqueHolders,
-      coinInsights.uniqueWallet24hChangePercent
+      (coin.uniqueWallet24h / Math.max(coin.holder - coin.uniqueWallet24h, 1)) *
+        100
     ),
     createMetric(
-      formatCurrencyWithMax(coinInsights.v24hUSD, CURRENCY_FORMAT_MAX),
+      `${Math.round((coin.dynamicBondingCurve?.curveProgress ?? 0) * 100)}%`,
+      messages.graduationProgress
+    ),
+    createMetric(
+      `$${formatCount(coin.v24hUSD, 2)}`,
       messages.volume24hr,
-      coinInsights.v24hChangePercent
+      coin.v24hChangePercent
     ),
-    createMetric(
-      formatCount(coinInsights.trade24h),
-      messages.totalTransfers,
-      coinInsights.trade24hChangePercent
-    )
+    createMetric(formatCount(coin.trade24h), messages.totalTransfers)
   ]
 
   return potentialMetrics.filter(

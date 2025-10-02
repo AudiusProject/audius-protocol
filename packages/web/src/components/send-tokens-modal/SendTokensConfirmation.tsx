@@ -54,12 +54,13 @@ const SendTokensConfirmation = ({
   const { isMobile } = useMedia()
 
   // Get token data and balance using the same hooks as ReceiveTokensModal
-  const { data: coin } = useArtistCoin({ mint })
-  const { data: tokenBalance } = useTokenBalance({ mint })
+  const { data: coin } = useArtistCoin(mint)
+  const { data: tokenBalance } = useTokenBalance({
+    mint,
+    includeExternalWallets: false,
+    includeStaked: false
+  })
   const tokenInfo = coin ? transformArtistCoinToTokenInfo(coin) : undefined
-  const currentBalance = tokenBalance?.balance
-    ? tokenBalance.balance.value
-    : BigInt(0)
 
   const formatAmount = (amount: bigint) => {
     return new FixedDecimal(amount, tokenInfo?.decimals).toLocaleString(
@@ -67,16 +68,6 @@ const SendTokensConfirmation = ({
       {
         minimumFractionDigits: 0,
         maximumFractionDigits: 0
-      }
-    )
-  }
-
-  const formatBalance = (balance: bigint) => {
-    return new FixedDecimal(balance, tokenInfo?.decimals).toLocaleString(
-      'en-US',
-      {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
       }
     )
   }
@@ -101,7 +92,8 @@ const SendTokensConfirmation = ({
       {/* Token Balance Section */}
       <CryptoBalanceSection
         tokenInfo={tokenInfo}
-        amount={formatBalance(currentBalance)}
+        name={tokenInfo.name}
+        amount={tokenBalance?.balanceLocaleString ?? ''}
       />
 
       <Divider orientation='horizontal' />

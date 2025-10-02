@@ -34,7 +34,7 @@ import { DownloadPriceField } from './DownloadPriceField'
 
 const getMessages = (props: DownloadAvailabilityProps) => ({
   downloadAvailability: 'Download Availability',
-  customize: 'Specify who has access to download your files.',
+  customize: 'Decide who can download your files.',
   public: 'Public',
   followers: 'Followers',
   premium: 'Premium',

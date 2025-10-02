@@ -1,13 +1,14 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import { Coin } from '@audius/common/adapters'
 import { useArtistCoins } from '@audius/common/api'
 import { walletMessages } from '@audius/common/messages'
 import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import { useBuySellModal } from '@audius/common/store'
+import { formatCurrencyWithSubscript, formatCount } from '@audius/common/utils'
 import {
   Button,
   Flex,
-  formatCount,
   IconSearch,
   LoadingSpinner,
   Paper,
@@ -15,13 +16,9 @@ import {
   spacing,
   Text
 } from '@audius/harmony'
-import {
-  GetCoinsSortMethodEnum,
-  GetCoinsSortDirectionEnum,
-  Coin,
-  HashId
-} from '@audius/sdk'
+import { GetCoinsSortMethodEnum, GetCoinsSortDirectionEnum } from '@audius/sdk'
 import moment from 'moment'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { Cell } from 'react-table'
 
 import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
@@ -29,6 +26,7 @@ import { TextLink, UserLink } from 'components/link'
 import { dateSorter, numericSorter, Table } from 'components/table'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { useMainContentRef } from 'pages/MainContentContext'
+import { env } from 'services/env'
 
 import styles from './ArtistCoinsTable.module.css'
 
@@ -36,7 +34,7 @@ type CoinCell = Cell<Coin>
 
 const renderTokenNameCell = (cellInfo: CoinCell) => {
   const coin = cellInfo.row.original
-  const ownerId = HashId.parse(coin.ownerId)
+  const { ownerId } = coin
 
   if (!coin || !coin.ticker) {
     return null
@@ -47,15 +45,45 @@ const renderTokenNameCell = (cellInfo: CoinCell) => {
   return (
     <Flex
       pl='xl'
-      gap='xl'
+      gap='l'
       alignItems='center'
-      justifyContent='space-between'
+      justifyContent='flex-start'
       w='100%'
     >
-      <Flex gap='s' alignItems='center' w='100%'>
-        <TokenIcon logoURI={coin.logoUri} size='xl' hex />
-        <Flex column>
-          <TextLink to={assetDetailUrl} textVariant='title' size='s'>
+      <Flex justifyContent='flex-end' css={{ flex: '0 0 2ch' }}>
+        <Text
+          variant='body'
+          size='s'
+          strength='strong'
+          css={{ fontVariantNumeric: 'tabular-nums' }}
+        >
+          {cellInfo.row.index + 1}
+        </Text>
+      </Flex>
+      <Flex
+        gap='m'
+        alignItems='center'
+        css={{
+          overflow: 'hidden',
+          flex: '0 0 clamp(80px, 24ch, 180px)',
+          minWidth: 'clamp(80px, 24ch, 180px)',
+          maxWidth: 'clamp(80px, 24ch, 180px)'
+        }}
+      >
+        <TokenIcon
+          logoURI={coin.logoUri}
+          size='xl'
+          hex
+          css={{ minWidth: spacing.unit10, minHeight: spacing.unit10 }}
+        />
+        <Flex column css={{ overflow: 'hidden' }}>
+          <TextLink
+            to={assetDetailUrl}
+            textVariant='title'
+            size='s'
+            ellipses
+            css={{ display: 'block' }}
+          >
             {coin.name}
           </TextLink>
           <TextLink
@@ -63,14 +91,31 @@ const renderTokenNameCell = (cellInfo: CoinCell) => {
             textVariant='body'
             size='s'
             strength='strong'
+            ellipses
+            css={{ display: 'block' }}
           >
             {coin.ticker}
           </TextLink>
         </Flex>
       </Flex>
-      <Flex w='100%' justifyContent='flex-start'>
+      <Flex
+        justifyContent='flex-start'
+        css={{
+          overflow: 'hidden',
+          flex: '1 1 0',
+          minWidth: '140px'
+        }}
+      >
         {ownerId ? (
-          <UserLink userId={ownerId} size='s' badgeSize='xs' />
+          <UserLink
+            userId={ownerId}
+            size='s'
+            badgeSize='xs'
+            ellipses
+            fullWidth
+            hideArtistCoinBadge
+            popover
+          />
         ) : (
           <Skeleton h='24px' w='100px' />
         )}
@@ -81,10 +126,11 @@ const renderTokenNameCell = (cellInfo: CoinCell) => {
 
 const renderPriceCell = (cellInfo: CoinCell) => {
   const coin = cellInfo.row.original
+  const price =
+    coin.price === 0 ? coin.dynamicBondingCurve.priceUSD : coin.price
   return (
-    <Text variant='body' size='m' color='default'>
-      {walletMessages.dollarSign}
-      {coin.price.toFixed(4)}
+    <Text variant='body' size='m'>
+      {formatCurrencyWithSubscript(price)}
     </Text>
   )
 }
@@ -103,7 +149,8 @@ const renderVolume24hCell = (cellInfo: CoinCell) => {
   const coin = cellInfo.row.original
   return (
     <Text variant='body' size='m'>
-      {formatCount(coin.v24hUSD)}
+      {walletMessages.dollarSign}
+      {formatCount(coin.v24hUSD, 2)}
     </Text>
   )
 }
@@ -133,14 +180,15 @@ const renderBuyCell = (
   const coin = cellInfo.row.original
 
   return (
-    <Flex pr='xl' justifyContent='flex-end'>
+    <Flex pr='s' justifyContent='flex-end'>
       <Button
-        variant='tertiary'
+        variant='secondary'
         size='small'
-        css={{
-          boxShadow: '0 0 0 1px inset var(--harmony-border-default) !important'
+        hoverColor='coinGradient'
+        onClick={(e) => {
+          e.stopPropagation()
+          handleBuy(coin.ticker ?? '')
         }}
-        onClick={() => handleBuy(coin.ticker ?? '')}
       >
         {walletMessages.buy}
       </Button>
@@ -151,10 +199,10 @@ const renderBuyCell = (
 const tableColumnMap = {
   tokenName: {
     id: 'tokenName',
-    Header: 'Coin',
+    Header: () => <Flex css={{ paddingLeft: spacing.unit8 }}>Coin</Flex>,
     accessor: 'name',
     Cell: renderTokenNameCell,
-    width: 200,
+    minWidth: 150,
     disableSortBy: true,
     align: 'left'
   },
@@ -165,6 +213,8 @@ const tableColumnMap = {
     Cell: renderPriceCell,
     disableSortBy: false,
     align: 'right',
+    width: 50,
+    minWidth: 50,
     sorter: numericSorter('price')
   },
   volume24h: {
@@ -174,6 +224,8 @@ const tableColumnMap = {
     Cell: renderVolume24hCell,
     disableSortBy: false,
     align: 'right',
+    width: 40,
+    minWidth: 40,
     sorter: numericSorter('v24hUSD')
   },
   marketCap: {
@@ -183,7 +235,8 @@ const tableColumnMap = {
     Cell: renderMarketCapCell,
     disableSortBy: false,
     align: 'right',
-    width: 80,
+    width: 50,
+    minWidth: 50,
     sorter: numericSorter('marketCap')
   },
   createdDate: {
@@ -193,6 +246,8 @@ const tableColumnMap = {
     Cell: renderCreatedDateCell,
     disableSortBy: false,
     align: 'right',
+    width: 40,
+    minWidth: 40,
     sorter: dateSorter('createdAt')
   },
   holders: {
@@ -202,6 +257,8 @@ const tableColumnMap = {
     Cell: renderHoldersCell,
     disableSortBy: false,
     align: 'right',
+    width: 40,
+    minWidth: 40,
     sorter: numericSorter('holder')
   },
   buy: {
@@ -209,7 +266,9 @@ const tableColumnMap = {
     accessor: 'buy',
     Cell: renderBuyCell,
     disableSortBy: true,
-    align: 'right'
+    align: 'right',
+    width: 30,
+    minWidth: 30
   }
 }
 
@@ -218,7 +277,7 @@ const sortMethodMap: Record<string, GetCoinsSortMethodEnum> = {
   marketCap: GetCoinsSortMethodEnum.MarketCap,
   volume24h: GetCoinsSortMethodEnum.Volume,
   createdDate: GetCoinsSortMethodEnum.CreatedAt,
-  holders: GetCoinsSortMethodEnum.Holder
+  holder: GetCoinsSortMethodEnum.Holder
 }
 
 const sortDirectionMap: Record<string, GetCoinsSortDirectionEnum> = {
@@ -238,7 +297,10 @@ const isEmptyRow = (row: any) => {
 
 export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
   const mainContentRef = useMainContentRef()
+  const navigate = useNavigate()
   const { onOpen: openBuySellModal } = useBuySellModal()
+  const tableRef = useRef<HTMLDivElement | null>(null)
+  const [hiddenColumns, setHiddenColumns] = useState<string[] | null>(null)
   const [sortMethod, setSortMethod] = useState<GetCoinsSortMethodEnum>(
     GetCoinsSortMethodEnum.MarketCap
   )
@@ -247,13 +309,72 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
   )
   const [page, setPage] = useState(0)
 
-  const { data: coins, isPending } = useArtistCoins({
+  const { data: coinsData, isPending } = useArtistCoins({
     sortMethod,
     sortDirection,
     query: searchQuery,
     limit: ARTIST_COINS_BATCH_SIZE,
     offset: page * ARTIST_COINS_BATCH_SIZE
   })
+  const coins = coinsData?.filter(
+    (coin) => coin.mint !== env.WAUDIO_MINT_ADDRESS
+  )
+
+  const resizeObserverRef = useRef<ResizeObserver | null>(null)
+
+  const updateColumnVisibility = useCallback(() => {
+    if (!tableRef.current) return
+    const width = tableRef.current.offsetWidth
+    if (width < 728) {
+      setHiddenColumns([
+        tableColumnMap.volume24h.id,
+        tableColumnMap.marketCap.id,
+        tableColumnMap.createdDate.id,
+        tableColumnMap.holders.id
+      ])
+    } else if (width < 866) {
+      setHiddenColumns([
+        tableColumnMap.marketCap.id,
+        tableColumnMap.createdDate.id,
+        tableColumnMap.holders.id
+      ])
+    } else if (width < 972) {
+      setHiddenColumns([
+        tableColumnMap.createdDate.id,
+        tableColumnMap.holders.id
+      ])
+    } else if (width < 1074) {
+      setHiddenColumns([tableColumnMap.holders.id])
+    } else {
+      setHiddenColumns(null)
+    }
+  }, [])
+
+  const setTableNode = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (resizeObserverRef.current && tableRef.current) {
+        resizeObserverRef.current.unobserve(tableRef.current)
+      }
+      tableRef.current = node
+      if (!node) return
+
+      if (!resizeObserverRef.current) {
+        resizeObserverRef.current = new ResizeObserver(() => {
+          updateColumnVisibility()
+        })
+      }
+      resizeObserverRef.current.observe(node)
+      updateColumnVisibility()
+    },
+    [updateColumnVisibility]
+  )
+
+  useEffect(() => {
+    return () => {
+      resizeObserverRef.current?.disconnect()
+      resizeObserverRef.current = null
+    }
+  }, [])
 
   const fetchMore = useCallback((offset: number) => {
     setPage(Math.floor(offset / ARTIST_COINS_BATCH_SIZE))
@@ -283,18 +404,37 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
     [openBuySellModal]
   )
 
+  const handleRowClick = useRequiresAccountCallback(
+    (e: React.MouseEvent<HTMLTableRowElement>, rowInfo: any) => {
+      const coin = rowInfo.original
+      if (coin?.ticker) {
+        navigate(ASSET_DETAIL_PAGE.replace(':ticker', coin.ticker))
+      }
+    },
+    [navigate]
+  )
+
   const columns = useMemo(() => {
     const baseColumns = { ...tableColumnMap }
     baseColumns.buy = {
       ...baseColumns.buy,
       Cell: (cellInfo: CoinCell) => renderBuyCell(cellInfo, handleBuy)
     }
-    return Object.values(baseColumns)
-  }, [handleBuy])
+    return Object.values(baseColumns).filter(
+      (column) => !hiddenColumns?.includes(column.id)
+    )
+  }, [handleBuy, hiddenColumns])
 
   if (isPending) {
     return (
-      <Paper w='100%' justifyContent='center' alignItems='center' p='4xl'>
+      <Paper
+        w='100%'
+        justifyContent='center'
+        alignItems='center'
+        p='4xl'
+        border='default'
+        borderRadius='m'
+      >
         <LoadingSpinner
           style={{ height: spacing.unit8, width: spacing.unit8 }}
         />
@@ -311,6 +451,8 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
         alignItems='center'
         p='4xl'
         gap='l'
+        border='default'
+        borderRadius='m'
       >
         <IconSearch size='2xl' color='default' />
         <Text variant='heading' size='m'>
@@ -324,16 +466,19 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
   }
 
   return (
-    <Table
-      columns={columns}
-      data={coins}
-      isVirtualized
-      onSort={onSort}
-      isEmptyRow={isEmptyRow}
-      fetchMore={fetchMore}
-      fetchBatchSize={ARTIST_COINS_BATCH_SIZE}
-      tableHeaderClassName={styles.tableHeader}
-      scrollRef={mainContentRef}
-    />
+    <Flex ref={setTableNode} border='default' borderRadius='m'>
+      <Table
+        columns={columns}
+        data={coins}
+        isVirtualized
+        onSort={onSort}
+        onClickRow={handleRowClick}
+        isEmptyRow={isEmptyRow}
+        fetchMore={fetchMore}
+        fetchBatchSize={ARTIST_COINS_BATCH_SIZE}
+        tableHeaderClassName={styles.tableHeader}
+        scrollRef={mainContentRef}
+      />
+    </Flex>
   )
 }

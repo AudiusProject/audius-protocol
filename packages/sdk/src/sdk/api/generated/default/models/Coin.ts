@@ -82,6 +82,36 @@ export interface Coin {
      */
     website?: string;
     /**
+     * Generic link URL for the coin
+     * @type {string}
+     * @memberof Coin
+     */
+    link1?: string;
+    /**
+     * Generic link URL for the coin
+     * @type {string}
+     * @memberof Coin
+     */
+    link2?: string;
+    /**
+     * Generic link URL for the coin
+     * @type {string}
+     * @memberof Coin
+     */
+    link3?: string;
+    /**
+     * Generic link URL for the coin
+     * @type {string}
+     * @memberof Coin
+     */
+    link4?: string;
+    /**
+     * Whether the coin has a Discord server
+     * @type {boolean}
+     * @memberof Coin
+     */
+    hasDiscord: boolean;
+    /**
      * The date and time when the coin was added to Audius.
      * @type {string}
      * @memberof Coin
@@ -356,6 +386,7 @@ export function instanceOfCoin(value: object): value is Coin {
     isInstance = isInstance && "mint" in value && value["mint"] !== undefined;
     isInstance = isInstance && "decimals" in value && value["decimals"] !== undefined;
     isInstance = isInstance && "ownerId" in value && value["ownerId"] !== undefined;
+    isInstance = isInstance && "hasDiscord" in value && value["hasDiscord"] !== undefined;
     isInstance = isInstance && "createdAt" in value && value["createdAt"] !== undefined;
     isInstance = isInstance && "marketCap" in value && value["marketCap"] !== undefined;
     isInstance = isInstance && "fdv" in value && value["fdv"] !== undefined;
@@ -406,6 +437,11 @@ export function CoinFromJSONTyped(json: any, ignoreDiscriminator: boolean): Coin
         'logoUri': !exists(json, 'logo_uri') ? undefined : json['logo_uri'],
         'description': !exists(json, 'description') ? undefined : json['description'],
         'website': !exists(json, 'website') ? undefined : json['website'],
+        'link1': !exists(json, 'link_1') ? undefined : json['link_1'],
+        'link2': !exists(json, 'link_2') ? undefined : json['link_2'],
+        'link3': !exists(json, 'link_3') ? undefined : json['link_3'],
+        'link4': !exists(json, 'link_4') ? undefined : json['link_4'],
+        'hasDiscord': json['has_discord'],
         'createdAt': json['created_at'],
         'address': !exists(json, 'address') ? undefined : json['address'],
         'symbol': !exists(json, 'symbol') ? undefined : json['symbol'],
@@ -470,6 +506,11 @@ export function CoinToJSON(value?: Coin | null): any {
         'logo_uri': value.logoUri,
         'description': value.description,
         'website': value.website,
+        'link_1': value.link1,
+        'link_2': value.link2,
+        'link_3': value.link3,
+        'link_4': value.link4,
+        'has_discord': value.hasDiscord,
         'created_at': value.createdAt,
         'address': value.address,
         'symbol': value.symbol,

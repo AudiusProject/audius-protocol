@@ -1,21 +1,15 @@
-import {
-  Id,
-  Coin,
-  GetCoinsSortMethodEnum,
-  GetCoinsSortDirectionEnum
-} from '@audius/sdk'
-import { useQuery } from '@tanstack/react-query'
+import { GetCoinsSortMethodEnum, GetCoinsSortDirectionEnum } from '@audius/sdk'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { ID } from '~/models'
-import { removeNullable } from '~/utils/typeUtils'
+import { coinListFromSDK, Coin } from '~/adapters/coin'
 
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../types'
 import { useQueryContext } from '../utils/QueryContext'
 
+import { getArtistCoinQueryKey } from './useArtistCoin'
+
 export type UseArtistCoinsParams = {
-  mint?: string[]
-  owner_id?: ID[]
   limit?: number
   offset?: number
   sortMethod?: GetCoinsSortMethodEnum
@@ -31,20 +25,14 @@ export const useArtistCoins = <TResult = Coin[]>(
   options?: SelectableQueryOptions<Coin[], TResult>
 ) => {
   const { audiusSdk } = useQueryContext()
+  const queryClient = useQueryClient()
 
   return useQuery({
     queryKey: getArtistCoinsQueryKey(params),
     queryFn: async () => {
       const sdk = await audiusSdk()
 
-      // Encode owner_id params to match API expectations
-      const encodedOwnerIds = params.owner_id
-        ?.map((id) => Id.parse(id))
-        .filter(removeNullable)
-
       const response = await sdk.coins.getCoins({
-        mint: params.mint,
-        ownerId: encodedOwnerIds,
         limit: params.limit,
         offset: params.offset,
         sortMethod: params.sortMethod,
@@ -52,7 +40,19 @@ export const useArtistCoins = <TResult = Coin[]>(
         query: params.query
       })
 
-      return response?.data
+      const coins = response?.data
+      const parsedCoins = coinListFromSDK(coins)
+
+      // Prime individual coin data for each mint
+      if (parsedCoins) {
+        parsedCoins.forEach((coin) => {
+          if (coin.mint) {
+            queryClient.setQueryData(getArtistCoinQueryKey(coin.mint), coin)
+          }
+        })
+      }
+
+      return parsedCoins
     },
     ...options,
     enabled: options?.enabled !== false

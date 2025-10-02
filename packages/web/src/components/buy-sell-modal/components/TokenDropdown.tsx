@@ -1,7 +1,7 @@
 import { useMemo, useCallback, useRef } from 'react'
 
 import type { TokenInfo } from '@audius/common/store'
-import { IconCaretDown, Text, Flex } from '@audius/harmony'
+import { IconCaretDown, Text, Flex, Box } from '@audius/harmony'
 import { useTheme } from '@emotion/react'
 import Select, { components } from 'react-select'
 import type { SingleValue, SingleValueProps, OptionProps } from 'react-select'
@@ -62,13 +62,15 @@ const CustomOption = (props: OptionProps<TokenOption>) => {
           }
         }}
       >
-        <TokenIcon
-          logoURI={props.data.tokenInfo.logoURI}
-          icon={props.data.tokenInfo.icon}
-          size='l'
-          hex
-        />
-        <Flex alignItems='center' gap='s'>
+        <Box>
+          <TokenIcon
+            logoURI={props.data.tokenInfo.logoURI}
+            icon={props.data.tokenInfo.icon}
+            size='l'
+            hex
+          />
+        </Box>
+        <Flex direction='row' wrap='wrap' alignItems='center' gap='xs'>
           <Text
             variant='body'
             size='m'
@@ -202,7 +204,7 @@ export const TokenDropdown = ({
             borderRadius: cornerRadius.m,
             padding: `${spacing.s} 0`,
             border: `1px solid ${color.border.default}`,
-            minWidth: 242,
+            minWidth: 300,
             right: 0,
             marginTop: spacing.l
           }),

@@ -2,12 +2,13 @@ import { useMemo } from 'react'
 
 import { FixedDecimal } from '@audius/fixed-decimal'
 
-import { useTokenBalance, useArtistCoins } from '../api'
-import { Status } from '../models/Status'
+import { useTokenBalance, useArtistCoin } from '../api'
 import {
   getTokenDecimalPlaces,
-  formatCurrency,
-  isNullOrUndefined
+  formatCurrencyWithSubscript,
+  isNullOrUndefined,
+  formatCount,
+  formatNumberCommas
 } from '../utils'
 
 type UseFormattedTokenBalanceReturn = {
@@ -17,6 +18,8 @@ type UseFormattedTokenBalanceReturn = {
   tokenPrice: string | null
   tokenDollarValue: string
   isTokenPriceLoading: boolean
+  heldValue: number | null
+  formattedHeldValue: string | null
 }
 
 /**
@@ -29,17 +32,15 @@ export const useFormattedTokenBalance = (
   mint: string,
   locale: string = 'en-US'
 ): UseFormattedTokenBalanceReturn => {
-  const { data: tokenBalance, status: balanceStatus } = useTokenBalance({
-    mint
-  })
+  const { data: tokenBalance, isPending: isTokenBalanceLoading } =
+    useTokenBalance({ mint })
 
-  const isTokenBalanceLoading = balanceStatus === Status.LOADING
-  const { data: tokenPriceData, isPending: isTokenPriceLoading } =
-    useArtistCoins({ mint: [mint] })
+  const { data, isPending: isTokenPriceLoading } = useArtistCoin(mint)
 
   const balance = tokenBalance?.balance
 
-  const tokenPrice = tokenPriceData?.[0]?.price || null
+  const tokenPrice =
+    data?.price === 0 ? data?.dynamicBondingCurve.priceUSD : data?.price
   const hasFetchedTokenBalance = !isNullOrUndefined(balance)
 
   // Format mint balance with dynamic decimal places
@@ -54,19 +55,30 @@ export const useFormattedTokenBalance = (
     // FixedDecimal can't format with more decimals than it was constructed with
     const maxFractionDigits = Math.min(decimalPlaces, tokenBalance?.decimals)
 
-    return balance.toLocaleString(locale, {
-      maximumFractionDigits: maxFractionDigits,
-      roundingMode: 'trunc'
-    })
+    // Need formatNumberCommas for mobile :(
+    return formatNumberCommas(
+      balance.toLocaleString(locale, {
+        maximumFractionDigits: maxFractionDigits,
+        roundingMode: 'trunc'
+      })
+    )
   }, [balance, hasFetchedTokenBalance, locale, tokenBalance?.decimals])
 
   // Calculate dollar value of user's mint balance
   const tokenDollarValue = useMemo(() => {
     if (!tokenPrice) return '$0.00'
 
-    const priceNumber = Number(new FixedDecimal(tokenPrice).toString())
-    return formatCurrency(priceNumber)
+    const priceNumber = Number(tokenPrice)
+    return formatCurrencyWithSubscript(priceNumber)
   }, [tokenPrice])
+
+  const heldValue =
+    tokenPrice && balance ? Number(tokenPrice) * Number(balance) : null
+  const formattedHeldValue = heldValue
+    ? heldValue >= 1
+      ? `$${formatCount(heldValue, 2)}`
+      : formatCurrencyWithSubscript(heldValue)
+    : null
 
   return {
     tokenBalance: balance ?? null,
@@ -74,6 +86,8 @@ export const useFormattedTokenBalance = (
     isTokenBalanceLoading,
     tokenPrice: tokenPrice?.toString() ?? null,
     tokenDollarValue,
-    isTokenPriceLoading
+    isTokenPriceLoading,
+    heldValue,
+    formattedHeldValue
   }
 }

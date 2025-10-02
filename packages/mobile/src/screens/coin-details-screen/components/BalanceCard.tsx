@@ -1,7 +1,10 @@
 import { useCallback } from 'react'
 
 import { useTokenBalance, useArtistCoin } from '@audius/common/api'
-import { useFormattedTokenBalance } from '@audius/common/hooks'
+import {
+  useFormattedTokenBalance,
+  useIsManagedAccount
+} from '@audius/common/hooks'
 import { coinDetailsMessages, walletMessages } from '@audius/common/messages'
 import {
   receiveTokensModalActions,
@@ -9,7 +12,7 @@ import {
 } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
-import { Paper, Flex, Text, Button } from '@audius/harmony-native'
+import { Paper, Flex, Text, Button, spacing } from '@audius/harmony-native'
 import { TokenIcon } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 
@@ -29,6 +32,7 @@ const ZeroBalanceState = ({
   onBuy,
   onReceive
 }: BalanceStateProps) => {
+  const isManagerMode = useIsManagedAccount()
   return (
     <Flex column gap='l' w='100%'>
       <Flex row gap='s' alignItems='center'>
@@ -52,7 +56,12 @@ const ZeroBalanceState = ({
         <Text>{messages.hintDescription(title)}</Text>
       </Paper>
       <Flex column gap='s'>
-        <Button variant='primary' fullWidth onPress={onBuy}>
+        <Button
+          disabled={isManagerMode}
+          variant='primary'
+          fullWidth
+          onPress={onBuy}
+        >
           {walletMessages.buy}
         </Button>
         <Button variant='secondary' fullWidth onPress={onReceive}>
@@ -69,40 +78,61 @@ const HasBalanceState = ({
   onBuy,
   onSend,
   onReceive,
-  mint
-}: BalanceStateProps & { mint: string }) => {
-  const {
-    tokenBalanceFormatted,
-    tokenDollarValue
-    // isTokenBalanceLoading,
-    // isTokenPriceLoading
-  } = useFormattedTokenBalance(mint)
-
-  //   const isLoading = isTokenBalanceLoading || isTokenPriceLoading
+  mint,
+  coinName
+}: BalanceStateProps & { mint: string; coinName: string }) => {
+  const isManagerMode = useIsManagedAccount()
+  const { tokenBalanceFormatted, formattedHeldValue } =
+    useFormattedTokenBalance(mint)
 
   return (
     <Flex column gap='l' w='100%'>
-      <Flex row gap='s' alignItems='center'>
-        <TokenIcon logoURI={logoURI} size={64} />
-        <Flex column gap='xs'>
-          <Flex row gap='xs'>
-            <Text variant='heading' size='l' color='default'>
-              {tokenBalanceFormatted}
+      <Flex row alignItems='center' justifyContent='space-between'>
+        <Flex row alignItems='center' gap='l' style={{ flexShrink: 1 }}>
+          <TokenIcon logoURI={logoURI} size={64} />
+          <Flex column gap='2xs'>
+            <Text variant='heading' size='s'>
+              {coinName}
             </Text>
-            <Text variant='heading' size='l' color='subdued'>
-              {title}
-            </Text>
+            <Flex row gap='xs' alignItems='center'>
+              <Text variant='title' size='l'>
+                {tokenBalanceFormatted}
+              </Text>
+              <Text variant='title' size='l' color='subdued'>
+                {title}
+              </Text>
+            </Flex>
           </Flex>
-          <Text variant='heading' size='s' color='subdued'>
-            {tokenDollarValue}
+        </Flex>
+        <Flex row alignItems='center' gap='m' ml={spacing.unit22}>
+          <Text
+            variant='title'
+            size='l'
+            color='default'
+            style={{
+              lineHeight: spacing.unit7,
+              transform: [{ translateY: -spacing.unitHalf }]
+            }}
+          >
+            {formattedHeldValue}
           </Text>
         </Flex>
       </Flex>
       <Flex column gap='s'>
-        <Button variant='secondary' fullWidth onPress={onBuy}>
+        <Button
+          disabled={isManagerMode}
+          variant='secondary'
+          fullWidth
+          onPress={onBuy}
+        >
           {walletMessages.buySell}
         </Button>
-        <Button variant='secondary' fullWidth onPress={onSend}>
+        <Button
+          disabled={isManagerMode}
+          variant='secondary'
+          fullWidth
+          onPress={onSend}
+        >
           {walletMessages.send}
         </Button>
         <Button variant='secondary' fullWidth onPress={onReceive}>
@@ -116,7 +146,7 @@ const HasBalanceState = ({
 export const BalanceCard = ({ mint }: { mint: string }) => {
   const dispatch = useDispatch()
   const navigation = useNavigation()
-  const { data: coin, isPending: coinsLoading } = useArtistCoin({ mint })
+  const { data: coin, isPending: coinsLoading } = useArtistCoin(mint)
   const { data: tokenBalance } = useTokenBalance({ mint })
 
   const handleBuy = useCallback(() => {
@@ -141,6 +171,7 @@ export const BalanceCard = ({ mint }: { mint: string }) => {
 
   const title = coin.ticker ?? ''
   const logoURI = coin.logoUri
+  const coinName = coin.name ?? ''
 
   return (
     <Paper p='l' border='default' borderRadius='l' shadow='far'>
@@ -160,6 +191,7 @@ export const BalanceCard = ({ mint }: { mint: string }) => {
           onSend={handleSend}
           onReceive={handleReceive}
           mint={mint}
+          coinName={coinName}
         />
       )}
     </Paper>

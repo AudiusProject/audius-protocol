@@ -1,6 +1,11 @@
-import { FixedDecimal } from '@audius/fixed-decimal'
+import { AUDIO, FixedDecimal } from '@audius/fixed-decimal'
 
-import { useCurrentAccountUser, useUser, useUserCoin } from '~/api'
+import {
+  useAudioBalance,
+  useCurrentAccountUser,
+  useUser,
+  useUserCoin
+} from '~/api'
 import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models'
 
@@ -9,6 +14,7 @@ import { QueryOptions } from '../types'
 import { useUSDCBalance } from './useUSDCBalance'
 
 const USDC_DECIMALS = 6
+const WEI_DECIMALS = 18
 
 /**
  * Wrapper hook that gives the balance of any token - including USDC which uses a different query.
@@ -24,13 +30,17 @@ export const useTokenBalance = ({
   isPolling,
   pollingInterval = 1000,
   includeExternalWallets = true,
+  includeStaked = true,
+  walletAddress,
   ...queryOptions
 }: {
   mint: string
   userId?: ID
   isPolling?: boolean
   includeExternalWallets?: boolean
+  includeStaked?: boolean
   pollingInterval?: number
+  walletAddress?: string
 } & QueryOptions) => {
   const { env } = useQueryContext()
   const { data: userById } = useUser(userId)
@@ -38,8 +48,19 @@ export const useTokenBalance = ({
   const user = userId ? userById : currentUser
   const ethAddress = user?.wallet ?? null
   const isUsdc = mint === env.USDC_MINT_ADDRESS
+  const isAudio = mint === env.WAUDIO_MINT_ADDRESS
 
-  // Artist coins query (includes AUDIO)
+  // For AUDIO, we need to use the useAudioBalance hook since it includes ETH audio. useUserCoin is only SOL AUDIO
+  const audioTokenQuery = useAudioBalance(
+    {
+      userId,
+      includeConnectedWallets: includeExternalWallets,
+      includeStaked
+    },
+    { enabled: isAudio }
+  )
+
+  // Artist coins query
   const userCoinQuery = useUserCoin(
     { mint, userId },
     {
@@ -74,7 +95,8 @@ export const useTokenBalance = ({
           decimals
         }
       },
-      enabled: !isUsdc
+      ...queryOptions,
+      enabled: !isUsdc && queryOptions.enabled !== false
     }
   )
 
@@ -82,7 +104,6 @@ export const useTokenBalance = ({
   const usdcQuery = useUSDCBalance({
     isPolling,
     pollingInterval,
-    enabled: isUsdc && !!ethAddress,
     select: (usdcBalance) => {
       if (!usdcBalance) return null
 
@@ -97,8 +118,25 @@ export const useTokenBalance = ({
         decimals: USDC_DECIMALS
       }
     },
-    ...queryOptions
+    ...queryOptions,
+    enabled: isUsdc && !!ethAddress && queryOptions.enabled !== false
   })
 
-  return isUsdc ? usdcQuery : userCoinQuery
+  if (isUsdc) return usdcQuery
+
+  if (isAudio) {
+    return {
+      data: {
+        balance: AUDIO(audioTokenQuery.totalBalance),
+        balanceLocaleString: AUDIO(
+          audioTokenQuery.totalBalance
+        ).toLocaleString(),
+        decimals: WEI_DECIMALS
+      },
+      isLoading: audioTokenQuery.isLoading,
+      isPending: audioTokenQuery.isLoading,
+      isError: audioTokenQuery.isError
+    }
+  }
+  return userCoinQuery
 }

@@ -1,7 +1,8 @@
+import type { LaunchpadFormValues } from '@audius/common/models'
 import { Flex, TextInput } from '@audius/harmony'
 import { useFormikContext } from 'formik'
 
-import type { SetupFormValues } from './types'
+import { useLaunchpadAnalytics } from '../utils'
 
 const messages = {
   coinName: 'Coin Name',
@@ -10,7 +11,16 @@ const messages = {
 
 export const CoinFormFields = () => {
   const { values, errors, touched, handleChange, handleBlur } =
-    useFormikContext<SetupFormValues>()
+    useFormikContext<LaunchpadFormValues>()
+
+  const { trackFormInputChange } = useLaunchpadAnalytics()
+
+  const handleBlurWithAnalytics =
+    (name: keyof LaunchpadFormValues) =>
+    (event: React.FocusEvent<HTMLInputElement>) => {
+      handleBlur(event)
+      trackFormInputChange(name, event.target.value)
+    }
 
   return (
     <Flex gap='xl' w='100%'>
@@ -20,7 +30,7 @@ export const CoinFormFields = () => {
           name='coinName'
           value={values.coinName}
           onChange={handleChange}
-          onBlur={handleBlur}
+          onBlur={handleBlurWithAnalytics('coinName')}
           error={!!(touched.coinName && errors.coinName)}
           helperText={touched.coinName ? errors.coinName : undefined}
           maxLength={30}
@@ -32,7 +42,7 @@ export const CoinFormFields = () => {
           name='coinSymbol'
           value={values.coinSymbol}
           onChange={handleChange}
-          onBlur={handleBlur}
+          onBlur={handleBlurWithAnalytics('coinSymbol')}
           error={!!(touched.coinSymbol && errors.coinSymbol)}
           helperText={touched.coinSymbol ? errors.coinSymbol : undefined}
           startAdornmentText='$'

@@ -1,6 +1,6 @@
-import { formatUSDCValue } from '@audius/common/api'
 import { buySellMessages as baseMessages } from '@audius/common/messages'
 import { useTokenAmountFormatting, TokenInfo } from '@audius/common/store'
+import { formatCurrencyWithSubscript } from '@audius/common/utils'
 import { Button, CompletionCheck, Flex, Text } from '@audius/harmony'
 
 import { SwapBalanceSection } from './SwapBalanceSection'
@@ -8,7 +8,7 @@ import { SwapBalanceSection } from './SwapBalanceSection'
 const messages = {
   ...baseMessages,
   priceEach: (price: number) => {
-    const formatted = formatUSDCValue(price, { includeDollarSign: true })
+    const formatted = formatCurrencyWithSubscript(price)
     return `(${formatted} ea.)`
   }
 }
@@ -18,9 +18,11 @@ type TransactionSuccessScreenProps = {
   receiveTokenInfo: TokenInfo
   payAmount: number
   receiveAmount: number
-  pricePerBaseToken: number
+  pricePerBaseToken?: number
   baseTokenSymbol: string
+  exchangeRate?: number | null
   onDone: () => void
+  hideUSDCTooltip?: boolean
 }
 
 export const TransactionSuccessScreen = (
@@ -33,7 +35,9 @@ export const TransactionSuccessScreen = (
     receiveAmount,
     pricePerBaseToken,
     baseTokenSymbol,
-    onDone
+    exchangeRate,
+    onDone,
+    hideUSDCTooltip
   } = props
 
   // Follow same pattern as ConfirmSwapScreen - call hooks first
@@ -50,9 +54,10 @@ export const TransactionSuccessScreen = (
   })
 
   const isReceivingBaseToken = receiveTokenInfo.symbol === baseTokenSymbol
-  const priceLabel = isReceivingBaseToken
-    ? messages.priceEach(pricePerBaseToken)
-    : undefined
+  const priceLabel =
+    isReceivingBaseToken && pricePerBaseToken
+      ? messages.priceEach(pricePerBaseToken)
+      : undefined
 
   if (!formattedPayAmount || !formattedReceiveAmount) {
     return null
@@ -71,6 +76,7 @@ export const TransactionSuccessScreen = (
           title={messages.youPaid}
           tokenInfo={payTokenInfo}
           amount={formattedPayAmount}
+          hideUSDCTooltip={hideUSDCTooltip}
         />
         <SwapBalanceSection
           title={messages.youReceived}
@@ -79,6 +85,21 @@ export const TransactionSuccessScreen = (
           priceLabel={priceLabel}
         />
       </Flex>
+
+      {exchangeRate ? (
+        <Flex gap='xs' alignItems='center' mt='l'>
+          <Text variant='body' size='s' color='subdued'>
+            {messages.exchangeRateLabel}
+          </Text>
+          <Text variant='body' size='s' color='default'>
+            {messages.exchangeRateValue(
+              payTokenInfo.symbol,
+              receiveTokenInfo.symbol,
+              exchangeRate
+            )}
+          </Text>
+        </Flex>
+      ) : null}
 
       <Flex>
         <Button variant='primary' fullWidth onClick={onDone}>
