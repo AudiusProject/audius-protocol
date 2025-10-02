@@ -1,6 +1,8 @@
 import {
   getArtistCoinsQueryKey,
+  getCurrentAccountQueryKey,
   getUserCreatedCoinsQueryKey,
+  getUserQueryKey,
   useQueryContext
 } from '@audius/common/api'
 import {
@@ -187,6 +189,13 @@ export const useLaunchCoin = () => {
     onSuccess: (_result, params, _context) => {
       // Invalidate the list of artist coins to add it to the list
       queryClient.invalidateQueries({ queryKey: getArtistCoinsQueryKey() })
+      // Invalidate the user to refresh their badge info
+      queryClient.invalidateQueries({
+        queryKey: getUserQueryKey(params.userId)
+      })
+      queryClient.invalidateQueries({
+        queryKey: getCurrentAccountQueryKey()
+      })
       // Invalidate our user - this will refresh their badge info
       // NOTE: this will eventually move to the users metadata
       queryClient.invalidateQueries({
