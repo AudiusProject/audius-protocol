@@ -60,11 +60,11 @@ export const CoinSuccessModal = () => {
             {/* Purchase Summary */}
 
             <Flex column gap='m' w='100%'>
-              {hasFirstBuyAmount ? (
-                <Text variant='label' size='l' color='subdued'>
-                  {launchpadMessages.modal.purchaseSummary}
-                </Text>
-              ) : null}
+              <Text variant='label' size='l' color='subdued'>
+                {hasFirstBuyAmount
+                  ? launchpadMessages.modal.purchaseSummaryTitle
+                  : launchpadMessages.modal.yourCoinTitle}
+              </Text>
               <Paper
                 p='m'
                 gap='m'
@@ -101,7 +101,14 @@ export const CoinSuccessModal = () => {
                         </Text>
                       </Flex>
                     ) : (
-                      <Text color='subdued'>${ticker}</Text>
+                      <Text
+                        color='subdued'
+                        variant='title'
+                        size='s'
+                        strength='weak'
+                      >
+                        ${ticker}
+                      </Text>
                     )}
                   </Flex>
                 </Flex>
