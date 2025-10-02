@@ -147,7 +147,6 @@ const DesktopArtistCoinsExplorePage = () => {
                   </Flex>
                 </Flex>
 
-                {/* Need to wrap with Flex because disabled button doesn't capture mouse events */}
                 <Flex>
                   <Button
                     onClick={handleGetStarted}
