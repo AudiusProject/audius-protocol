@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import type { ID, User } from '@audius/common/models'
 import type { ListRenderItem } from '@shopify/flash-list'
