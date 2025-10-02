@@ -31,7 +31,7 @@ export const fetchCoinTickerAvailability = async (
   const sdk = await audiusSdk()
   try {
     // Use getCoinByTicker - if it returns a coin, the ticker is taken
-    await sdk.coins.getCoinByTicker({ ticker: `$${ticker}` })
+    await sdk.coins.getCoinByTicker({ ticker })
     // If we get a coin back, the ticker is not available
     return { available: false }
   } catch (error: any) {

@@ -195,9 +195,3 @@ export const formatDoubleDigit = (value: number) =>
  */
 export const formatTickerForUrl = (ticker: string) =>
   ticker.startsWith('$') ? ticker.slice(1) : ticker
-
-/**
- * Formats a ticker from url to be display friendly
- */
-export const formatTickerFromUrl = (ticker: string) =>
-  ticker.startsWith('$') ? ticker : `$${ticker}`
