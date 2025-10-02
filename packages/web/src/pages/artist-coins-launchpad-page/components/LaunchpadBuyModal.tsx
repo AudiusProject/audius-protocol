@@ -284,6 +284,7 @@ const ConfirmationStep = ({
               title={buySellMessages.youPay}
               tokenInfo={values.selectedInputToken}
               amount={formattedPayAmount ?? ''}
+              hideUSDCTooltip
             />
             <SwapBalanceSection
               title={buySellMessages.youReceive}
