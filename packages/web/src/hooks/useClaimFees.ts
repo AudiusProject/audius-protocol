@@ -19,7 +19,7 @@ export type UseClaimFeesParams = {
 }
 
 export type ClaimFeesResponse = {
-  claimfeesTx: string
+  claimFeesTx: string
   signature: string
 }
 
@@ -56,11 +56,11 @@ export const useClaimFees = (
         receiverWalletAddress
       })
 
-      const { claimfeesTx: claimfeesTxSerialized } = claimFeesResponse
+      const { claimFeesTx: claimFeesTxSerialized } = claimFeesResponse
 
       // Transaction is sent from the backend as a serialized base64 string
       const deserializedTx = VersionedTransaction.deserialize(
-        Buffer.from(claimfeesTxSerialized, 'base64')
+        Buffer.from(claimFeesTxSerialized, 'base64')
       )
 
       // Triggers 3rd party wallet to sign and send the transaction
@@ -74,7 +74,7 @@ export const useClaimFees = (
       )
 
       return {
-        claimfeesTx: claimfeesTxSerialized,
+        claimFeesTx: claimFeesTxSerialized,
         signature
       }
     },
