@@ -261,12 +261,6 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
   const discordOAuthLink = useDiscordOAuthLink(userToken?.ticker)
   const { balance: userTokenBalance } = userToken ?? {}
 
-  // Get owner information for social links display
-  const { ownerId: ownerIdRaw } = coin ?? {}
-  const ownerId =
-    typeof ownerIdRaw === 'string' ? HashId.parse(ownerIdRaw) : ownerIdRaw
-  const { data: owner } = useUser(ownerId)
-
   const descriptionParagraphs = coin?.description?.split('\n') ?? []
 
   const openDiscord = () => {
