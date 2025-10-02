@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
   LaunchpadFormValues,
   LaunchCoinErrorMetadata
 } from '@audius/common/models'
+import { AUDIUS_ARTIST_COIN_HELP_LINK } from '@audius/common/src/utils/route'
 import { useSendTokensModal } from '@audius/common/store'
 import { wAUDIO } from '@audius/fixed-decimal'
 import {
@@ -247,6 +248,10 @@ export const InsufficientBalanceModal = ({
 }) => {
   const { onOpen: openSendTokensModal } = useSendTokensModal()
 
+  const handleLearnHowToFund = useCallback(() => {
+    window.open(AUDIUS_ARTIST_COIN_HELP_LINK, '_blank', 'noreferrer,noopener')
+  }, [])
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size='small'>
       <ModalHeader showDismissButton>
@@ -281,12 +286,7 @@ export const InsufficientBalanceModal = ({
             <Flex gap='m' column>
               <Text>{messages.hintText}</Text>
               <Flex gap='m'>
-                <TextLink
-                  showUnderline
-                  onClick={() => {
-                    /* TODO: DESIGN TO PROVIDE LINK */
-                  }}
-                >
+                <TextLink showUnderline onClick={handleLearnHowToFund}>
                   {messages.learnHowToFund}
                 </TextLink>
                 <TextLink
