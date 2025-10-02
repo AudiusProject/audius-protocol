@@ -58,33 +58,36 @@ export const CoinSuccessModal = () => {
             </Text>
 
             {/* Purchase Summary */}
-            {hasFirstBuyAmount ? (
-              <Flex column gap='m' w='100%'>
+
+            <Flex column gap='m' w='100%'>
+              {hasFirstBuyAmount ? (
                 <Text variant='label' size='l' color='subdued'>
                   {launchpadMessages.modal.purchaseSummary}
                 </Text>
-                <Paper
-                  p='m'
-                  gap='m'
-                  w='100%'
-                  borderRadius='m'
-                  border='default'
-                  shadow='flat'
-                  backgroundColor='surface1'
-                >
-                  <Flex alignItems='center' gap='m' w='100%'>
-                    <Artwork
-                      src={logoUri}
-                      w='48px'
-                      h='48px'
-                      hex
-                      borderWidth={0}
-                    />
+              ) : null}
+              <Paper
+                p='m'
+                gap='m'
+                w='100%'
+                borderRadius='m'
+                border='default'
+                shadow='flat'
+                backgroundColor='surface1'
+              >
+                <Flex alignItems='center' gap='m' w='100%'>
+                  <Artwork
+                    src={logoUri}
+                    w='48px'
+                    h='48px'
+                    hex
+                    borderWidth={0}
+                  />
 
-                    <Flex column gap='xs' flex={1}>
-                      <Text variant='title' size='m' color='default'>
-                        {name}
-                      </Text>
+                  <Flex column gap='xs' flex={1}>
+                    <Text variant='title' size='m' color='default'>
+                      {name}
+                    </Text>
+                    {hasFirstBuyAmount ? (
                       <Flex
                         alignItems='center'
                         justifyContent='space-between'
@@ -97,11 +100,13 @@ export const CoinSuccessModal = () => {
                           ${amountUsd}
                         </Text>
                       </Flex>
-                    </Flex>
+                    ) : (
+                      <Text color='subdued'>${ticker}</Text>
+                    )}
                   </Flex>
-                </Paper>
-              </Flex>
-            ) : null}
+                </Flex>
+              </Paper>
+            </Flex>
 
             {/* Contract Address Section */}
             <Flex column gap='m' w='100%'>
