@@ -141,8 +141,8 @@ const initializeServices = (config: SdkConfig) => {
     config.environment === 'development'
       ? developmentConfig
       : config.environment === 'staging'
-        ? stagingConfig
-        : productionConfig
+      ? stagingConfig
+      : productionConfig
 
   const defaultLogger = new Logger({
     logLevel: config.environment !== 'production' ? 'debug' : undefined
@@ -215,14 +215,20 @@ const initializeServices = (config: SdkConfig) => {
     })
 
   const middleware = [
-    addRequestSignatureMiddleware({ services: { audiusWalletClient, logger } })
+    addRequestSignatureMiddleware({
+      services: { audiusWalletClient, logger },
+      apiKey: config.apiKey,
+      apiSecret: config.apiSecret
+    })
   ]
 
   /* Solana Programs */
   const solanaRelay = config.services?.solanaRelay
     ? config.services.solanaRelay.withMiddleware(
         addRequestSignatureMiddleware({
-          services: { audiusWalletClient, logger }
+          services: { audiusWalletClient, logger },
+          apiKey: config.apiKey,
+          apiSecret: config.apiSecret
         })
       )
     : new SolanaRelay(
@@ -234,7 +240,9 @@ const initializeServices = (config: SdkConfig) => {
   const archiverService = config.services?.archiverService
     ? config.services.archiverService.withMiddleware(
         addRequestSignatureMiddleware({
-          services: { audiusWalletClient, logger }
+          services: { audiusWalletClient, logger },
+          apiKey: config.apiKey,
+          apiSecret: config.apiSecret
         })
       )
     : undefined
@@ -415,12 +423,16 @@ const initializeApis = ({
     config.environment === 'development'
       ? developmentConfig.network.apiEndpoint
       : config.environment === 'staging'
-        ? stagingConfig.network.apiEndpoint
-        : productionConfig.network.apiEndpoint
+      ? stagingConfig.network.apiEndpoint
+      : productionConfig.network.apiEndpoint
 
   const middleware = [
     addAppInfoMiddleware({ apiKey, appName, services }),
-    addRequestSignatureMiddleware({ services })
+    addRequestSignatureMiddleware({
+      services,
+      apiKey,
+      apiSecret: config.apiSecret
+    })
   ]
   const apiClientConfig = new Configuration({
     fetchApi: fetch,
