@@ -41,6 +41,8 @@ export const CoinSuccessModal = () => {
 
   const { mint, name, ticker, logoUri, amountUi, amountUsd } = coinData
 
+  const hasFirstBuyAmount = amountUi !== '0' || amountUsd !== '0'
+
   return (
     <>
       <ConnectedMusicConfetti />
@@ -56,48 +58,50 @@ export const CoinSuccessModal = () => {
             </Text>
 
             {/* Purchase Summary */}
-            <Flex column gap='m' w='100%'>
-              <Text variant='label' size='l' color='subdued'>
-                {launchpadMessages.modal.purchaseSummary}
-              </Text>
-              <Paper
-                p='m'
-                gap='m'
-                w='100%'
-                borderRadius='m'
-                border='default'
-                shadow='flat'
-                backgroundColor='surface1'
-              >
-                <Flex alignItems='center' gap='m' w='100%'>
-                  <Artwork
-                    src={logoUri}
-                    w='48px'
-                    h='48px'
-                    hex
-                    borderWidth={0}
-                  />
+            {hasFirstBuyAmount ? (
+              <Flex column gap='m' w='100%'>
+                <Text variant='label' size='l' color='subdued'>
+                  {launchpadMessages.modal.purchaseSummary}
+                </Text>
+                <Paper
+                  p='m'
+                  gap='m'
+                  w='100%'
+                  borderRadius='m'
+                  border='default'
+                  shadow='flat'
+                  backgroundColor='surface1'
+                >
+                  <Flex alignItems='center' gap='m' w='100%'>
+                    <Artwork
+                      src={logoUri}
+                      w='48px'
+                      h='48px'
+                      hex
+                      borderWidth={0}
+                    />
 
-                  <Flex column gap='xs' flex={1}>
-                    <Text variant='title' size='m' color='default'>
-                      {name}
-                    </Text>
-                    <Flex
-                      alignItems='center'
-                      justifyContent='space-between'
-                      w='100%'
-                    >
-                      <Text variant='title' size='s' strength='weak'>
-                        {amountUi} <Text color='subdued'>${ticker}</Text>
+                    <Flex column gap='xs' flex={1}>
+                      <Text variant='title' size='m' color='default'>
+                        {name}
                       </Text>
-                      <Text variant='title' size='s' strength='weak'>
-                        ${amountUsd}
-                      </Text>
+                      <Flex
+                        alignItems='center'
+                        justifyContent='space-between'
+                        w='100%'
+                      >
+                        <Text variant='title' size='s' strength='weak'>
+                          {amountUi} <Text color='subdued'>${ticker}</Text>
+                        </Text>
+                        <Text variant='title' size='s' strength='weak'>
+                          ${amountUsd}
+                        </Text>
+                      </Flex>
                     </Flex>
                   </Flex>
-                </Flex>
-              </Paper>
-            </Flex>
+                </Paper>
+              </Flex>
+            ) : null}
 
             {/* Contract Address Section */}
             <Flex column gap='m' w='100%'>
