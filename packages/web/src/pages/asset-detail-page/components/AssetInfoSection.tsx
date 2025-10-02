@@ -39,7 +39,7 @@ import Skeleton from 'components/skeleton/Skeleton'
 import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
 import { UserTokenBadge } from 'components/user-token-badge/UserTokenBadge'
-import { useClaimFee } from 'hooks/useClaimFee'
+import { useClaimFees } from 'hooks/useClaimFees'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { getLastConnectedSolWallet } from 'pages/artist-coins-launchpad-page/utils'
 import { env } from 'services/env'
@@ -279,7 +279,7 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
   )
 
   // Claim fee hook
-  const { mutate: claimFee, isPending: isClaimFeePending } = useClaimFee({
+  const { mutate: claimFees, isPending: isClaimFeesPending } = useClaimFees({
     onSuccess: () => {
       toast(toastMessages.feesClaimed)
     },
@@ -345,12 +345,12 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
       return
     }
 
-    claimFee({
+    claimFees({
       tokenMint: mint,
       ownerWalletAddress: externalSolWallet.address,
       receiverWalletAddress: currentUser.spl_wallet // Using same wallet for owner and receiver
     })
-  }, [externalSolWallet, mint, currentUser, claimFee, toast, coin])
+  }, [externalSolWallet, mint, currentUser, claimFees, toast, coin])
 
   if (isLoading || !coin) {
     return <AssetInfoSectionSkeleton />
@@ -540,16 +540,16 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
                 <Flex gap='xs' alignItems='center'>
                   <TextLink
                     onClick={handleClaimFees}
-                    variant={isClaimFeePending ? 'subdued' : 'visible'}
+                    variant={isClaimFeesPending ? 'subdued' : 'visible'}
                     disabled={
-                      isClaimFeePending ||
+                      isClaimFeesPending ||
                       !externalSolWallet ||
                       !currentUser?.spl_wallet
                     }
                   >
                     {overflowMessages.claim}
                   </TextLink>
-                  {isClaimFeePending ? (
+                  {isClaimFeesPending ? (
                     <LoadingSpinner size='s' color='subdued' />
                   ) : null}
                 </Flex>
