@@ -108,7 +108,7 @@ export const CoinSuccessModal = () => {
               <Text variant='label' size='l' color='subdued'>
                 {launchpadMessages.modal.addressTitle}
               </Text>
-              <AddressTile address={mint} />
+              <AddressTile address={mint} shorten shortenLength={16} />
             </Flex>
 
             {/* Action Buttons */}
