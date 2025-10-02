@@ -75,7 +75,7 @@ async function updateBlockchainIds() {
   }
 }
 
-/* We use a JS implementation of the the HashIds protocol (http://hashids.org)
+/* We use a JS implementation of the HashIds protocol (http://hashids.org)
  * to obfuscate our monotonically increasing int IDs as
  * strings in our consumable API.
  *

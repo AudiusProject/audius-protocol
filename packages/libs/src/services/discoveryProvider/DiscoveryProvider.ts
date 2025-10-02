@@ -82,9 +82,9 @@ export type UserProfile = {
   handle: string
   verified: boolean
   profilePicture:
-    | { '150x150': string; '480x480': string; '1000x1000': string }
-    | null
-    | undefined
+  | { '150x150': string; '480x480': string; '1000x1000': string }
+  | null
+  | undefined
   sub: number
   iat: string
 }
@@ -1384,12 +1384,12 @@ export class DiscoveryProvider {
     blockNumber?: number
   ): Promise<
     | {
-        latest_indexed_block: number
-        latest_chain_block: number
-        latest_indexed_slot_plays: number
-        latest_chain_slot_plays: number
-        data: Response
-      }
+      latest_indexed_block: number
+      latest_chain_block: number
+      latest_indexed_slot_plays: number
+      latest_chain_slot_plays: number
+      data: Response
+    }
     | undefined
     | null
   > {
@@ -1472,7 +1472,7 @@ export class DiscoveryProvider {
     // Validate health check response
 
     // Regressed mode signals we couldn't find a node that wasn't behind by some measure
-    // so we should should pick something
+    // so we should pick something
     const notInRegressedMode =
       this.ethContracts && !this.ethContracts.isInRegressedMode()
 

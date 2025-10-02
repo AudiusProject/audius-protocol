@@ -166,7 +166,7 @@ export const useGestureEventsHandlers: GestureEventsHandlersHookType = () => {
         const negativeScrollableContentOffset =
           (context.initialPosition === highestSnapPoint &&
             source === GESTURE_SOURCE.SCROLLABLE) ||
-          !context.isScrollablePositionLocked
+            !context.isScrollablePositionLocked
             ? animatedScrollableContentOffsetY.value * -1
             : 0
 
@@ -217,7 +217,7 @@ export const useGestureEventsHandlers: GestureEventsHandlersHookType = () => {
             const resistedPosition =
               highestSnapPoint -
               Math.sqrt(1 + (highestSnapPoint - draggedPosition)) *
-                overDragResistanceFactor
+              overDragResistanceFactor
             animatedPosition.value = resistedPosition
             return
           }
@@ -229,7 +229,7 @@ export const useGestureEventsHandlers: GestureEventsHandlersHookType = () => {
             const resistedPosition =
               lowestSnapPoint +
               Math.sqrt(1 + (draggedPosition - lowestSnapPoint)) *
-                overDragResistanceFactor
+              overDragResistanceFactor
             animatedPosition.value = resistedPosition
             return
           }
@@ -242,11 +242,11 @@ export const useGestureEventsHandlers: GestureEventsHandlersHookType = () => {
               lowestSnapPoint +
               Math.sqrt(
                 1 +
-                  (draggedPosition +
-                    negativeScrollableContentOffset -
-                    lowestSnapPoint)
+                (draggedPosition +
+                  negativeScrollableContentOffset -
+                  lowestSnapPoint)
               ) *
-                overDragResistanceFactor
+              overDragResistanceFactor
             animatedPosition.value = resistedPosition
             return
           }
@@ -347,7 +347,7 @@ export const useGestureEventsHandlers: GestureEventsHandlersHookType = () => {
            * the end touch point is below the keyboard position then
            * we exit the method.
            *
-           * because the the keyboard dismiss is interactive in iOS.
+           * because the keyboard dismiss is interactive in iOS.
            */
           if (
             !(
