@@ -158,12 +158,12 @@ export type LaunchpadConfigResponse = {
   startingPrice: string
 }
 
-export type ClaimFeeRequest = {
+export type ClaimFeesRequest = {
   tokenMint: string
   ownerWalletAddress: string
   receiverWalletAddress: string
 }
 
-export type ClaimFeeResponse = {
-  claimFeeTx: string
+export type ClaimFeesResponse = {
+  claimFeesTx: string
 }

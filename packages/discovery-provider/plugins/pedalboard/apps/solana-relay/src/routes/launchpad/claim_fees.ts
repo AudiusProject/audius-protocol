@@ -59,7 +59,7 @@ export const claimFees = async (
     })
   } catch (e) {
     logger.error(
-      'Error in claim_fee - unable to create creator claim fee transaction'
+      'Error in claim_fees - unable to create creator claim fee transaction'
     )
     res.status(500).send()
   }

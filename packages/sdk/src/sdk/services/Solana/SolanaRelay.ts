@@ -18,8 +18,8 @@ import {
   FirstBuyQuoteResponse,
   FirstBuyQuoteRequest,
   LaunchpadConfigResponse,
-  ClaimFeeRequest,
-  ClaimFeeResponse
+  ClaimFeesRequest,
+  ClaimFeesResponse
 } from './types'
 
 /**
@@ -308,10 +308,10 @@ export class SolanaRelay extends BaseAPI {
   /**
    * Claims creator trading fees from a dynamic bonding curve pool.
    */
-  public async claimFee(
-    params: ClaimFeeRequest,
+  public async claimFees(
+    params: ClaimFeesRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction
-  ): Promise<ClaimFeeResponse> {
+  ): Promise<ClaimFeesResponse> {
     const headerParameters: runtime.HTTPHeaders = {
       'Content-Type': 'application/json'
     }
@@ -323,7 +323,7 @@ export class SolanaRelay extends BaseAPI {
 
     const response = await this.request(
       {
-        path: '/launchpad/claim_fee',
+        path: '/launchpad/claim_fees',
         method: 'GET',
         headers: headerParameters,
         query: queryParameters
@@ -332,7 +332,7 @@ export class SolanaRelay extends BaseAPI {
     )
 
     return await new runtime.JSONApiResponse(response, (json) => {
-      return json as ClaimFeeResponse
+      return json as ClaimFeesResponse
     }).value()
   }
 }
