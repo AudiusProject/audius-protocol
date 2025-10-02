@@ -33,7 +33,8 @@ import {
   TokenIcon,
   Screen,
   ScreenContent,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
+  FixedFooter
 } from 'app/components/core'
 import { TextAreaField } from 'app/components/fields/TextAreaField'
 import { TextField } from 'app/components/fields/TextField'
@@ -282,23 +283,11 @@ export const EditCoinDetailsScreen = () => {
                 </Flex>
               </Paper>
             </KeyboardAwareScrollView>
-            <Flex
-              style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}
-            >
-              <KeyboardAvoidingView keyboardShowingOffset={spacing.unit21}>
-                <Paper
-                  ph='xl'
-                  pv='m'
-                  style={{
-                    borderRadius: 0
-                  }}
-                >
-                  <Button onPress={() => formikSubmit()} fullWidth>
-                    {coinDetailsMessages.editCoinDetails.saveChanges}
-                  </Button>
-                </Paper>
-              </KeyboardAvoidingView>
-            </Flex>
+            <FixedFooter keyboardShowingOffset={spacing.unit24} avoidKeyboard>
+              <Button onPress={() => formikSubmit()} fullWidth>
+                {coinDetailsMessages.editCoinDetails.saveChanges}
+              </Button>
+            </FixedFooter>
           </ScreenContent>
         </Screen>
       )}
