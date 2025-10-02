@@ -10,7 +10,6 @@ import {
   useIsManagedAccount
 } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
-import { APP_REDIRECT } from '@audius/common/src/utils/route'
 import {
   useAddCashModal,
   useBuySellModal,
@@ -26,24 +25,16 @@ import {
   Text,
   useTheme
 } from '@audius/harmony'
-import { useHistory } from 'react-router-dom'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { useBuySellRegionSupport } from 'components/buy-sell-modal'
-import Drawer from 'components/drawer/Drawer'
 import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import Skeleton from 'components/skeleton/Skeleton'
 import Tooltip from 'components/tooltip/Tooltip'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
-import { getPathname } from 'utils/route'
-import { zIndex } from 'utils/zIndex'
 
-const messages = {
-  openTheApp: 'Open The App',
-  drawerDescription:
-    "You'll need to make this purchase in the app or on the web."
-}
+import { OpenAppDrawer } from './OpenAppDrawer'
 
 type BalanceStateProps = {
   ticker: string
@@ -276,14 +267,6 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
   const isMobile = useIsMobile()
   const [isOpenAppDrawerOpen, setIsOpenAppDrawerOpen] = useState(false)
 
-  const history = useHistory()
-
-  const handleOpenAppClick = useCallback(() => {
-    const pathname = getPathname(history.location)
-    const redirectHref = `https://redirect.audius.co${APP_REDIRECT}${pathname}`
-    window.location.href = redirectHref
-  }, [history.location])
-
   const onOpenOpenAppDrawer = useCallback(() => {
     setIsOpenAppDrawerOpen(true)
   }, [setIsOpenAppDrawerOpen])
@@ -361,32 +344,10 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
           />
         )}
         {isMobile && (
-          <Drawer
-            zIndex={zIndex.BUY_SELL_MODAL}
+          <OpenAppDrawer
             isOpen={isOpenAppDrawerOpen}
             onClose={onCloseOpenAppDrawer}
-            shouldClose={!isOpenAppDrawerOpen}
-          >
-            <Flex direction='column' p='l' pb='2xl' w='100%'>
-              <Box pv='s'>
-                <Text
-                  variant='label'
-                  size='xl'
-                  strength='strong'
-                  color='subdued'
-                  textAlign='center'
-                >
-                  {messages.openTheApp}
-                </Text>
-              </Box>
-              <Box pv='l'>
-                <Text>{messages.drawerDescription}</Text>
-              </Box>
-              <Button variant='secondary' onClick={handleOpenAppClick}>
-                {messages.openTheApp}
-              </Button>
-            </Flex>
-          </Drawer>
+          />
         )}
       </Flex>
     </Paper>
