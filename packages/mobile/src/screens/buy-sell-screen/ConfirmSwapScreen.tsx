@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
-import { SLIPPAGE_BPS } from '@audius/common/api'
+import { SLIPPAGE_BPS, SwapStatus } from '@audius/common/api'
 import { useBuySellAnalytics } from '@audius/common/hooks'
 import { buySellMessages as baseMessages } from '@audius/common/messages'
 import type { TokenInfo, TokenPair } from '@audius/common/store'
@@ -28,6 +28,7 @@ import {
   ScreenContent
 } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useToast } from 'app/hooks/useToast'
 
 import { SwapBalanceSection } from '../../components/buy-sell'
 
@@ -90,6 +91,7 @@ const LoadingScreen = () => (
 
 export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
   const navigation = useNavigation()
+  const { toast } = useToast()
   const { trackSwapConfirmed, trackSwapSuccess, trackSwapFailure } =
     useBuySellAnalytics()
 
@@ -99,8 +101,6 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
       receiveTokenInfo,
       payAmount,
       receiveAmount,
-      pricePerBaseToken,
-      baseTokenSymbol,
       exchangeRate = null
     },
     activeTab,
@@ -135,7 +135,8 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
     isConfirmButtonLoading,
     swapStatus,
     swapError,
-    swapResult
+    swapResult,
+    swapData
   } = useBuySellSwap({
     transactionData,
     currentScreen,
@@ -191,9 +192,13 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
     trackSwapSuccess
   ])
 
-  // Handle swap error
+  // Handle swap data errors (when swap returns error status) - navigate back and show toast
   useEffect(() => {
-    if (swapStatus === 'error' && swapError) {
+    if (
+      (swapData?.status === SwapStatus.ERROR && swapData?.error) ||
+      swapStatus === 'error' ||
+      swapError
+    ) {
       trackSwapFailure(
         {
           activeTab,
@@ -206,29 +211,30 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
         {
           errorType: 'swap_error',
           errorStage: 'transaction',
-          errorMessage: swapError?.message
-            ? swapError.message.substring(0, 500)
+          errorMessage: swapData?.error?.message
+            ? swapData?.error?.message.substring(0, 500)
             : 'Unknown error'
         }
       )
 
-      navigation.navigate('TransactionResultScreen', {
-        result: {
-          status: 'error' as const,
-          error: swapError
-        }
-      })
+      // Navigate back to input screen (matching web behavior)
+      navigation.navigate('BuySellMain')
+
+      // Show toast notification
+      toast({ content: messages.transactionFailed, type: 'error' })
     }
   }, [
-    swapStatus,
-    swapError,
-    navigation,
+    swapData,
     activeTab,
+    swapTokens,
     payAmount,
     receiveAmount,
-    swapTokens,
     exchangeRate,
-    trackSwapFailure
+    trackSwapFailure,
+    navigation,
+    toast,
+    swapStatus,
+    swapError
   ])
 
   // balance isn't needed so we pass 0
@@ -245,11 +251,6 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
     isStablecoin: !!receiveTokenInfo.isStablecoin,
     decimals: receiveTokenInfo.decimals
   })
-
-  const isReceivingBaseToken = receiveTokenInfo.symbol === baseTokenSymbol
-  const priceLabel = isReceivingBaseToken
-    ? messages.priceEach(pricePerBaseToken)
-    : undefined
 
   const handleBack = () => {
     navigation.goBack()
@@ -312,9 +313,22 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
                 title={messages.youReceive}
                 tokenInfo={receiveTokenInfo}
                 amount={formattedReceiveAmount}
-                priceLabel={priceLabel}
               />
             </Flex>
+            {exchangeRate ? (
+              <Flex row gap='xs' alignItems='center' pt='s'>
+                <Text variant='body' size='s' color='subdued'>
+                  {messages.exchangeRateLabel}
+                </Text>
+                <Text variant='body' size='s' color='default'>
+                  {messages.exchangeRateValue(
+                    payTokenInfo.symbol,
+                    receiveTokenInfo.symbol,
+                    exchangeRate
+                  )}
+                </Text>
+              </Flex>
+            ) : null}
           </Flex>
         </FixedFooterContent>
 

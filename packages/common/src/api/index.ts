@@ -30,6 +30,7 @@ export * from './tan-query/coins/useUserCreatedCoins'
 export * from './tan-query/coins/useArtistCoins'
 export * from './tan-query/coins/useArtistOwnedCoin'
 export * from './tan-query/coins/useFirstBuyQuote'
+export * from './tan-query/coins/useUpdateArtistCoin'
 export * from './tan-query/coins/tokenUtils'
 
 // Developer Apps
@@ -181,6 +182,7 @@ export * from './tan-query/wallets/useWalletSolBalance'
 export * from './tan-query/jupiter/useSwapTokens'
 export * from './tan-query/jupiter/useTokenExchangeRate'
 export * from './tan-query/jupiter/utils'
+export * from './tan-query/jupiter/types'
 
 // Saga fetch utils, remove when migration is complete
 export * from './tan-query/saga-utils'

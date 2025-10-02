@@ -20,6 +20,7 @@ type TransactionSuccessScreenProps = {
   receiveAmount: number
   pricePerBaseToken?: number
   baseTokenSymbol: string
+  exchangeRate?: number | null
   onDone: () => void
   hideUSDCTooltip?: boolean
 }
@@ -34,6 +35,7 @@ export const TransactionSuccessScreen = (
     receiveAmount,
     pricePerBaseToken,
     baseTokenSymbol,
+    exchangeRate,
     onDone,
     hideUSDCTooltip
   } = props
@@ -83,6 +85,21 @@ export const TransactionSuccessScreen = (
           priceLabel={priceLabel}
         />
       </Flex>
+
+      {exchangeRate ? (
+        <Flex gap='xs' alignItems='center' mt='l'>
+          <Text variant='body' size='s' color='subdued'>
+            {messages.exchangeRateLabel}
+          </Text>
+          <Text variant='body' size='s' color='default'>
+            {messages.exchangeRateValue(
+              payTokenInfo.symbol,
+              receiveTokenInfo.symbol,
+              exchangeRate
+            )}
+          </Text>
+        </Flex>
+      ) : null}
 
       <Flex>
         <Button variant='primary' fullWidth onClick={onDone}>

@@ -1,5 +1,6 @@
 import { useCallback, useContext, useMemo } from 'react'
 
+import type { Coin } from '@audius/common/adapters'
 import {
   useArtistCoin,
   useCurrentUserId,
@@ -9,13 +10,17 @@ import {
 import { useDiscordOAuthLink } from '@audius/common/hooks'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { WidthSizes } from '@audius/common/models'
-import { route, shortenSPLAddress } from '@audius/common/utils'
+import { removeNullable, route, shortenSPLAddress } from '@audius/common/utils'
 import {
   Flex,
   IconCopy,
   IconDiscord,
   IconExternalLink,
   IconGift,
+  IconInstagram,
+  IconLink,
+  IconTikTok,
+  IconX,
   Paper,
   PlainButton,
   Text,
@@ -24,6 +29,7 @@ import {
 import { HashId } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
+import { ExternalLink } from 'components/link/ExternalLink'
 import Skeleton from 'components/skeleton/Skeleton'
 import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
@@ -37,6 +43,68 @@ const messages = coinDetailsMessages.coinInfo
 const overflowMessages = coinDetailsMessages.overflowMenu
 
 const BANNER_HEIGHT = 120
+
+// Helper function to detect platform from URL
+const detectPlatform = (
+  url: string
+): 'x' | 'instagram' | 'tiktok' | 'website' => {
+  const cleanUrl = url.toLowerCase().trim()
+
+  if (cleanUrl.includes('twitter.com') || cleanUrl.includes('x.com')) {
+    return 'x'
+  }
+  if (cleanUrl.includes('instagram.com')) {
+    return 'instagram'
+  }
+  if (cleanUrl.includes('tiktok.com')) {
+    return 'tiktok'
+  }
+
+  return 'website'
+}
+
+// Get platform icon
+const getPlatformIcon = (platform: string) => {
+  switch (platform) {
+    case 'x':
+      return IconX
+    case 'instagram':
+      return IconInstagram
+    case 'tiktok':
+      return IconTikTok
+    case 'website':
+    default:
+      return IconLink
+  }
+}
+
+const SocialLinksDisplay = ({ coin }: { coin: Coin }) => {
+  const socialLinks = [coin.link1, coin.link2, coin.link3, coin.link4].filter(
+    removeNullable
+  )
+
+  if (socialLinks.length === 0) {
+    return null
+  }
+
+  return (
+    <Flex gap='l' alignItems='center'>
+      {socialLinks.map((link, index) => {
+        const platform = detectPlatform(link)
+        const IconComponent = getPlatformIcon(platform)
+
+        return (
+          <ExternalLink key={index} to={link}>
+            <PlainButton
+              size='large'
+              iconLeft={() => <IconComponent color='subdued' />}
+            />
+          </ExternalLink>
+        )
+      })}
+    </Flex>
+  )
+}
 
 const AssetInfoSectionSkeleton = () => {
   const theme = useTheme()
@@ -233,8 +301,16 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
       <BannerSection mint={mint} />
 
       {coin.description ? (
-        <Flex column alignItems='flex-start' alignSelf='stretch' p='xl' gap='l'>
+        <Flex
+          column
+          alignItems='flex-start'
+          alignSelf='stretch'
+          ph='xl'
+          pv='l'
+          gap='l'
+        >
           <Flex column gap='m'>
+            <SocialLinksDisplay coin={coin} />
             {descriptionParagraphs.map((paragraph) => {
               if (paragraph.trim() === '') {
                 return null

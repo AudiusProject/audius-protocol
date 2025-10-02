@@ -564,8 +564,15 @@ def validate_signature(
     chain: str, web3, user_id: int, associated_wallet: str, signature: str
 ):
     if chain == "eth":
-        signed_wallet = recover_user_id_hash(web3, user_id, signature)
-        return signed_wallet == associated_wallet
+        try:
+            signed_wallet = recover_user_id_hash(web3, user_id, signature)
+            return signed_wallet == associated_wallet
+        except Exception as e:
+            logger.error(
+                f"index.py | users.py | Verifying ETH validation signature for user_id {user_id} {e}",
+                exc_info=True,
+            )
+            return False
     if chain == "sol":
         try:
             message = f"AudiusUserID:{user_id}"

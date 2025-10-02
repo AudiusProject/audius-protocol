@@ -164,7 +164,11 @@ const SendTokensInput = ({
   return (
     <Flex direction='column' gap='xl' p='xl'>
       {/* Token Balance Section */}
-      <CryptoBalanceSection tokenInfo={tokenInfo} amount={formattedBalance} />
+      <CryptoBalanceSection
+        tokenInfo={tokenInfo}
+        name={tokenInfo.name}
+        amount={formattedBalance}
+      />
 
       <Divider orientation='horizontal' color='default' />
 

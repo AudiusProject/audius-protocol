@@ -74,17 +74,7 @@ export const TransactionResultScreen = ({
   }
 
   if (result.status === 'success' && successData) {
-    const {
-      payTokenInfo,
-      receiveTokenInfo,
-      pricePerBaseToken,
-      baseTokenSymbol
-    } = successData
-
-    const isReceivingBaseToken = receiveTokenInfo.symbol === baseTokenSymbol
-    const priceLabel = isReceivingBaseToken
-      ? messages.priceEach(pricePerBaseToken)
-      : undefined
+    const { payTokenInfo, receiveTokenInfo, exchangeRate } = successData
 
     if (!formattedPayAmount || !formattedReceiveAmount) return null
 
@@ -115,9 +105,22 @@ export const TransactionResultScreen = ({
                   title={messages.youReceived}
                   tokenInfo={receiveTokenInfo}
                   amount={formattedReceiveAmount}
-                  priceLabel={priceLabel}
                 />
               </Flex>
+              {exchangeRate ? (
+                <Flex row gap='xs' alignItems='center' pt='s'>
+                  <Text variant='body' size='s' color='subdued'>
+                    {messages.exchangeRateLabel}
+                  </Text>
+                  <Text variant='body' size='s' color='default'>
+                    {messages.exchangeRateValue(
+                      payTokenInfo.symbol,
+                      receiveTokenInfo.symbol,
+                      exchangeRate
+                    )}
+                  </Text>
+                </Flex>
+              ) : null}
             </Flex>
           </FixedFooterContent>
 

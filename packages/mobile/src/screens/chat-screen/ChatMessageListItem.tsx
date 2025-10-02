@@ -1,7 +1,10 @@
 import { memo, useCallback, useState } from 'react'
 
 import { useCurrentUserId } from '@audius/common/api'
-import { useFeatureFlag } from '@audius/common/hooks'
+import {
+  useArtistCoinMessageHeader,
+  useFeatureFlag
+} from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { chatSelectors } from '@audius/common/store'
@@ -41,7 +44,8 @@ const TAIL_HORIZONTAL_OFFSET = 7
 const useStyles = makeStyles(({ spacing, palette }) => ({
   bubble: {
     marginTop: spacing(2),
-    borderRadius: spacing(3)
+    borderRadius: spacing(3),
+    overflow: 'hidden'
   },
   pressed: {
     backgroundColor: palette.neutralLight10
@@ -54,6 +58,10 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     paddingVertical: spacing(3),
     backgroundColor: palette.white,
     borderRadius: spacing(3)
+  },
+  messageContainerHasHeader: {
+    borderTopStartRadius: 0,
+    borderTopEndRadius: 0
   },
   messageContainerAuthor: {
     backgroundColor: palette.secondaryLight2
@@ -214,6 +222,13 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
     borderBottomWidth
   }
 
+  const artistCoinSymbol = useArtistCoinMessageHeader({
+    userId: senderUserId ?? 0,
+    audience: message?.audience
+  })
+
+  const hasHeader = artistCoinSymbol || isCollection || isTrack || link
+
   return message ? (
     <>
       <Flex
@@ -288,7 +303,8 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
               <Flex
                 style={[
                   styles.messageContainer,
-                  isAuthor && styles.messageContainerAuthor
+                  isAuthor && styles.messageContainerAuthor,
+                  hasHeader && styles.messageContainerHasHeader
                 ]}
               >
                 <UserGeneratedText

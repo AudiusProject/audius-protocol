@@ -8,7 +8,6 @@ import { useNavigate } from 'react-router-dom-v5-compat'
 import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
 
 const messages = {
-  cardBody: 'Unlock exclusive perks & more.',
   buyCoins: 'Buy Coins'
 }
 
@@ -48,14 +47,21 @@ export const BuyArtistCoinCard = ({ mint }: { mint: string }) => {
     >
       <Flex gap='s' alignItems='center'>
         <TokenIcon logoURI={artistCoin.logoUri} size='xl' hex />
-        <Text variant='title' size='l'>
-          {artistCoin.ticker}
-        </Text>
+        <Flex column gap='2xs'>
+          <Text variant='title' size='l'>
+            {artistCoin.name}
+          </Text>
+          <Text variant='title' size='s' color='subdued'>
+            {artistCoin.ticker}
+          </Text>
+        </Flex>
       </Flex>
-      <Text variant='body' size='s'>
-        {messages.cardBody}
-      </Text>
-      <Button size='small' onClick={handleBuyCoins} color='coinGradient'>
+      <Button
+        size='small'
+        onClick={handleBuyCoins}
+        color='coinGradient'
+        fullWidth
+      >
         {messages.buyCoins}
       </Button>
     </Paper>

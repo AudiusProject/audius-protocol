@@ -7,11 +7,15 @@ import {
   useState
 } from 'react'
 
-import { useArtistCoin, useTokenPair, useTokens } from '@audius/common/api'
+import {
+  SwapStatus,
+  useArtistCoin,
+  useTokenPair,
+  useTokens
+} from '@audius/common/api'
 import { useBuySellAnalytics, useOwnedTokens } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
-import { SwapStatus } from '@audius/common/src/api/tan-query/jupiter/types'
 import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import {
   BuySellTab,
@@ -27,7 +31,6 @@ import {
   useSwapDisplayData,
   useTokenStates
 } from '@audius/common/store'
-import { formatTickerFromUrl } from '@audius/common/utils'
 import { Button, Flex, Hint, SegmentedControl, TextLink } from '@audius/harmony'
 import { matchPath, useLocation } from 'react-router-dom'
 
@@ -119,8 +122,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     exact: true
   })
   const { data: selectedPair } = useTokenPair({
-    baseSymbol:
-      initialTicker ?? formatTickerFromUrl(match?.params.ticker ?? ''),
+    baseSymbol: initialTicker ?? match?.params.ticker ?? '',
     quoteSymbol: 'USDC'
   })
 

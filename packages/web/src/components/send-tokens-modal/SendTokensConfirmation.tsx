@@ -92,6 +92,7 @@ const SendTokensConfirmation = ({
       {/* Token Balance Section */}
       <CryptoBalanceSection
         tokenInfo={tokenInfo}
+        name={tokenInfo.name}
         amount={tokenBalance?.balanceLocaleString ?? ''}
       />
 

@@ -4,7 +4,7 @@
   "version": "1.5.75",
   "description": "dotenv lint",
   "author": "Audius",
-  "homepage": "https://github.com/AudiusProject/audius-protocol#readme",
+  "homepage": "https://github.com/AudiusProject/apps#readme",
   "license": "Apache-2.0",
   "bin": {
     "dotenv-linter": "bin/dotenv-linter"
@@ -14,6 +14,6 @@
     "rebuild": "npm rebuild --ignore-scripts"
   },
   "bugs": {
-    "url": "https://github.com/AudiusProject/audius-protocol/issues"
+    "url": "https://github.com/AudiusProject/apps/issues"
   }
 }

@@ -36,12 +36,10 @@ export const SellTab = ({
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
     useArtistCoin(selectedInputToken.address)
 
-  const tokenPrice = tokenPriceData?.price?.toString() ?? null
-
   const decimalPlaces = useMemo(() => {
-    if (!tokenPrice) return 2
-    return getCurrencyDecimalPlaces(parseFloat(tokenPrice))
-  }, [tokenPrice])
+    if (!tokenPriceData?.price) return 2
+    return getCurrencyDecimalPlaces(tokenPriceData.price)
+  }, [tokenPriceData?.price])
 
   const {
     inputAmount,
@@ -105,7 +103,7 @@ export const SellTab = ({
             onAmountChange={handleOutputAmountChange}
             availableBalance={0}
             exchangeRate={currentExchangeRate}
-            tokenPrice={tokenPrice}
+            tokenPrice={tokenPriceData?.price.toString() ?? null}
             isTokenPriceLoading={isTokenPriceLoading}
             tokenPriceDecimalPlaces={decimalPlaces}
             hideTokenDisplay={true} // Hide token display completely in sell tab output
