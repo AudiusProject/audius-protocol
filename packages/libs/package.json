@@ -165,7 +165,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AudiusProject/audius-protocol/tree/main/packages/libs"
+    "url": "git+https://github.com/AudiusProject/apps/tree/main/packages/libs"
   },
   "engines": {
     "node": ">=14.0.0"
@@ -173,7 +173,7 @@
   "author": "Audius",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/AudiusProject/audius-protocol/issues"
+    "url": "https://github.com/AudiusProject/apps/issues"
   },
-  "homepage": "https://github.com/AudiusProject/audius-protocol/tree/main/packages/libs"
+  "homepage": "https://github.com/AudiusProject/apps/tree/main/packages/libs"
 }

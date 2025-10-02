@@ -73,14 +73,14 @@ const readConfig = (): Config => {
       default: 'dev'
     }),
     audius_discprov_url: str({
-      default: 'http://audius-protocol-discovery-provider-1'
+      default: 'http://audius-discovery-provider-1'
     }),
     audius_db_url: str({
       default:
         'postgresql+psycopg2://postgres:postgres@db:5432/discovery_provider_1'
     }),
     audius_redis_url: str({
-      default: 'redis://audius-protocol-discovery-provider-redis-1:6379/00'
+      default: 'redis://audius-discovery-redis-1:6379/00'
     }),
     audius_solana_endpoint: str({
       default: 'http://solana-test-validator:8899'
@@ -152,7 +152,7 @@ const readConfig = (): Config => {
     audius_solana_listens_track_daily_rate_limit: num({ default: 50000 }),
     audius_solana_listens_track_weekly_rate_limit: num({ default: 50000000 }),
     audius_anti_abuse_oracle: str({
-      default: 'http://audius-protocol-anti-abuse-oracle-1:8000'
+      default: 'http://audius-anti-abuse-oracle-1:8000'
     }),
     audius_launchpad_config_key: str({
       default: ''

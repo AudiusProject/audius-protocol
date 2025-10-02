@@ -18,7 +18,15 @@ const messages = {
   fixErrors: 'Fix errors to continue your update.'
 }
 
-export const AnchoredSubmitRowEdit = () => {
+type AnchoredSubmitRowEditProps = {
+  isSubmitting?: boolean
+  errorText?: string
+}
+
+export const AnchoredSubmitRowEdit = ({
+  errorText,
+  isSubmitting = false
+}: AnchoredSubmitRowEditProps = {}) => {
   const scrollToTop = useContext(EditFormScrollContext)
   const { isValid } = useFormikContext()
 
@@ -32,6 +40,7 @@ export const AnchoredSubmitRowEdit = () => {
           <Button
             variant='secondary'
             size='default'
+            disabled={isSubmitting}
             onClick={() =>
               history.length > 0 ? history.goBack() : navigate(FEED_PAGE)
             }
@@ -45,15 +54,17 @@ export const AnchoredSubmitRowEdit = () => {
               scrollToTop()
             }}
             type='submit'
+            disabled={isSubmitting}
+            isLoading={isSubmitting}
           >
             {messages.save}
           </Button>
         </Flex>
-        {!isValid ? (
+        {errorText || !isValid ? (
           <Flex alignItems='center' gap='xs'>
             <IconError color='danger' size='s' />
             <Text color='danger' size='s' variant='body'>
-              {messages.fixErrors}
+              {errorText ?? messages.fixErrors}
             </Text>
           </Flex>
         ) : null}

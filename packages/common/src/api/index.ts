@@ -29,6 +29,7 @@ export * from './tan-query/coins/useUserCreatedCoins'
 export * from './tan-query/coins/useArtistCoins'
 export * from './tan-query/coins/useArtistOwnedCoin'
 export * from './tan-query/coins/useFirstBuyQuote'
+export * from './tan-query/coins/useUpdateArtistCoin'
 export * from './tan-query/coins/tokenUtils'
 
 // Developer Apps
