@@ -57,7 +57,14 @@ export const useTokenBalance = ({
       includeConnectedWallets: includeExternalWallets,
       includeStaked
     },
-    { enabled: isAudio }
+    {
+      enabled: isAudio,
+      // TanStack Query's built-in polling - only poll when isPolling is true
+      refetchInterval: isPolling ? pollingInterval : undefined,
+      // Prevent refetching when window regains focus during polling to avoid conflicts
+      refetchOnWindowFocus: !isPolling,
+      ...queryOptions
+    }
   )
 
   // Artist coins query
@@ -95,6 +102,10 @@ export const useTokenBalance = ({
           decimals
         }
       },
+      // TanStack Query's built-in polling - only poll when isPolling is true
+      refetchInterval: isPolling ? pollingInterval : undefined,
+      // Prevent refetching when window regains focus during polling to avoid conflicts
+      refetchOnWindowFocus: !isPolling,
       ...queryOptions,
       enabled: !isUsdc && queryOptions.enabled !== false
     }

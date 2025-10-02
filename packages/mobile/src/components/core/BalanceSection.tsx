@@ -11,10 +11,24 @@ import { TokenIcon } from './TokenIcon'
 export type BalanceSectionProps = {
   /** Mint address for fetching balance */
   mint?: string
+  /** Whether to enable polling for balance updates */
+
+  isPolling?: boolean
+  /** Interval for polling in milliseconds */
+  pollingInterval?: number
 }
 
-export const BalanceSection = ({ mint }: BalanceSectionProps) => {
-  const { tokenBalanceFormatted } = useFormattedTokenBalance(mint ?? '')
+export const BalanceSection = ({
+  mint,
+  isPolling,
+  pollingInterval
+}: BalanceSectionProps) => {
+  const { tokenBalanceFormatted } = useFormattedTokenBalance(
+    mint ?? '',
+    'en-US',
+    isPolling,
+    pollingInterval
+  )
   const { data: coin } = useArtistCoin(mint)
   const tokenInfo = coin ? transformArtistCoinToTokenInfo(coin) : undefined
 

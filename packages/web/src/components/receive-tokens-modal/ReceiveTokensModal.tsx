@@ -37,7 +37,10 @@ export const ReceiveTokensModal = () => {
   const { mint } = data ?? {}
   const { data: coin } = useArtistCoin(mint)
   const { tokenBalanceFormatted: balance } = useFormattedTokenBalance(
-    mint ?? ''
+    mint ?? '',
+    'en-US',
+    isOpen,
+    3000 // Poll every 3 seconds when modal is open
   )
   const { userBankAddress, loading: userBankLoading } = useUserbank(mint)
   const tokenInfo = coin ? transformArtistCoinToTokenInfo(coin) : undefined
