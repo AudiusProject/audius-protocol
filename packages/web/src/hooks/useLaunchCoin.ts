@@ -1,7 +1,6 @@
 import {
   getArtistCoinsQueryKey,
   getUserCreatedCoinsQueryKey,
-  getUserQueryKey,
   useQueryContext
 } from '@audius/common/api'
 import {

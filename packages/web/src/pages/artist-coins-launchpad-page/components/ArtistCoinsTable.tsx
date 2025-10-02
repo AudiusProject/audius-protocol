@@ -94,7 +94,7 @@ const renderTokenNameCell = (cellInfo: CoinCell) => {
             ellipses
             css={{ display: 'block' }}
           >
-            {coin.ticker}
+            ${coin.ticker}
           </TextLink>
         </Flex>
       </Flex>

@@ -111,7 +111,7 @@ const ZeroBalanceState = ({
       <Flex gap='s' alignItems='center'>
         <TokenIcon logoURI={logoURI} />
         <Text variant='heading' size='l' color='subdued'>
-          {ticker}
+          ${ticker}
         </Text>
       </Flex>
       {!isCoinCreator ? (
@@ -210,7 +210,7 @@ const HasBalanceState = ({
                 {tokenBalanceFormatted}
               </Text>
               <Text variant='title' size='l' color='subdued'>
-                {ticker}
+                ${ticker}
               </Text>
             </Flex>
           </Flex>

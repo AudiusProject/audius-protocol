@@ -1,10 +1,6 @@
 import { useCallback, useState, ChangeEvent } from 'react'
 
-import {
-  useCurrentAccountUser,
-  useCurrentUserId,
-  useUserCreatedCoins
-} from '@audius/common/api'
+import { useCurrentAccountUser, useUserCreatedCoins } from '@audius/common/api'
 import { walletMessages } from '@audius/common/messages'
 import { COINS_CREATE_PAGE } from '@audius/common/src/utils/route'
 import {
