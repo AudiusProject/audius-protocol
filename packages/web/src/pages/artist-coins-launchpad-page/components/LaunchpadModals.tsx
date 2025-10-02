@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import {
   LaunchpadFormValues,
@@ -22,6 +22,7 @@ import {
 import { useFormikContext } from 'formik'
 
 import { AddressTile } from 'components/address-tile'
+import { ExternalTextLink } from 'components/link'
 import { env } from 'services/env'
 
 const messages = {
@@ -248,10 +249,6 @@ export const InsufficientBalanceModal = ({
 }) => {
   const { onOpen: openSendTokensModal } = useSendTokensModal()
 
-  const handleLearnHowToFund = useCallback(() => {
-    window.open(AUDIUS_ARTIST_COIN_HELP_LINK, '_blank', 'noreferrer,noopener')
-  }, [])
-
   return (
     <Modal isOpen={isOpen} onClose={onClose} size='small'>
       <ModalHeader showDismissButton>
@@ -286,9 +283,12 @@ export const InsufficientBalanceModal = ({
             <Flex gap='m' column>
               <Text>{messages.hintText}</Text>
               <Flex gap='m'>
-                <TextLink showUnderline onClick={handleLearnHowToFund}>
+                <ExternalTextLink
+                  showUnderline
+                  to={AUDIUS_ARTIST_COIN_HELP_LINK}
+                >
                   {messages.learnHowToFund}
-                </TextLink>
+                </ExternalTextLink>
                 <TextLink
                   showUnderline
                   onClick={() => {
