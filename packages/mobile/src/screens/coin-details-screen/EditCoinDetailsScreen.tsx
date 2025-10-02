@@ -33,7 +33,6 @@ import {
   TokenIcon,
   Screen,
   ScreenContent,
-  KeyboardAvoidingView,
   FixedFooter
 } from 'app/components/core'
 import { TextAreaField } from 'app/components/fields/TextAreaField'
