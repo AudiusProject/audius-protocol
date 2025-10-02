@@ -513,7 +513,7 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
             <Text variant='body' size='s' strength='strong'>
               {overflowMessages.artistEarnings}
             </Text>
-            <Tooltip text={overflowMessages.artistEarnings}>
+            <Tooltip text={overflowMessages.artistEarnings} mount='body'>
               <IconInfo size='s' color='subdued' />
             </Tooltip>
           </Flex>
@@ -531,7 +531,7 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
               <Text variant='body' size='s' strength='strong'>
                 {overflowMessages.unclaimedFees}
               </Text>
-              <Tooltip text={overflowMessages.unclaimedFees}>
+              <Tooltip text={overflowMessages.unclaimedFees} mount='body'>
                 <IconInfo size='s' color='subdued' />
               </Tooltip>
             </Flex>
