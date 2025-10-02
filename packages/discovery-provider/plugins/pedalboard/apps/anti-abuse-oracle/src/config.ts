@@ -44,14 +44,14 @@ const readConfig = (): Config => {
       default: 'dev'
     }),
     audius_discprov_url: str({
-      default: 'http://audius-protocol-discovery-provider-1'
+      default: 'http://audius-discovery-provider-1'
     }),
     audius_db_url: str({
       default:
         'postgresql+psycopg2://postgres:postgres@db:5432/discovery_provider_1'
     }),
     audius_redis_url: str({
-      default: 'redis://audius-protocol-discovery-provider-redis-1:6379/00'
+      default: 'redis://audius-discovery-redis-1:6379/00'
     }),
     anti_abuse_oracle_server_host: str({ default: '0.0.0.0' }),
     anti_abuse_oracle_server_port: num({ default: 6003 }),

@@ -65,6 +65,7 @@ import { DeactivateAccountPage } from 'pages/deactivate-account-page/DeactivateA
 import DevTools from 'pages/dev-tools/DevTools'
 import SolanaToolsPage from 'pages/dev-tools/SolanaToolsPage'
 import UserIdParserPage from 'pages/dev-tools/UserIdParserPage'
+import { EditCoinDetailsPage } from 'pages/edit-coin-details-page/EditCoinDetailsPage'
 import { EditCollectionPage } from 'pages/edit-collection-page'
 import EmptyPage from 'pages/empty-page/EmptyPage'
 import { ExplorePage } from 'pages/explore-page/ExplorePage'
@@ -133,6 +134,7 @@ const {
   NOT_FOUND_PAGE,
   SEARCH_PAGE,
   PLAYLIST_PAGE,
+
   ALBUM_PAGE,
   TRACK_PAGE,
   TRACK_COMMENTS_PAGE,
@@ -193,6 +195,7 @@ const {
   WALLET_PAGE,
   COINS_CREATE_PAGE,
   COINS_EXPLORE_PAGE,
+  EDIT_COIN_DETAILS_PAGE,
   DEV_TOOLS_PAGE,
   SOLANA_TOOLS_PAGE,
   USER_ID_PARSER_PAGE
@@ -742,6 +745,12 @@ const WebPlayer = (props) => {
                     <AudioPage {...props} />
                   )
                 }}
+              />
+              <Route
+                exact
+                path={EDIT_COIN_DETAILS_PAGE}
+                isMobile={isMobile}
+                render={(props) => <EditCoinDetailsPage {...props} />}
               />
               <Route
                 exact

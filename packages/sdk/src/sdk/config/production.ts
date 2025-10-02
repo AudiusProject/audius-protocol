@@ -7,43 +7,7 @@ import type { SdkServicesConfig } from './types'
 export const productionConfig: SdkServicesConfig = {
   "network": {
     "minVersion": "0.7.0",
-    "discoveryNodes": [
-      {
-        "endpoint": "https://audius-metadata-1.figment.io",
-        "ownerWallet": "0xc1f351FE81dFAcB3541e59177AC71Ed237BD15D0",
-        "delegateOwnerWallet": "0x7db3789e5E2154569e802945ECF2cC92e0994841"
-      },
-      {
-        "endpoint": "https://audius-metadata-2.figment.io",
-        "ownerWallet": "0xc1f351FE81dFAcB3541e59177AC71Ed237BD15D0",
-        "delegateOwnerWallet": "0x4E2C78d0d3303ed459BF8a3CD87f11A6bc936140"
-      },
-      {
-        "endpoint": "https://discoveryprovider.audius.co",
-        "ownerWallet": "0xe5b256d302ea2f4e04B8F3bfD8695aDe147aB68d",
-        "delegateOwnerWallet": "0xf1a1Bd34b2Bc73629aa69E50E3249E89A3c16786"
-      },
-      {
-        "endpoint": "https://audius-metadata-3.figment.io",
-        "ownerWallet": "0xc1f351FE81dFAcB3541e59177AC71Ed237BD15D0",
-        "delegateOwnerWallet": "0xE019F1Ad9803cfC83e11D37Da442c9Dc8D8d82a6"
-      },
-      {
-        "endpoint": "https://audius-metadata-4.figment.io",
-        "ownerWallet": "0xc1f351FE81dFAcB3541e59177AC71Ed237BD15D0",
-        "delegateOwnerWallet": "0xf7441A14A31199744Bf8e7b79405c5446C120D0f"
-      },
-      {
-        "endpoint": "https://dn1.monophonic.digital",
-        "ownerWallet": "0x6470Daf3bd32f5014512bCdF0D02232f5640a5BD",
-        "delegateOwnerWallet": "0x2CD66a3931C36596efB037b06753476dcE6B4e86"
-      },
-      {
-        "endpoint": "https://audius-dn1.tikilabs.com",
-        "ownerWallet": "0xe4882D9A38A2A1fc652996719AF0fb15CB968d0a",
-        "delegateOwnerWallet": "0x1cF73c5023572F2d5dc6BD3c5E4F24b4F3b6B76F"
-      }
-    ],
+    "discoveryNodes": [],
     "apiEndpoint": "https://api.audius.co",
     "storageNodes": [
       {
