@@ -290,6 +290,7 @@ const ConfirmationStep = ({
               title={buySellMessages.youReceive}
               tokenInfo={values.selectedOutputToken}
               amount={formattedReceiveAmount ?? ''}
+              hideUSDCTooltip
             />
           </Flex>
 

@@ -62,14 +62,11 @@ const DesktopArtistCoinsExplorePage = () => {
       userId: currentUser?.user_id
     })
 
-  const hasExistingArtistCoin = false // (createdCoins?.length ?? 0) > 0
-  const canLaunchCoin = !hasExistingArtistCoin
+  const hasExistingArtistCoin = (createdCoins?.length ?? 0) > 0
 
   const handleGetStarted = useCallback(() => {
-    if (canLaunchCoin) {
-      navigate(COINS_CREATE_PAGE)
-    }
-  }, [navigate, canLaunchCoin])
+    navigate(COINS_CREATE_PAGE)
+  }, [navigate])
 
   const handleSearchChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value)
