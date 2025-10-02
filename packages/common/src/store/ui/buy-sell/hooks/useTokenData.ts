@@ -89,9 +89,10 @@ export const useTokenData = ({
 
   // balance: truncated balance for display purposes only
   const displayDecimals = getTokenDecimalPlaces(Number(balanceFD))
+  const maxFractionDigits = Math.min(displayDecimals, inputToken.decimals)
   const balance =
     balanceFD && balanceFD.toString() !== '0'
-      ? Number(balanceFD.trunc(displayDecimals))
+      ? Number(balanceFD.trunc(maxFractionDigits))
       : 0
   const formattedBalance = useMemo(() => {
     if (!balance) return '0'
