@@ -91,7 +91,7 @@ export const CoinCard = ({
                   {balance}
                 </Text>
                 <Text variant='title' size='l' color='subdued'>
-                  {symbol}
+                  ${symbol}
                 </Text>
               </Flex>
             </>
