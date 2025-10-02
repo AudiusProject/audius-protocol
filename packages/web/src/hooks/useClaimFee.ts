@@ -1,7 +1,12 @@
-import { useQueryContext } from '@audius/common/api'
+import { type Coin } from '@audius/common/adapters'
+import { getArtistCoinQueryKey, useQueryContext } from '@audius/common/api'
 import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react'
 import { VersionedTransaction } from '@solana/web3.js'
-import { useMutation, UseMutationOptions } from '@tanstack/react-query'
+import {
+  useMutation,
+  UseMutationOptions,
+  useQueryClient
+} from '@tanstack/react-query'
 
 import { appkitModal } from 'app/ReownAppKitModal'
 
@@ -24,6 +29,7 @@ export const useClaimFee = (
   options?: UseMutationOptions<ClaimFeeResponse, Error, UseClaimFeeParams>
 ) => {
   const { audiusSdk } = useQueryContext()
+  const queryClient = useQueryClient()
 
   return useMutation<ClaimFeeResponse, Error, UseClaimFeeParams>({
     mutationFn: async ({
@@ -69,6 +75,23 @@ export const useClaimFee = (
         signature
       }
     },
-    ...options
+    ...options,
+    onSuccess: (data, variables, context) => {
+      // Optimistically update the unclaimed fees data
+      const queryKey = getArtistCoinQueryKey(variables.tokenMint)
+      queryClient.setQueryData<Coin>(queryKey, (existingCoin) => {
+        if (!existingCoin) return existingCoin
+        return {
+          ...existingCoin,
+          dynamicBondingCurve: {
+            ...existingCoin?.dynamicBondingCurve,
+            creatorQuoteFee: 0
+          }
+        }
+      })
+
+      // Call the original onSuccess if provided
+      options?.onSuccess?.(data, variables, context)
+    }
   })
 }

@@ -66,6 +66,10 @@ export const coinDetailsMessages = {
   overflowMenu: {
     copyCoinAddress: 'Copy Coin Address',
     unclaimedFees: 'Unclaimed Fees',
+    artistEarnings: 'Artist Earnings',
+    vestingSchedule: 'Vesting Schedule',
+    vestingScheduleValue: '5 years (post-graduation)',
+    $audio: '$AUDIO',
     claim: 'Claim',
     openDexscreener: 'Open Dexscreener',
     details: 'Details',
@@ -103,5 +107,9 @@ export const coinDetailsMessages = {
       circulatingSupply:
         'The number of artist coins currently available for trading, excluding any tokens that are locked or reserved.'
     }
+  },
+  toasts: {
+    feesClaimed: 'Fees claimed successfully!',
+    feesClaimFailed: 'Unable to claim fees. Please try again.'
   }
 }
