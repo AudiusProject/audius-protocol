@@ -52,7 +52,7 @@ const CoinRow = ({ coin, onPress }: CoinRowProps) => {
               {coin.name}
             </Text>
             <Text variant='body' size='s' color='subdued'>
-              {coin.ticker}
+              ${coin.ticker}
             </Text>
           </Flex>
 
