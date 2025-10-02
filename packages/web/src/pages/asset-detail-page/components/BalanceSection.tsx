@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 
 import {
   useArtistCoin,
+  useCurrentAccountUser,
   useTokenBalance,
   useUSDCBalance
 } from '@audius/common/api'
@@ -98,8 +99,12 @@ const ZeroBalanceState = ({
   logoURI,
   onBuy,
   onReceive,
-  isBuySellSupported
-}: BalanceStateProps & { isBuySellSupported: boolean }) => {
+  isBuySellSupported,
+  isCoinCreator
+}: BalanceStateProps & {
+  isBuySellSupported: boolean
+  isCoinCreator: boolean
+}) => {
   const isManagerMode = useIsManagedAccount()
   return (
     <>
@@ -109,22 +114,24 @@ const ZeroBalanceState = ({
           {ticker}
         </Text>
       </Flex>
-      <Paper
-        ph='xl'
-        pv='l'
-        backgroundColor='surface2'
-        border='default'
-        direction='column'
-        gap='xs'
-        shadow='flat'
-      >
-        <Text variant='heading' size='s'>
-          {walletMessages.becomeMemberTitle}
-        </Text>
-        <Text variant='body' size='s' color='default' strength='default'>
-          {walletMessages.becomeMemberBody(ticker)}
-        </Text>
-      </Paper>
+      {!isCoinCreator ? (
+        <Paper
+          ph='xl'
+          pv='l'
+          backgroundColor='surface2'
+          border='default'
+          direction='column'
+          gap='xs'
+          shadow='flat'
+        >
+          <Text variant='heading' size='s'>
+            {walletMessages.becomeMemberTitle}
+          </Text>
+          <Text variant='body' size='s' color='default' strength='default'>
+            {walletMessages.becomeMemberBody(ticker)}
+          </Text>
+        </Paper>
+      ) : null}
       <Flex gap='s'>
         <Tooltip
           disabled={isBuySellSupported && !isManagerMode}
@@ -263,6 +270,8 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
   const { data: coin, isPending: coinsLoading } = useArtistCoin(mint)
   const { data: tokenBalance, isPending: tokenBalanceLoading } =
     useTokenBalance({ mint })
+  const { data: currentUser } = useCurrentAccountUser()
+
   const { data: usdcBalance } = useUSDCBalance()
 
   const { isBuySellSupported } = useBuySellRegionSupport()
@@ -274,6 +283,7 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
   const { onOpen: openReceiveTokensModal } = useReceiveTokensModal()
   const { onOpen: openSendTokensModal } = useSendTokensModal()
   const isMobile = useIsMobile()
+  const isCoinCreator = coin?.ownerId === currentUser?.user_id
   const [isOpenAppDrawerOpen, setIsOpenAppDrawerOpen] = useState(false)
 
   const history = useHistory()
@@ -347,6 +357,7 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
             onBuy={isMobile ? onOpenOpenAppDrawer : handleAddCash}
             onReceive={handleReceive}
             isBuySellSupported={isBuySellSupported}
+            isCoinCreator={isCoinCreator}
           />
         ) : (
           <HasBalanceState
