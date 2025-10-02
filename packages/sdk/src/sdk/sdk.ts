@@ -3,13 +3,13 @@ import { mainnet } from 'viem/chains'
 
 import { ResolveApi } from './api/ResolveApi'
 import { AlbumsApi } from './api/albums/AlbumsApi'
-import { ChallengesApi } from './api/challenges/ChallengesApi'
 import { ChatsApi } from './api/chats/ChatsApi'
 import { CommentsApi } from './api/comments/CommentsAPI'
 import { DashboardWalletUsersApi } from './api/dashboard-wallet-users/DashboardWalletUsersApi'
 import { DeveloperAppsApi } from './api/developer-apps/DeveloperAppsApi'
 import { EventsApi } from './api/events/EventsApi'
 import {
+  ChallengesApi,
   CoinsApi,
   Configuration,
   ExploreApi,
@@ -51,10 +51,6 @@ import { AntiAbuseOracle } from './services/AntiAbuseOracle/AntiAbuseOracle'
 import { getDefaultAntiAbuseOracleSelectorConfig } from './services/AntiAbuseOracleSelector'
 import { AntiAbuseOracleSelector } from './services/AntiAbuseOracleSelector/AntiAbuseOracleSelector'
 import { createAppWalletClient } from './services/AudiusWalletClient'
-import {
-  DiscoveryNodeSelector,
-  getDefaultDiscoveryNodeSelectorConfig
-} from './services/DiscoveryNodeSelector'
 import { EmailEncryptionService } from './services/Encryption'
 import {
   EntityManagerClient,
@@ -182,13 +178,6 @@ const initializeServices = (config: SdkConfig) => {
       transport: http(servicesConfig.ethereum.rpcEndpoint)
     })
 
-  const discoveryNodeSelector =
-    config.services?.discoveryNodeSelector ??
-    new DiscoveryNodeSelector({
-      ...getDefaultDiscoveryNodeSelectorConfig(servicesConfig),
-      logger
-    })
-
   const storageNodeSelector =
     config.services?.storageNodeSelector ??
     new StorageNodeSelector({
@@ -226,8 +215,7 @@ const initializeServices = (config: SdkConfig) => {
     })
 
   const middleware = [
-    addRequestSignatureMiddleware({ services: { audiusWalletClient, logger } }),
-    discoveryNodeSelector.createMiddleware()
+    addRequestSignatureMiddleware({ services: { audiusWalletClient, logger } })
   ]
 
   /* Solana Programs */
@@ -381,7 +369,6 @@ const initializeServices = (config: SdkConfig) => {
 
   const services: ServicesContainer = {
     storageNodeSelector,
-    discoveryNodeSelector,
     antiAbuseOracleSelector,
     entityManager,
     storage,
@@ -481,6 +468,7 @@ const initializeApis = ({
     services.entityManager,
     services.logger
   )
+  const challenges = new ChallengesApi(apiClientConfig)
   const coins = new CoinsApi(apiClientConfig)
   const tips = new TipsApi(apiClientConfig)
   const resolveApi = new ResolveApi(apiClientConfig)
@@ -507,17 +495,6 @@ const initializeApis = ({
   const dashboardWalletUsers = new DashboardWalletUsersApi(
     apiClientConfig,
     services.entityManager
-  )
-
-  const challenges = new ChallengesApi(
-    apiClientConfig,
-    users,
-    services.discoveryNodeSelector,
-    services.rewardManagerClient,
-    services.claimableTokensClient,
-    services.antiAbuseOracle,
-    services.logger,
-    services.solanaClient
   )
 
   const notifications = new NotificationsApi(
@@ -564,14 +541,14 @@ const initializeApis = ({
     grants,
     developerApps,
     dashboardWalletUsers,
-    challenges,
     rewards,
     services,
     comments,
     notifications,
     events,
     explore,
-    coins
+    coins,
+    challenges
   }
 }
 

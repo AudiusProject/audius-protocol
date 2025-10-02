@@ -140,7 +140,7 @@ export const initializeAudiusSdk = async ({
       middleware: [
         {
           pre: async (context) => {
-            const endpoint = 'http://audius-discovery-provider-1'
+            const endpoint = 'http://audius-api'
             const url = `${endpoint}${context.url}`
             return { url, init: context.init }
           }

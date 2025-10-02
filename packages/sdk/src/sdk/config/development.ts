@@ -8,7 +8,6 @@ export const developmentConfig: SdkServicesConfig = {
   network: {
     minVersion: '0.0.0',
     apiEndpoint: 'http://audius-api',
-    discoveryNodes: [],
     storageNodes: [
       {
         delegateOwnerWallet: '0x0D38e653eC28bdea5A2296fD5940aaB2D0B8875c',
