@@ -34,7 +34,7 @@ const apiEndpoint =
     ? 'https://api.audius.co'
     : env === 'staging'
       ? 'https://api.staging.audius.co'
-      : 'http://audius-protocol-discovery-provider-1'
+      : 'http://audius-discovery-provider-1'
 
 const fetchNFTClient = new FetchNFTClient({
   openSeaConfig: { apiEndpoint: openSeaApiUrl },
@@ -43,8 +43,7 @@ const fetchNFTClient = new FetchNFTClient({
 })
 
 export const getTrackStreamEndpoint = (trackId, isPurchaseable) =>
-  `${apiEndpoint}/v1/tracks/${trackId}/stream?app_name=${appName}&api_key=${apiKey}${
-    isPurchaseable ? '&preview=true' : ''
+  `${apiEndpoint}/v1/tracks/${trackId}/stream?app_name=${appName}&api_key=${apiKey}${isPurchaseable ? '&preview=true' : ''
   }`
 
 export const getCollectiblesJson = async (hashId) => {
