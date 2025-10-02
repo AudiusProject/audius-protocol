@@ -3,14 +3,16 @@ import { useCallback, useContext, useMemo } from 'react'
 import type { Coin } from '@audius/common/adapters'
 import {
   useArtistCoin,
-  useCurrentUserId,
   useUser,
-  useUserCoins
+  useUserCoins,
+  useConnectedWallets,
+  useCurrentAccountUser
 } from '@audius/common/api'
 import { useDiscordOAuthLink } from '@audius/common/hooks'
 import { coinDetailsMessages } from '@audius/common/messages'
-import { WidthSizes } from '@audius/common/models'
+import { Feature, WidthSizes } from '@audius/common/models'
 import { removeNullable, route, shortenSPLAddress } from '@audius/common/utils'
+import { wAUDIO } from '@audius/fixed-decimal'
 import {
   Flex,
   IconCopy,
@@ -21,9 +23,12 @@ import {
   IconLink,
   IconTikTok,
   IconX,
+  IconInfo,
+  LoadingSpinner,
   Paper,
   PlainButton,
   Text,
+  TextLink,
   useTheme
 } from '@audius/harmony'
 import { HashId } from '@audius/sdk'
@@ -34,13 +39,17 @@ import Skeleton from 'components/skeleton/Skeleton'
 import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
 import { UserTokenBadge } from 'components/user-token-badge/UserTokenBadge'
+import { useClaimFees } from 'hooks/useClaimFees'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
+import { getLastConnectedSolWallet } from 'pages/artist-coins-launchpad-page/utils'
 import { env } from 'services/env'
+import { reportToSentry } from 'store/errors/reportToSentry'
 import { copyToClipboard } from 'utils/clipboardUtil'
 import { push } from 'utils/navigation'
 
 const messages = coinDetailsMessages.coinInfo
 const overflowMessages = coinDetailsMessages.overflowMenu
+const toastMessages = coinDetailsMessages.toasts
 
 const BANNER_HEIGHT = 120
 
@@ -252,15 +261,54 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
 
   const { data: coin, isLoading } = useArtistCoin(mint)
 
-  const { data: currentUserId } = useCurrentUserId()
-  const { data: userCoins } = useUserCoins({ userId: currentUserId })
+  const { data: currentUser } = useCurrentAccountUser()
+  const { data: userCoins } = useUserCoins({ userId: currentUser?.user_id })
   const userToken = useMemo(
     () => userCoins?.find((coin) => coin.mint === mint),
     [userCoins, mint]
   )
+  const isCoinCreator = coin?.ownerId === currentUser?.user_id
   const discordOAuthLink = useDiscordOAuthLink(userToken?.ticker)
   const { balance: userTokenBalance } = userToken ?? {}
 
+  // Get wallet addresses for claim fee
+  const { data: connectedWallets } = useConnectedWallets()
+  const externalSolWallet = useMemo(
+    () => getLastConnectedSolWallet(connectedWallets),
+    [connectedWallets]
+  )
+
+  // Claim fee hook
+  const { mutate: claimFees, isPending: isClaimFeesPending } = useClaimFees({
+    onSuccess: () => {
+      toast(toastMessages.feesClaimed)
+    },
+    onError: (error) => {
+      reportToSentry({
+        error,
+        feature: Feature.ArtistCoins,
+        name: 'Failed to claim artist coin fees',
+        additionalInfo: {
+          coin,
+          tokenMint: mint,
+          unclaimedFees,
+          totalArtistEarnings
+        }
+      })
+      toast(toastMessages.feesClaimFailed)
+    }
+  })
+
+  const unclaimedFees = coin?.dynamicBondingCurve?.creatorQuoteFee ?? 0
+  const formattedUnclaimedFees = useMemo(() => {
+    return wAUDIO(BigInt(unclaimedFees)).toShorthand()
+  }, [unclaimedFees])
+  const totalArtistEarnings =
+    coin?.dynamicBondingCurve?.totalTradingQuoteFee ?? 0
+  const formattedTotalArtistEarnings = useMemo(() => {
+    // Here we divide by 2 because the artist only gets half of the fees (this value includes the AUDIO network fees)
+    return wAUDIO(BigInt(Math.trunc(totalArtistEarnings / 2))).toShorthand()
+  }, [totalArtistEarnings])
   const descriptionParagraphs = coin?.description?.split('\n') ?? []
 
   const openDiscord = () => {
@@ -279,6 +327,30 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
     copyToClipboard(mint)
     toast(overflowMessages.copiedToClipboard)
   }, [mint, toast])
+
+  const handleClaimFees = useCallback(() => {
+    if (!externalSolWallet || !mint || !currentUser?.spl_wallet) {
+      toast(toastMessages.feesClaimFailed)
+      reportToSentry({
+        error: new Error('Unknown error while claiming fees'),
+        feature: Feature.ArtistCoins,
+        name: 'No external Solana wallet connected',
+        additionalInfo: {
+          coin,
+          mint,
+          externalSolWallet,
+          currentUser
+        }
+      })
+      return
+    }
+
+    claimFees({
+      tokenMint: mint,
+      ownerWalletAddress: externalSolWallet.address,
+      receiverWalletAddress: currentUser.spl_wallet // Using same wallet for owner and receiver
+    })
+  }, [externalSolWallet, mint, currentUser, claimFees, toast, coin])
 
   if (isLoading || !coin) {
     return <AssetInfoSectionSkeleton />
@@ -405,6 +477,90 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
         <Text variant='body' size='m' color='subdued'>
           {shortenSPLAddress(mint)}
         </Text>
+      </Flex>
+      <Flex
+        direction='column'
+        alignItems='flex-start'
+        alignSelf='stretch'
+        borderTop='default'
+        ph='xl'
+        pv='l'
+        gap='l'
+      >
+        <Flex
+          alignItems='center'
+          justifyContent='space-between'
+          alignSelf='stretch'
+        >
+          <Flex alignItems='center' gap='s'>
+            <Text variant='body' size='s' strength='strong'>
+              {overflowMessages.vestingSchedule}
+            </Text>
+            <Tooltip text={overflowMessages.vestingSchedule}>
+              <IconInfo size='s' color='subdued' />
+            </Tooltip>
+          </Flex>
+          <Text variant='body' size='s' color='subdued'>
+            {overflowMessages.vestingScheduleValue}
+          </Text>
+        </Flex>
+        <Flex
+          alignItems='center'
+          justifyContent='space-between'
+          alignSelf='stretch'
+        >
+          <Flex alignItems='center' gap='s'>
+            <Text variant='body' size='s' strength='strong'>
+              {overflowMessages.artistEarnings}
+            </Text>
+            <Tooltip text={overflowMessages.artistEarnings}>
+              <IconInfo size='s' color='subdued' />
+            </Tooltip>
+          </Flex>
+          <Text variant='body' size='s' color='subdued'>
+            {formattedTotalArtistEarnings} {overflowMessages.$audio}
+          </Text>
+        </Flex>
+        {isCoinCreator ? (
+          <Flex
+            alignItems='center'
+            justifyContent='space-between'
+            alignSelf='stretch'
+          >
+            <Flex alignItems='center' gap='s'>
+              <Text variant='body' size='s' strength='strong'>
+                {overflowMessages.unclaimedFees}
+              </Text>
+              <Tooltip text={overflowMessages.unclaimedFees}>
+                <IconInfo size='s' color='subdued' />
+              </Tooltip>
+            </Flex>
+            <Flex alignItems='center' gap='s'>
+              {unclaimedFees > 0 ? (
+                <Flex gap='xs' alignItems='center'>
+                  <TextLink
+                    onClick={handleClaimFees}
+                    variant={isClaimFeesPending ? 'subdued' : 'visible'}
+                    disabled={
+                      isClaimFeesPending ||
+                      !externalSolWallet ||
+                      !currentUser?.spl_wallet
+                    }
+                  >
+                    {overflowMessages.claim}
+                  </TextLink>
+                  {isClaimFeesPending ? (
+                    <LoadingSpinner size='s' color='subdued' />
+                  ) : null}
+                </Flex>
+              ) : null}
+
+              <Text variant='body' size='s' color='subdued'>
+                {formattedUnclaimedFees} {overflowMessages.$audio}
+              </Text>
+            </Flex>
+          </Flex>
+        ) : null}
       </Flex>
     </Paper>
   )

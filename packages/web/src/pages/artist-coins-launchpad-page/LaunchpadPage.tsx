@@ -40,7 +40,7 @@ import {
 } from './components/LaunchpadModals'
 import { LAUNCHPAD_COIN_DESCRIPTION, MIN_SOL_BALANCE, Phase } from './constants'
 import { BuyCoinPage, ReviewPage, SetupPage, SplashPage } from './pages'
-import { getLatestConnectedWallet, useLaunchpadAnalytics } from './utils'
+import { getLastConnectedSolWallet, useLaunchpadAnalytics } from './utils'
 import { useLaunchpadFormSchema } from './validation'
 
 const messages = {
@@ -70,7 +70,7 @@ const LaunchpadPageContent = ({
   const { data: connectedWallets } = useConnectedWallets()
   const { toast } = useContext(ToastContext)
   const connectedWallet = useMemo(
-    () => getLatestConnectedWallet(connectedWallets),
+    () => getLastConnectedSolWallet(connectedWallets),
     [connectedWallets]
   )
   const {
@@ -173,7 +173,7 @@ const LaunchpadPageContent = ({
     async (error: unknown) => {
       // If wallet is already linked, continue with the flow
       if (error instanceof AlreadyAssociatedError) {
-        const lastConnectedWallet = getLatestConnectedWallet(connectedWallets)
+        const lastConnectedWallet = getLastConnectedSolWallet(connectedWallets)
         if (lastConnectedWallet) {
           const { isValid: isValidWalletBalance, walletBalanceLamports } =
             await getIsValidWalletBalance(lastConnectedWallet?.address)
@@ -320,7 +320,7 @@ export const LaunchpadPage = () => {
   const navigate = useNavigate()
 
   const connectedWallet = useMemo(
-    () => getLatestConnectedWallet(connectedWallets),
+    () => getLastConnectedSolWallet(connectedWallets),
     [connectedWallets]
   )
   const {
@@ -474,7 +474,7 @@ export const LaunchpadPage = () => {
 
       // Get the most recent connected Solana wallet (last in the array)
       const connectedWallet: ConnectedWallet | undefined =
-        getLatestConnectedWallet(connectedWallets)
+        getLastConnectedSolWallet(connectedWallets)
 
       if (!currentUser || !connectedWallet) {
         toast(messages.errors.unknownError)

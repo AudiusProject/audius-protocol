@@ -66,6 +66,12 @@ export const coinDetailsMessages = {
   },
   overflowMenu: {
     copyCoinAddress: 'Copy Coin Address',
+    unclaimedFees: 'Unclaimed Fees',
+    artistEarnings: 'Artist Earnings',
+    vestingSchedule: 'Vesting Schedule',
+    vestingScheduleValue: '5 years (post-graduation)',
+    $audio: '$AUDIO',
+    claim: 'Claim',
     openDexscreener: 'Open Dexscreener',
     details: 'Details',
     copiedToClipboard: 'Copied Coin Address To Clipboard!',
@@ -115,5 +121,9 @@ export const coinDetailsMessages = {
     descriptionPlaceholder:
       'Tell fans what makes your artist coin special — think early listens, exclusive drops, or fun perks for your biggest supporters.',
     pasteLink: 'Paste a link'
+  },
+  toasts: {
+    feesClaimed: 'Fees claimed successfully!',
+    feesClaimFailed: 'Unable to claim fees. Please try again.'
   }
 }

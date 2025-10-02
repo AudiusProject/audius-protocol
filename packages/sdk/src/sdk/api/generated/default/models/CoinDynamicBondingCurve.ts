@@ -44,6 +44,24 @@ export interface CoinDynamicBondingCurve {
      * @memberof CoinDynamicBondingCurve
      */
     curveProgress: number;
+    /**
+     * Whether the bonding curve has been migrated
+     * @type {boolean}
+     * @memberof CoinDynamicBondingCurve
+     */
+    isMigrated?: boolean;
+    /**
+     * Creator quote fee for the bonding curve
+     * @type {number}
+     * @memberof CoinDynamicBondingCurve
+     */
+    creatorQuoteFee: number;
+    /**
+     * Total trading quote fee accumulated
+     * @type {number}
+     * @memberof CoinDynamicBondingCurve
+     */
+    totalTradingQuoteFee: number;
 }
 
 /**
@@ -55,6 +73,8 @@ export function instanceOfCoinDynamicBondingCurve(value: object): value is CoinD
     isInstance = isInstance && "price" in value && value["price"] !== undefined;
     isInstance = isInstance && "priceUSD" in value && value["priceUSD"] !== undefined;
     isInstance = isInstance && "curveProgress" in value && value["curveProgress"] !== undefined;
+    isInstance = isInstance && "creatorQuoteFee" in value && value["creatorQuoteFee"] !== undefined;
+    isInstance = isInstance && "totalTradingQuoteFee" in value && value["totalTradingQuoteFee"] !== undefined;
 
     return isInstance;
 }
@@ -73,6 +93,9 @@ export function CoinDynamicBondingCurveFromJSONTyped(json: any, ignoreDiscrimina
         'price': json['price'],
         'priceUSD': json['priceUSD'],
         'curveProgress': json['curveProgress'],
+        'isMigrated': !exists(json, 'isMigrated') ? undefined : json['isMigrated'],
+        'creatorQuoteFee': json['creatorQuoteFee'],
+        'totalTradingQuoteFee': json['totalTradingQuoteFee'],
     };
 }
 
@@ -89,6 +112,9 @@ export function CoinDynamicBondingCurveToJSON(value?: CoinDynamicBondingCurve | 
         'price': value.price,
         'priceUSD': value.priceUSD,
         'curveProgress': value.curveProgress,
+        'isMigrated': value.isMigrated,
+        'creatorQuoteFee': value.creatorQuoteFee,
+        'totalTradingQuoteFee': value.totalTradingQuoteFee,
     };
 }
 

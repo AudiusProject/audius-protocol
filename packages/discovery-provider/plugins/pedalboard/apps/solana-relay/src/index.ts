@@ -18,6 +18,7 @@ import { cache } from './routes/cache'
 import { feePayer } from './routes/feePayer'
 import { health } from './routes/health/health'
 import { location } from './routes/instruction/location'
+import { claimFees } from './routes/launchpad/claim_fees'
 import {
   firstBuyQuote,
   getLaunchpadConfigRoute
@@ -45,6 +46,7 @@ const main = async () => {
   })
   // launchpad endpoints don't need user/discovery validation, so register them before middleware
   app.post('/solana/launchpad/launch_coin', upload.single('image'), launchCoin)
+  app.get('/solana/launchpad/claim_fees', claimFees)
   app.get('/solana/launchpad/first_buy_quote', firstBuyQuote)
   app.get('/solana/launchpad/config', getLaunchpadConfigRoute)
 

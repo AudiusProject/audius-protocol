@@ -10,9 +10,9 @@ import { omit } from 'lodash'
 import { make } from 'services/analytics'
 
 /**
- * Gets the most recently added connected wallet
+ * Gets the last connected Solana wallet in the connected wallets array
  */
-export const getLatestConnectedWallet = (
+export const getLastConnectedSolWallet = (
   connectedWallets: ConnectedWallet[] | undefined
 ) => {
   return connectedWallets?.filter(

@@ -37,7 +37,7 @@ import { useExternalWalletSwap } from 'hooks/useExternalWalletSwap'
 import { make, track } from 'services/analytics'
 import zIndex from 'utils/zIndex'
 
-import { getLatestConnectedWallet } from '../utils'
+import { getLastConnectedSolWallet } from '../utils'
 
 const INPUT_TOKEN_MAP: Record<string, TokenInfo & { minSwapAmount?: number }> =
   {
@@ -402,7 +402,7 @@ export const LaunchpadBuyModal = ({
   }
   const { data: connectedWallets } = useConnectedWallets()
   const externalWalletAddress = useMemo(
-    () => getLatestConnectedWallet(connectedWallets)?.address,
+    () => getLastConnectedSolWallet(connectedWallets)?.address,
     [connectedWallets]
   )
   const {

@@ -18,7 +18,7 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import { useLaunchpadConfig } from 'hooks/useLaunchpadConfig'
 import { reportToSentry } from 'store/errors/reportToSentry'
 
-import { getLatestConnectedWallet } from './utils'
+import { getLastConnectedSolWallet } from './utils'
 
 export const FIELDS = {
   coinName: 'coinName',
@@ -215,7 +215,7 @@ export const useLaunchpadFormSchema = () => {
   }, [firstBuyQuoteData])
 
   const connectedWallet = useMemo(
-    () => getLatestConnectedWallet(connectedWallets),
+    () => getLastConnectedSolWallet(connectedWallets),
     [connectedWallets]
   )
   const { data: audioBalance } = useWalletAudioBalance({
