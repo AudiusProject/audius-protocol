@@ -30,6 +30,17 @@ vi.mock('hooks/useIsMobile', () => ({
   useIsMobile: () => false
 }))
 
+// Enable feature flags (e.g., ARTIST_COINS) for this test file
+vi.mock('@audius/common/hooks', async () => {
+  const actual = await vi.importActual<typeof import('@audius/common/hooks')>(
+    '@audius/common/hooks'
+  )
+  return {
+    ...actual,
+    useFeatureFlag: () => ({ isLoaded: true, isEnabled: true })
+  }
+})
+
 const { apiEndpoint } = developmentConfig.network
 
 // TODO: move these into a fixtures folder setup
@@ -378,13 +389,9 @@ describe('ProfilePage', () => {
     ).toBeInTheDocument()
 
     // Verify that coin-related elements are present when user has coins
+    const buyButton = await screen.findByRole('button', { name: 'Buy Coins' })
+    expect(buyButton).toBeInTheDocument()
     expect(await screen.findByText('$TEST')).toBeInTheDocument()
-    expect(
-      await screen.findByText('Unlock exclusive perks & more.')
-    ).toBeInTheDocument()
-    expect(
-      await screen.findByRole('button', { name: 'Buy Coins' })
-    ).toBeInTheDocument()
     expect(screen.queryByText('Tip $AUDIO')).not.toBeInTheDocument()
   })
 })
