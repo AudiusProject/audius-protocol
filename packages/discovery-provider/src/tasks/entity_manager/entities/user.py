@@ -459,16 +459,16 @@ def add_associated_wallet(
         # Check if wallet already exists
         existing_wallet = None
         for _, wallet in params.existing_records["AssociatedWallet"].items():
-            if (
-                wallet.chain == chain
-                and wallet.user_id == user_id
-                and wallet.wallet == wallet_address
-            ):
-                existing_wallet = wallet
-                break
+            if wallet.chain == chain and wallet.wallet == wallet_address:
+                if wallet.user_id == user_id:
+                    existing_wallet = wallet
+                    logger.debug("index")
+                else:
+                    # Remove the wallet from other users
+                    session.delete(wallet)
 
         if not existing_wallet:
-            # Create new wallet association only if it doesn't exist
+            # Create new wallet association only if it doesn't exist for this user
             associated_wallet_entry = AssociatedWallet(
                 user_id=user_id,
                 wallet=wallet_address,
