@@ -4,6 +4,7 @@ import {
   LaunchpadFormValues,
   LaunchCoinErrorMetadata
 } from '@audius/common/models'
+import { AUDIUS_ARTIST_COIN_HELP_LINK } from '@audius/common/src/utils/route'
 import { useSendTokensModal } from '@audius/common/store'
 import { wAUDIO } from '@audius/fixed-decimal'
 import {
@@ -21,6 +22,7 @@ import {
 import { useFormikContext } from 'formik'
 
 import { AddressTile } from 'components/address-tile'
+import { ExternalTextLink } from 'components/link'
 import { env } from 'services/env'
 
 const messages = {
@@ -281,14 +283,12 @@ export const InsufficientBalanceModal = ({
             <Flex gap='m' column>
               <Text>{messages.hintText}</Text>
               <Flex gap='m'>
-                <TextLink
+                <ExternalTextLink
                   showUnderline
-                  onClick={() => {
-                    /* TODO: DESIGN TO PROVIDE LINK */
-                  }}
+                  to={AUDIUS_ARTIST_COIN_HELP_LINK}
                 >
                   {messages.learnHowToFund}
-                </TextLink>
+                </ExternalTextLink>
                 <TextLink
                   showUnderline
                   onClick={() => {
