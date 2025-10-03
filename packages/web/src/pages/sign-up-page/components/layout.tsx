@@ -190,7 +190,7 @@ type PageFooterProps = {
 } & Omit<PaperProps & BoxProps, 'prefix'>
 
 export const PageFooter = (props: PageFooterProps) => {
-  const { prefix, postfix, buttonProps, centered, sticky, ...other} = props
+  const { prefix, postfix, buttonProps, centered, sticky, ...other } = props
   const { isMobile } = useMedia()
   // On the MobileCTAPage we use this footer outside a formik context, hence the default values
   const { isSubmitting, touched, isValid } = useFormikContext() ?? {
