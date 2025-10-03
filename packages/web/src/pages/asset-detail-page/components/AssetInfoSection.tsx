@@ -12,7 +12,6 @@ import { useDiscordOAuthLink } from '@audius/common/hooks'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { Feature, WidthSizes } from '@audius/common/models'
 import {
-  formatCurrencyWithSubscript,
   getTokenDecimalPlaces,
   removeNullable,
   route,
@@ -413,9 +412,10 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
   const formattedUnclaimedFees = useMemo(() => {
     const value = wAUDIO(BigInt(unclaimedFees))
     const decimalPlaces = getTokenDecimalPlaces(Number(value.toString()))
-    return formatCurrencyWithSubscript(
-      Number(value.trunc(decimalPlaces).toString())
-    )
+    return value.trunc(decimalPlaces).toLocaleString('en-US', {
+      maximumFractionDigits: decimalPlaces,
+      minimumFractionDigits: Math.min(decimalPlaces, 2)
+    })
   }, [unclaimedFees])
   const totalArtistEarnings =
     coin?.dynamicBondingCurve?.totalTradingQuoteFee ?? 0
@@ -423,7 +423,10 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
     // Here we divide by 2 because the artist only gets half of the fees (this value includes the AUDIO network fees)
     const value = wAUDIO(BigInt(Math.trunc(totalArtistEarnings / 2)))
     const decimalPlaces = getTokenDecimalPlaces(Number(value.toString()))
-    return Number(value.trunc(decimalPlaces).toString()).toString()
+    return value.trunc(decimalPlaces).toLocaleString('en-US', {
+      maximumFractionDigits: decimalPlaces,
+      minimumFractionDigits: Math.min(decimalPlaces, 2)
+    })
   }, [totalArtistEarnings])
   const descriptionParagraphs = coin?.description?.split('\n') ?? []
 
