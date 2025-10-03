@@ -579,7 +579,8 @@ export const LaunchpadPage = () => {
         payAmount: '',
         receiveAmount: '',
         usdcValue: '',
-        wantsToBuy: 'no'
+        wantsToBuy: 'no',
+        termsAgreed: false
       }}
       validationSchema={validationSchema}
       validateOnMount={true}
