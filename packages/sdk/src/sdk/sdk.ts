@@ -419,15 +419,21 @@ const initializeApis = ({
   appName?: string
   services: ServicesContainer
 }) => {
-  const basePath =
+  const apiEndpoint =
     config.environment === 'development'
       ? developmentConfig.network.apiEndpoint
       : config.environment === 'staging'
       ? stagingConfig.network.apiEndpoint
       : productionConfig.network.apiEndpoint
+  const basePath = `${apiEndpoint}/v1`
 
   const middleware = [
-    addAppInfoMiddleware({ apiKey, appName, services }),
+    addAppInfoMiddleware({
+      apiKey,
+      appName,
+      services,
+      basePath
+    }),
     addRequestSignatureMiddleware({
       services,
       apiKey,
@@ -437,7 +443,7 @@ const initializeApis = ({
   const apiClientConfig = new Configuration({
     fetchApi: fetch,
     middleware,
-    basePath: `${basePath}/v1`
+    basePath
   })
 
   const tracks = new TracksApi(
@@ -515,7 +521,7 @@ const initializeApis = ({
   )
 
   const generatedApiClientConfigFull = new ConfigurationFull({
-    basePath: `${basePath}/v1/full`,
+    basePath: `${basePath}/full`,
     fetchApi: fetch,
     middleware
   })
