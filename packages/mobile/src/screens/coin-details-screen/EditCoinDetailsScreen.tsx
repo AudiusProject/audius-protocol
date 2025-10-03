@@ -9,7 +9,7 @@ import {
   type EditCoinDetailsFormValues
 } from '@audius/common/hooks'
 import { coinDetailsMessages } from '@audius/common/messages'
-import { formatTickerFromUrl, removeNullable } from '@audius/common/utils'
+import { removeNullable } from '@audius/common/utils'
 import { useRoute, useNavigation } from '@react-navigation/native'
 import { useFormikContext, Formik } from 'formik'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
