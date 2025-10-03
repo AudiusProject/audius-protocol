@@ -265,7 +265,7 @@ def push(ctx, services, prod):
 
     try:
         for service in services:
-            base_tag = f"{protocol_dir.name}-{service}"
+            base_tag = f"audius-{service}"
 
             subprocess.run(
                 ["docker", "tag", base_tag, f"audius/{service}:{git_commit}"],
@@ -472,7 +472,7 @@ def test_build(protocol_dir):
             "docker",
             "compose",
             f"--file={protocol_dir / 'dev-tools/compose/docker-compose.test.yml'}",
-            f"--project-name={protocol_dir.name}-test",
+            "--project-name=audius-test",
             f"--project-directory={protocol_dir / 'dev-tools/compose'}",
             "build",
         ],
@@ -483,7 +483,7 @@ def test_build(protocol_dir):
             "docker",
             "compose",
             f"--file={protocol_dir / 'dev-tools/compose/docker-compose.test.yml'}",
-            f"--project-name={protocol_dir.name}-test",
+            "--project-name=audius-test",
             f"--project-directory={protocol_dir / 'dev-tools/compose'}",
             "pull",
         ],
@@ -506,7 +506,7 @@ def test_run(protocol_dir, service, args):
             "docker",
             "compose",
             f"--file={protocol_dir / 'dev-tools/compose/docker-compose.test.yml'}",
-            f"--project-name={protocol_dir.name}-test",
+            "--project-name=audius-test",
             f"--project-directory={protocol_dir / 'dev-tools/compose'}",
             "run",
             "--rm",
@@ -536,7 +536,7 @@ def test_up(protocol_dir, service):
                 "docker",
                 "compose",
                 f"--file={protocol_dir / 'dev-tools/compose/docker-compose.test.yml'}",
-                f"--project-name={protocol_dir.name}-test",
+                "--project-name=audius-test",
                 f"--project-directory={protocol_dir / 'dev-tools/compose'}",
                 "up",
                 "-d",
@@ -557,7 +557,7 @@ def test_down(protocol_dir):
             "docker",
             "compose",
             f"--file={protocol_dir / 'dev-tools/compose/docker-compose.test.yml'}",
-            f"--project-name={protocol_dir.name}-test",
+            f"--project-name=audius-test",
             f"--project-directory={protocol_dir / 'dev-tools/compose'}",
             "--profile=*",
             "down",
