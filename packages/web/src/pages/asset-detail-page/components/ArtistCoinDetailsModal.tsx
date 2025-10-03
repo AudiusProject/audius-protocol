@@ -48,7 +48,9 @@ export const ArtistCoinDetailsModal = ({
   const isAudio = mint === env.WAUDIO_MINT_ADDRESS
   const { spacing } = useTheme()
   const { data: artistCoin } = useArtistCoin(mint)
-  const { data: artist } = useUser(artistCoin?.ownerId)
+  const { data: artistHandle } = useUser(artistCoin?.ownerId, {
+    select: (user) => user.handle
+  })
   const { data: coingeckoResponse } = useCoinGeckoCoin(
     { coinId: 'audius' },
     { enabled: isAudio }
@@ -105,13 +107,13 @@ export const ArtistCoinDetailsModal = ({
         ) : null}
 
         {/* On-Chain Description */}
-        {artistCoin?.ticker && artist?.handle ? (
+        {artistCoin?.ticker && artistHandle ? (
           <Flex direction='column' gap='xs' w='100%'>
             <Text variant='body' size='m' strength='strong' color='subdued'>
               {artistCoinDetails.onChainDescription}
             </Text>
             <Text variant='body' size='m' userSelect='text'>
-              {LAUNCHPAD_COIN_DESCRIPTION(artist.handle, artistCoin.ticker)}
+              {LAUNCHPAD_COIN_DESCRIPTION(artistHandle, artistCoin.ticker)}
             </Text>
           </Flex>
         ) : null}
