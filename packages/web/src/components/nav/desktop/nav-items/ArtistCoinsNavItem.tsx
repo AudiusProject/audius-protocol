@@ -24,7 +24,7 @@ export const ArtistCoinsNavItem = () => {
     <LeftNavLink
       leftIcon={IconArtistCoin}
       to={COINS_EXPLORE_PAGE}
-      exact
+      additionalPathMatches={['/coins/']}
       restriction='none'
     >
       {messages.title}
