@@ -11,7 +11,12 @@ import {
 import { useDiscordOAuthLink } from '@audius/common/hooks'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { Feature, WidthSizes } from '@audius/common/models'
-import { removeNullable, route, shortenSPLAddress } from '@audius/common/utils'
+import {
+  formatCurrencyWithSubscript,
+  removeNullable,
+  route,
+  shortenSPLAddress
+} from '@audius/common/utils'
 import { wAUDIO } from '@audius/fixed-decimal'
 import {
   Flex,
@@ -301,13 +306,17 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
 
   const unclaimedFees = coin?.dynamicBondingCurve?.creatorQuoteFee ?? 0
   const formattedUnclaimedFees = useMemo(() => {
-    return wAUDIO(BigInt(unclaimedFees)).toShorthand()
+    return formatCurrencyWithSubscript(
+      Number(wAUDIO(BigInt(unclaimedFees)).toPrecision(8))
+    )
   }, [unclaimedFees])
   const totalArtistEarnings =
     coin?.dynamicBondingCurve?.totalTradingQuoteFee ?? 0
   const formattedTotalArtistEarnings = useMemo(() => {
     // Here we divide by 2 because the artist only gets half of the fees (this value includes the AUDIO network fees)
-    return wAUDIO(BigInt(Math.trunc(totalArtistEarnings / 2))).toShorthand()
+    return formatCurrencyWithSubscript(
+      Number(wAUDIO(BigInt(Math.trunc(totalArtistEarnings / 2))).toPrecision(8))
+    )
   }, [totalArtistEarnings])
   const descriptionParagraphs = coin?.description?.split('\n') ?? []
 

@@ -91,10 +91,19 @@ export const useLaunchCoin = () => {
           // Triggers 3rd party wallet to sign the transaction, doesnt send to Solana just yet
           const signature =
             await solanaProvider.signAndSendTransaction(deserializedTx)
-          await sdk.services.solanaClient.connection.confirmTransaction(
-            signature,
-            'confirmed'
-          )
+          const result =
+            await sdk.services.solanaClient.connection.confirmTransaction(
+              signature,
+              'confirmed'
+            )
+
+          // Check if the transaction actually succeeded
+          if (result.value.err) {
+            throw new Error(
+              `Transaction confirmed but failed: ${JSON.stringify(result.value.err)}`
+            )
+          }
+
           return signature
         }
 
@@ -140,7 +149,7 @@ export const useLaunchCoin = () => {
             userId: Id.parse(userId),
             createCoinRequest: {
               mint: mintPublicKey,
-              ticker: `$${symbolUpper}`,
+              ticker: `${symbolUpper}`,
               decimals: LAUNCHPAD_COIN_DECIMALS,
               name,
               logoUri: imageUri,

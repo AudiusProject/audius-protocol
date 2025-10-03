@@ -195,7 +195,7 @@ function* validateHandle(
     yield* delay(1000) // Wait 1000ms to debounce user input
 
     // Call fetch user by handle and do not retry if the user is not created, it will
-    // return 404 and force discovery reselection
+    // return 404
     const user = yield* call(queryUserByHandle, handle)
     const handleInUse = !isEmpty(user)
     const handleCheckTimeout =

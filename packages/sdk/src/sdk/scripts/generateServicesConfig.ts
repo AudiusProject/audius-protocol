@@ -13,62 +13,9 @@ import {
 
 const { writeFile } = promises
 
-const productionDiscoveryNodeRPCEarlyAdopters = [
-  'https://audius-discovery-1.altego.net',
-  'https://dn-jpn.audius.metadata.fyi',
-  'https://dn-usa.audius.metadata.fyi',
-  'https://discovery-us-01.audius.openplayer.org',
-  'https://audius-discovery-2.altego.net',
-  'https://dn1.nodeoperator.io',
-  'https://dn2.monophonic.digital',
-  'https://audius-discovery-3.altego.net',
-  'https://dn1.matterlightblooming.xyz',
-  'https://discovery.grassfed.network',
-  'https://audius-discovery-1.cultur3stake.com',
-  'https://audius-discovery-3.cultur3stake.com',
-  'https://audius-discovery-4.cultur3stake.com',
-  'https://audius-discovery-5.cultur3stake.com',
-  'https://audius-discovery-7.cultur3stake.com',
-  'https://audius-discovery-8.cultur3stake.com',
-  'https://audius-discovery-9.cultur3stake.com',
-  'https://audius-discovery-10.cultur3stake.com',
-  'https://discovery-au-02.audius.openplayer.org',
-  'https://disc-lon01.audius.hashbeam.com',
-  'https://blockdaemon-audius-discovery-01.bdnodes.net',
-  'https://blockdaemon-audius-discovery-02.bdnodes.net',
-  'https://blockdaemon-audius-discovery-03.bdnodes.net',
-  'https://blockdaemon-audius-discovery-04.bdnodes.net',
-  'https://blockdaemon-audius-discovery-05.bdnodes.net',
-  'https://blockdaemon-audius-discovery-06.bdnodes.net',
-  'https://blockchange-audius-discovery-01.bdnodes.net',
-  'https://blockchange-audius-discovery-02.bdnodes.net',
-  'https://blockchange-audius-discovery-03.bdnodes.net',
-  'https://audius-discovery-11.cultur3stake.com',
-  'https://audius-discovery-12.cultur3stake.com',
-  'https://audius-discovery-13.cultur3stake.com',
-  'https://audius-discovery-14.cultur3stake.com',
-  'https://audius-discovery-16.cultur3stake.com',
-  'https://audius-discovery-18.cultur3stake.com',
-  'https://audius-discovery-17.cultur3stake.com',
-  'https://audius-discovery-15.cultur3stake.com',
-  'https://audius-discovery-6.cultur3stake.com',
-  'https://audius-discovery-2.cultur3stake.com',
-  'https://blockdaemon-audius-discovery-08.bdnodes.net',
-  'https://audius-metadata-5.figment.io',
-  'https://dn1.stuffisup.com',
-  'https://audius-discovery-1.theblueprint.xyz',
-  'https://audius-discovery-2.theblueprint.xyz',
-  'https://audius-discovery-3.theblueprint.xyz',
-  'https://audius-discovery-4.theblueprint.xyz',
-  'https://audius-nodes.com',
-  'https://blockchange-audius-discovery-04.bdnodes.net',
-  'https://blockchange-audius-discovery-05.bdnodes.net'
-]
-
 const productionConfig: SdkServicesConfig = {
   network: {
     minVersion: '',
-    discoveryNodes: [],
     apiEndpoint: 'https://api.audius.co',
     storageNodes: [],
     antiAbuseOracleNodes: {
@@ -118,7 +65,6 @@ const stagingConfig: SdkServicesConfig = {
   network: {
     minVersion: '',
     apiEndpoint: 'https://api.staging.audius.co',
-    discoveryNodes: [],
     storageNodes: [],
     antiAbuseOracleNodes: {
       endpoints: ['https://discoveryprovider.staging.audius.co'],
@@ -163,15 +109,6 @@ const developmentConfig: SdkServicesConfig = {
   network: {
     minVersion: '0.0.0',
     apiEndpoint: 'http://audius-api',
-    discoveryNodes: [
-      {
-        delegateOwnerWallet:
-          '0xd09ba371c359f10f22ccda12fd26c598c7921bda3220c9942174562bc6a36fe8',
-        endpoint: 'http://audius-discovery-provider-1',
-        ownerWallet:
-          '0xd09ba371c359f10f22ccda12fd26c598c7921bda3220c9942174562bc6a36fe8'
-      }
-    ],
     storageNodes: [
       {
         delegateOwnerWallet: '0x0D38e653eC28bdea5A2296fD5940aaB2D0B8875c',
@@ -217,8 +154,7 @@ const developmentConfig: SdkServicesConfig = {
 }
 
 const generateServicesConfig = async (
-  config: SdkServicesConfig,
-  { discoveryNodeBlockList }: { discoveryNodeBlockList?: string[] } = {}
+  config: SdkServicesConfig
 ): Promise<SdkServicesConfig> => {
   const serviceProviderFactory = new ServiceProviderFactoryClient(
     getDefaultServiceProviderFactoryConfig(config)
@@ -229,11 +165,6 @@ const generateServicesConfig = async (
   const serviceTypeManager = new ServiceTypeManagerClient(
     getDefaultServiceTypeManagerConfig(config)
   )
-
-  const discoveryNodes = await serviceProviderFactory.getDiscoveryNodes()
-  if (!discoveryNodes || discoveryNodes.length === 0) {
-    throw Error('Discovery node services not found')
-  }
 
   const contentNodes = await serviceProviderFactory.getContentNodes()
   if (!contentNodes || contentNodes.length === 0) {
@@ -249,17 +180,6 @@ const generateServicesConfig = async (
   const minVersion = await serviceTypeManager.getDiscoveryNodeVersion()
 
   config.network.minVersion = minVersion
-  config.network.discoveryNodes = discoveryNodes
-    .map(([ownerWallet, endpoint, _blockNumber, delegateOwnerWallet]: any) => ({
-      endpoint,
-      ownerWallet,
-      delegateOwnerWallet
-    }))
-    .filter((node) =>
-      discoveryNodeBlockList
-        ? !discoveryNodeBlockList.includes(node.endpoint)
-        : true
-    )
   config.network.storageNodes = contentNodes.map(
     ([_ownerWallet, endpoint, _blockNumber, delegateOwnerWallet]: any) => ({
       endpoint,
@@ -274,9 +194,7 @@ const generateServicesConfig = async (
 }
 
 const writeServicesConfig = async () => {
-  const production = await generateServicesConfig(productionConfig, {
-    discoveryNodeBlockList: productionDiscoveryNodeRPCEarlyAdopters
-  })
+  const production = await generateServicesConfig(productionConfig)
   const staging = await generateServicesConfig(stagingConfig)
   const development = developmentConfig
   const config: Record<string, SdkServicesConfig> = {

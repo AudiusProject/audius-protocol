@@ -39,8 +39,8 @@ export const CoinDetailsScreen = () => {
     <Screen
       url={route.ASSET_DETAIL_PAGE}
       variant='secondary'
-      title={ticker ?? 'Coin Details'}
       topbarRight={topbarRight}
+      title={ticker ? `$${ticker}` : 'Coin Details'}
     >
       <ScreenContent>
         <ScrollView>

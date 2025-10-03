@@ -1,5 +1,23 @@
 # @audius/sdk
 
+## 11.0.0
+
+### Major Changes
+
+- 51b2a0f: Remove DiscoveryNodeSelector and related functionality
+- f5e607a: removes unsupported nft-gated-signatures endpoint
+
+### Minor Changes
+
+- 4a21db9: Add RewardsAPI
+- 1443320: add insights to coins endpoints
+
+### Patch Changes
+
+- 4a21db9: Remove membersChange24hrPercent
+- 9c3ede0: Add token gate functionality with TokenGate, ExtendedTokenGate, and updated coin creation API
+- f5b304c: Fix oauth login when no discovery node
+
 ## 10.0.0
 
 ### Major Changes

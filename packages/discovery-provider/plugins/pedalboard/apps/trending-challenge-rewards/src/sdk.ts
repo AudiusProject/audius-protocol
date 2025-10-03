@@ -1,17 +1,11 @@
 import {
   AntiAbuseOracleSelector,
   Configuration,
-  DiscoveryNodeSelector,
   SolanaRelayWalletAdapter,
   SolanaClient,
   SolanaRelay,
   sdk
 } from '@audius/sdk'
-
-const makeDiscoveryNodeSelector = (allowlist?: string[]) =>
-  new DiscoveryNodeSelector({
-    allowlist: allowlist ? new Set(allowlist) : undefined
-  })
 
 const makeAAOSelector = () =>
   new AntiAbuseOracleSelector({
@@ -55,14 +49,12 @@ export const audiusSdk = ({
   apiKey,
   apiSecret,
   environment,
-  discoveryNodeAllowlist,
   solanaRpcEndpoint,
   solanaRelayNode
 }: {
   apiKey: string
   apiSecret: string
   environment: 'development' | 'staging' | 'production'
-  discoveryNodeAllowlist?: string[]
   solanaRpcEndpoint?: string
   solanaRelayNode: string
 }) => {
@@ -76,7 +68,6 @@ export const audiusSdk = ({
     apiSecret,
     environment,
     services: {
-      discoveryNodeSelector: makeDiscoveryNodeSelector(discoveryNodeAllowlist),
       solanaRelay,
       solanaClient,
       antiAbuseOracleSelector: makeAAOSelector()

@@ -1,10 +1,6 @@
 import { useCallback, useState, ChangeEvent } from 'react'
 
-import {
-  useCurrentAccountUser,
-  useCurrentUserId,
-  useUserCreatedCoins
-} from '@audius/common/api'
+import { useCurrentAccountUser, useUserCreatedCoins } from '@audius/common/api'
 import { walletMessages } from '@audius/common/messages'
 import { COINS_CREATE_PAGE } from '@audius/common/src/utils/route'
 import {
@@ -27,7 +23,6 @@ import { useNavigate } from 'react-router-dom-v5-compat'
 import imageCoinsBackgroundImage from 'assets/img/publicSite/imageCoinsBackgroundImage2x.webp'
 import { ExternalLink } from 'components/link'
 import Page from 'components/page/Page'
-import { Tooltip } from 'components/tooltip'
 import { isMobile } from 'utils/clientUtil'
 
 import { ArtistCoinsTable } from '../artist-coins-launchpad-page/components/ArtistCoinsTable'
@@ -58,20 +53,16 @@ const DesktopArtistCoinsExplorePage = () => {
   const navigate = useNavigate()
   const [searchValue, setSearchValue] = useState('')
   const { data: currentUser } = useCurrentAccountUser()
-  const { data: currentUserId } = useCurrentUserId()
-  const { data: createdCoins } = useUserCreatedCoins({
-    userId: currentUserId
-  })
+  const { data: createdCoins, isPending: isLoadingCreatedCoins } =
+    useUserCreatedCoins({
+      userId: currentUser?.user_id
+    })
 
-  const isVerified = currentUser?.is_verified ?? false
   const hasExistingArtistCoin = (createdCoins?.length ?? 0) > 0
-  const canLaunchCoin = isVerified && !hasExistingArtistCoin
 
   const handleGetStarted = useCallback(() => {
-    if (canLaunchCoin) {
-      navigate(COINS_CREATE_PAGE)
-    }
-  }, [navigate, canLaunchCoin])
+    navigate(COINS_CREATE_PAGE)
+  }, [navigate])
 
   const handleSearchChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value)
@@ -116,7 +107,7 @@ const DesktopArtistCoinsExplorePage = () => {
           </Box>
         </Flex>
 
-        {!hasExistingArtistCoin ? (
+        {!hasExistingArtistCoin && !isLoadingCreatedCoins ? (
           <Paper p='xl' gap='xl' border='default' borderRadius='m'>
             <Flex gap='xl' w='100%' wrap='wrap'>
               <Flex
@@ -156,24 +147,15 @@ const DesktopArtistCoinsExplorePage = () => {
                   </Flex>
                 </Flex>
 
-                <Tooltip
-                  text={messages.getStartedTooltip}
-                  placement='top'
-                  // Only show tooltip if user cannot launch a coin (not verified)
-                  disabled={canLaunchCoin}
-                >
-                  {/* Need to wrap with Flex because disabled button doesn't capture mouse events */}
-                  <Flex>
-                    <Button
-                      onClick={handleGetStarted}
-                      fullWidth
-                      disabled={!canLaunchCoin}
-                      color={canLaunchCoin ? 'coinGradient' : undefined}
-                    >
-                      {messages.getStarted}
-                    </Button>
-                  </Flex>
-                </Tooltip>
+                <Flex>
+                  <Button
+                    onClick={handleGetStarted}
+                    fullWidth
+                    color='coinGradient'
+                  >
+                    {messages.getStarted}
+                  </Button>
+                </Flex>
               </Flex>
 
               <Box
