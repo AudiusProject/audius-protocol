@@ -1,4 +1,6 @@
 import { useCurrentAccountUser } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import {
   Button,
   LoadingSpinner,
@@ -109,6 +111,9 @@ type SplashPageProps = {
 export const SplashPage = ({ onContinue, isPending }: SplashPageProps) => {
   const styles = useStyles()
   const { data: currentUser } = useCurrentAccountUser()
+  const { isEnabled: isLaunchpadVerificationEnabled } = useFeatureFlag(
+    FeatureFlags.LAUNCHPAD_VERIFICATION
+  )
   const isVerified = currentUser?.is_verified ?? false
 
   return (
@@ -139,7 +144,7 @@ export const SplashPage = ({ onContinue, isPending }: SplashPageProps) => {
             <Tooltip
               text={messages.verifiedOnlyTooltip}
               placement='top'
-              disabled={isVerified}
+              disabled={isVerified && isLaunchpadVerificationEnabled}
             >
               {/* Need to wrap with Flex because disabled button doesn't capture mouse events */}
               <Flex>
@@ -148,7 +153,9 @@ export const SplashPage = ({ onContinue, isPending }: SplashPageProps) => {
                   fullWidth
                   iconRight={isPending ? undefined : IconArrowRight}
                   onClick={onContinue}
-                  disabled={isPending || !isVerified}
+                  disabled={
+                    isPending || (!isVerified && isLaunchpadVerificationEnabled)
+                  }
                   color='coinGradient'
                 >
                   {isPending ? (

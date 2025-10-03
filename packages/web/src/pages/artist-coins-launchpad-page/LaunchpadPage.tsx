@@ -8,9 +8,11 @@ import {
   useQueryContext,
   useUserCreatedCoins
 } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { launchpadMessages } from '@audius/common/messages'
 import { Feature } from '@audius/common/models'
 import type { LaunchpadFormValues } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { TOKEN_LISTING_MAP, useCoinSuccessModal } from '@audius/common/store'
 import { shortenSPLAddress, route } from '@audius/common/utils'
 import { FixedDecimal, wAUDIO } from '@audius/fixed-decimal'
@@ -308,6 +310,9 @@ export const LaunchpadPage = () => {
   const { data: createdCoins } = useUserCreatedCoins({
     userId: currentUser?.user_id
   })
+  const { isEnabled: isLaunchpadVerificationEnabled } = useFeatureFlag(
+    FeatureFlags.LAUNCHPAD_VERIFICATION
+  )
   const hasExistingArtistCoin = (createdCoins?.length ?? 0) > 0
 
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -566,7 +571,7 @@ export const LaunchpadPage = () => {
   )
 
   // Redirect if user is not verified or already has an artist coin
-  if (hasExistingArtistCoin) {
+  if (hasExistingArtistCoin && isLaunchpadVerificationEnabled) {
     return <Navigate to={route.COINS_EXPLORE_PAGE} replace />
   }
 
