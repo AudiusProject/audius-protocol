@@ -33,10 +33,7 @@ export const AgreeToTerms = () => {
           {messages.termsOfService}
         </ExternalTextLink>{' '}
         and the{' '}
-        <ExternalTextLink
-          to='https://audius.co/artist-coins-terms'
-          variant='visible'
-        >
+        <ExternalTextLink to={route.ARTIST_COIN_TERMS} variant='visible'>
           {messages.artistCoinsTerms}
         </ExternalTextLink>
         .
