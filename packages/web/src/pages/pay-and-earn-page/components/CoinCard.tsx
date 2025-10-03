@@ -75,24 +75,30 @@ export const CoinCard = ({
       onClick={onClick}
       css={{
         cursor: onClick ? 'pointer' : 'default',
+        minWidth: 0,
         '&:hover': onClick ? { backgroundColor: color.background.surface2 } : {}
       }}
     >
-      <Flex alignItems='center' gap='l'>
+      <Flex alignItems='center' gap='l' css={{ minWidth: 0, flex: 1 }}>
         {loading ? <HexagonSkeleton /> : renderIcon()}
-        <Flex direction='column' gap='2xs' flex={1}>
+        <Flex direction='column' gap='2xs' flex={1} css={{ minWidth: 0 }}>
           {loading ? (
             <CoinCardSkeleton />
           ) : (
             <>
-              <Text variant='heading' size='s'>
+              <Text variant='heading' size='s' css={{ wordWrap: 'break-word' }}>
                 {name}
               </Text>
-              <Flex gap='xs' alignItems='center'>
-                <Text variant='title' size='l'>
+              <Flex gap='xs' alignItems='center' css={{ flexWrap: 'wrap' }}>
+                <Text variant='title' size='l' css={{ wordWrap: 'break-word' }}>
                   {balance}
                 </Text>
-                <Text variant='title' size='l' color='subdued'>
+                <Text
+                  variant='title'
+                  size='l'
+                  color='subdued'
+                  css={{ wordWrap: 'break-word' }}
+                >
                   {noDollarSignPrefix ? symbol : `$${symbol}`}
                 </Text>
               </Flex>
@@ -100,7 +106,7 @@ export const CoinCard = ({
           )}
         </Flex>
       </Flex>
-      <Flex alignItems='center' gap='m'>
+      <Flex alignItems='center' gap='m' css={{ flexShrink: 0 }}>
         {!loading && (
           <Text variant='title' size='l' color='default'>
             {heldValue ?? dollarValue}
