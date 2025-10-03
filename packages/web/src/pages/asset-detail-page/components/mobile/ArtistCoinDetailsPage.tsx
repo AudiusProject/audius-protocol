@@ -1,4 +1,8 @@
-import { useArtistCoinByTicker, useCoinGeckoCoin } from '@audius/common/api'
+import {
+  useArtistCoinByTicker,
+  useCoinGeckoCoin,
+  useUser
+} from '@audius/common/api'
 import {
   formatTickerForUrl,
   formatCurrencyWithSubscript
@@ -9,7 +13,9 @@ import { useLocation } from 'react-router-dom-v5-compat'
 
 import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
+import { UserGeneratedTextV2 } from 'components/user-generated-text/UserGeneratedTextV2'
 import { TokenInfoRow } from 'pages/artist-coins-launchpad-page/components'
+import { LAUNCHPAD_COIN_DESCRIPTION } from 'pages/artist-coins-launchpad-page/constants'
 
 import {
   convertCoinGeckoResponseToStatsDetailsProps,
@@ -44,11 +50,12 @@ const tooltipContent = {
 
 export const ArtistCoinDetailsPage = () => {
   const location = useLocation()
-  // Locations should be in the format /coins/:ticker/details (COIN_DETAIL_ROUTE)
+  // Locations should be in the format /coins/:ticker/details (COIN_DETAIL_MOBILE_WEB_ROUTE)
   const ticker = location.pathname.split('/')[2]
   const { data: artistCoin } = useArtistCoinByTicker({
     ticker
   })
+  const { data: artist } = useUser(artistCoin?.ownerId)
   const { spacing } = useTheme()
   const isAudio = formatTickerForUrl(ticker) === 'AUDIO'
   const { data: coingeckoResponse } = useCoinGeckoCoin(
@@ -102,10 +109,12 @@ export const ArtistCoinDetailsPage = () => {
             <Text variant='label' size='s' color='subdued'>
               {messages.onChainDescription}
             </Text>
-            <Text variant='body' size='s' color='default'>
-              {artistCoin?.description ??
-                `${artistCoin?.ticker ?? 'UNKNOWN'} is an artist coin created on Audius. Learn more at https://audius.co/coin/${artistCoin?.ticker ?? 'unknown'}`}
-            </Text>
+            <UserGeneratedTextV2 variant='body' size='s' color='default'>
+              {LAUNCHPAD_COIN_DESCRIPTION(
+                artist?.handle ?? '',
+                artistCoin?.ticker ?? ''
+              )}
+            </UserGeneratedTextV2>
           </Flex>
 
           <Divider />
