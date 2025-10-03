@@ -114,7 +114,7 @@ export const TokenDropdown = ({
   const options: TokenOption[] = useMemo(() => {
     return availableTokens.map((token) => ({
       value: token.symbol,
-      label: token.name ?? token.symbol,
+      label: token.symbol,
       tokenInfo: token
     }))
   }, [availableTokens])
@@ -142,7 +142,7 @@ export const TokenDropdown = ({
       pv='s'
       borderRadius='s'
       css={{
-        height: spacing.unit16,
+        maxHeight: spacing.unit16,
         cursor: disabled ? 'not-allowed' : 'pointer',
         opacity: disabled ? 0.5 : 1,
         '&:hover': !disabled
@@ -157,8 +157,7 @@ export const TokenDropdown = ({
         onChange={handleTokenSelect}
         options={options}
         isDisabled={disabled}
-        isSearchable
-        css={{ '& *': { 'caret-color': 'transparent' } }}
+        isSearchable={false}
         menuPlacement='auto'
         menuPosition='absolute'
         menuPortalTarget={document.body}
