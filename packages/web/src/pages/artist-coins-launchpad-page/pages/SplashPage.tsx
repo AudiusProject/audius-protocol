@@ -148,7 +148,7 @@ export const SplashPage = ({ onContinue, isPending }: SplashPageProps) => {
                   fullWidth
                   iconRight={isPending ? undefined : IconArrowRight}
                   onClick={onContinue}
-                  // disabled={isPending || !isVerified}
+                  disabled={isPending || !isVerified}
                   color='coinGradient'
                 >
                   {isPending ? (
