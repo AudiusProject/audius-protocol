@@ -149,7 +149,7 @@ export const useLaunchCoin = () => {
             userId: Id.parse(userId),
             createCoinRequest: {
               mint: mintPublicKey,
-              ticker: `$${symbolUpper}`,
+              ticker: `${symbolUpper}`,
               decimals: LAUNCHPAD_COIN_DECIMALS,
               name,
               logoUri: imageUri,
