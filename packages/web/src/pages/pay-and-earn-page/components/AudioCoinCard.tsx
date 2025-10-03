@@ -43,6 +43,7 @@ export const AudioCoinCard = () => {
       dollarValue={audioDollarValue ?? ''}
       loading={isLoading}
       name={COIN_NAME}
+      noDollarSignPrefix
       onClick={handleCoinClick}
     />
   )
