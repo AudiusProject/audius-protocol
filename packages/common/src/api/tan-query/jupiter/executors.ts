@@ -167,7 +167,7 @@ export class DirectSwapExecutor extends BaseSwapExecutor {
         tokenInfo: inputTokenConfig,
         userPublicKey,
         ethAddress: ethAddress!,
-        amountLamports: BigInt(quote.inputAmount.amount),
+        amountLamports: BigInt(quote.inputAmount.amountString),
         sdk,
         feePayer,
         instructions
@@ -382,7 +382,7 @@ export class IndirectSwapExecutor extends BaseSwapExecutor {
         tokenInfo: inputTokenConfig,
         userPublicKey,
         ethAddress: ethAddress!,
-        amountLamports: BigInt(firstQuote.inputAmount.amount),
+        amountLamports: BigInt(firstQuote.inputAmount.amountString),
         sdk,
         feePayer,
         instructions
@@ -543,7 +543,7 @@ export class IndirectSwapExecutor extends BaseSwapExecutor {
           tokenInfo: audioTokenInfo,
           userPublicKey,
           ethAddress: ethAddress!,
-          amountLamports: BigInt(secondQuote.inputAmount.amount),
+          amountLamports: BigInt(secondQuote.inputAmount.amountString),
           sdk,
           feePayer,
           instructions
