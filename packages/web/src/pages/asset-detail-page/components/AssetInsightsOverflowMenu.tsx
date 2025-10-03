@@ -2,6 +2,7 @@ import { useCallback, useContext, useState } from 'react'
 
 import { useArtistCoin, useCurrentUserId, useUser } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
+import { COIN_DETAIL_ROUTE } from '@audius/common/src/utils/route'
 import { formatTickerForUrl, route } from '@audius/common/utils'
 import {
   PopupMenu,
@@ -71,7 +72,7 @@ export const AssetInsightsOverflowMenu = ({
     if (isMobile) {
       if (artistCoin?.ticker) {
         navigate(
-          route.ASSET_DETAIL_PAGE.replace(
+          COIN_DETAIL_ROUTE.replace(
             ':ticker',
             formatTickerForUrl(artistCoin.ticker)
           )
@@ -88,7 +89,7 @@ export const AssetInsightsOverflowMenu = ({
     const isArtistOwner = currentUserId === artistCoin.ownerId
     const coinUrl =
       window.location.origin +
-      route.ASSET_DETAIL_PAGE.replace(
+      route.COIN_DETAIL_ROUTE.replace(
         ':ticker',
         formatTickerForUrl(artistCoin.ticker)
       )
