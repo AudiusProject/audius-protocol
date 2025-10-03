@@ -1,7 +1,9 @@
 import { useCallback, useState, ChangeEvent } from 'react'
 
 import { useCurrentAccountUser, useUserCreatedCoins } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
+import { FeatureFlags } from '@audius/common/services'
 import { COINS_CREATE_PAGE } from '@audius/common/src/utils/route'
 import {
   Box,
@@ -58,6 +60,9 @@ const DesktopArtistCoinsExplorePage = () => {
       userId: currentUser?.user_id
     })
 
+  const { isEnabled: isLaunchpadVerificationEnabled } = useFeatureFlag(
+    FeatureFlags.LAUNCHPAD_VERIFICATION
+  )
   const hasExistingArtistCoin = (createdCoins?.length ?? 0) > 0
 
   const handleGetStarted = useCallback(() => {
@@ -107,7 +112,8 @@ const DesktopArtistCoinsExplorePage = () => {
           </Box>
         </Flex>
 
-        {!hasExistingArtistCoin && !isLoadingCreatedCoins ? (
+        {(!hasExistingArtistCoin && !isLoadingCreatedCoins) ||
+        !isLaunchpadVerificationEnabled ? (
           <Paper p='xl' gap='xl' border='default' borderRadius='m'>
             <Flex gap='xl' w='100%' wrap='wrap'>
               <Flex
