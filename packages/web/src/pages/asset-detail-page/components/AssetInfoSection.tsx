@@ -15,6 +15,7 @@ import { Feature, WidthSizes } from '@audius/common/models'
 import type { User } from '@audius/common/models'
 import {
   formatCurrencyWithSubscript,
+  getTokenDecimalPlaces,
   removeNullable,
   route,
   shortenSPLAddress
@@ -417,17 +418,19 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
 
   const unclaimedFees = coin?.dynamicBondingCurve?.creatorQuoteFee ?? 0
   const formattedUnclaimedFees = useMemo(() => {
+    const value = wAUDIO(BigInt(unclaimedFees))
+    const decimalPlaces = getTokenDecimalPlaces(Number(value.toString()))
     return formatCurrencyWithSubscript(
-      Number(wAUDIO(BigInt(unclaimedFees)).toPrecision(8))
+      Number(value.trunc(decimalPlaces).toString())
     )
   }, [unclaimedFees])
   const totalArtistEarnings =
     coin?.dynamicBondingCurve?.totalTradingQuoteFee ?? 0
   const formattedTotalArtistEarnings = useMemo(() => {
     // Here we divide by 2 because the artist only gets half of the fees (this value includes the AUDIO network fees)
-    return formatCurrencyWithSubscript(
-      Number(wAUDIO(BigInt(Math.trunc(totalArtistEarnings / 2))).toPrecision(8))
-    )
+    const value = wAUDIO(BigInt(Math.trunc(totalArtistEarnings / 2)))
+    const decimalPlaces = getTokenDecimalPlaces(Number(value.toString()))
+    return Number(value.trunc(decimalPlaces).toString()).toString()
   }, [totalArtistEarnings])
   const descriptionParagraphs = coin?.description?.split('\n') ?? []
 
