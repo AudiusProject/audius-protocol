@@ -30,7 +30,7 @@ const messages = {
   blastCustomersDescription: 'Everyone who has paid for your content.',
   blastRemixersDescription: 'Everyone who has remixed your tracks.',
   blastCoinHoldersDescription: (symbol: string) =>
-    `Everyone who holds ${symbol}.`,
+    `Everyone who holds $${symbol}.`,
   blastCTABase: 'Send a message blast to ',
   blastCTAFollowers: 'each of your followers',
   blastCTASupporters: 'everyone who has sent you a tip',

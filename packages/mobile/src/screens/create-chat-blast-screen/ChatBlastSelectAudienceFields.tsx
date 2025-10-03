@@ -50,9 +50,9 @@ const messages = {
     search: 'Search for tracks with remixes'
   },
   coinHolders: {
-    label: (symbol: string) => `${symbol} Members`,
+    label: (symbol: string) => `$${symbol} Members`,
     description: (symbol: string) =>
-      `Send a bulk message to every holder of ${symbol} on Audius.`,
+      `Send a bulk message to every holder of $${symbol} on Audius.`,
     placeholder: 'Coin Holders'
   },
   count: (count: number) => ` (${formatNumberCommas(count)})`

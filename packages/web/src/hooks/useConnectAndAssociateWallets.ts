@@ -11,7 +11,7 @@ import { Name, Chain } from '@audius/common/models'
 import { useTheme } from '@emotion/react'
 import type { NamespaceTypeMap } from '@reown/appkit'
 import { mainnet } from '@reown/appkit/networks'
-import { useAppKit, useDisconnect } from '@reown/appkit/react'
+import { useAppKit, useAppKitState, useDisconnect } from '@reown/appkit/react'
 import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react'
 import type { Hex } from 'viem'
 import { useSignMessage, useSwitchAccount, useAccount } from 'wagmi'
@@ -97,9 +97,7 @@ export const useConnectAndAssociateWallets = (
   const { disconnect } = useDisconnect()
 
   // The state goes from modal open => connecting => associating
-  // Explicitly manage our own state for the open state of the modal
-  // since their might be multiple hook instances listening for events
-  const [isAppKitModalOpen, setIsAppKitModalOpen] = useState(false)
+  const { open: isAppKitModalOpen } = useAppKitState()
   const [isConnecting, setIsConnecting] = useState(false)
   const [isAssociating, setIsAssociating] = useState(false)
 
@@ -133,7 +131,6 @@ export const useConnectAndAssociateWallets = (
       // to the audiusChain network. Reset that to mainnet to connect properly.
       await appkitModal.switchNetwork(mainnet)
       await openAppKitModal({ view: 'Connect', namespace })
-      setIsAppKitModalOpen(true)
     },
     [disconnect, isConnected, openAppKitModal, theme.type]
   )
@@ -287,13 +284,9 @@ export const useConnectAndAssociateWallets = (
    */
   useEffect(() => {
     return appkitModal.subscribeEvents(async (event) => {
-      // Ignore events not meant for this hook instance
-      if (!isAppKitModalOpen) return
-
       if (event.data.event === 'SELECT_WALLET') {
         setIsConnecting(true)
       } else if (event.data.event === 'MODAL_CLOSE') {
-        setIsAppKitModalOpen(false)
         if (!isConnecting && !isAssociating) {
           await reconnectExternalAuthWallet()
         }
@@ -306,7 +299,6 @@ export const useConnectAndAssociateWallets = (
       }
     })
   }, [
-    isAppKitModalOpen,
     associateConnectedWallets,
     reconnectExternalAuthWallet,
     isConnecting,
