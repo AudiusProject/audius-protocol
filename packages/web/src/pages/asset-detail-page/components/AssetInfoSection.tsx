@@ -518,7 +518,6 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
                   variant='body'
                   size='m'
                   color='subdued'
-                  linkSource='profile page'
                 >
                   {paragraph}
                 </UserGeneratedText>
