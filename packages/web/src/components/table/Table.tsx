@@ -3,6 +3,7 @@ import {
   MouseEvent,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState
@@ -692,6 +693,13 @@ export const Table = ({
     wrapperClassName
   ])
 
+  // Force the window scroller to update its position
+  // after the DOM has laid out
+  const wsRef = useRef<WindowScroller>(null)
+  useLayoutEffect(() => {
+    wsRef.current?.updatePosition()
+  }, [])
+
   const renderVirtualizedContent = useCallback(() => {
     return (
       <InfiniteLoader
@@ -702,7 +710,7 @@ export const Table = ({
         minimumBatchSize={fetchBatchSize}
       >
         {({ onRowsRendered, registerChild: registerListChild }) => (
-          <WindowScroller scrollElement={scrollRef?.current}>
+          <WindowScroller ref={wsRef} scrollElement={scrollRef?.current}>
             {({
               height,
               registerChild,
