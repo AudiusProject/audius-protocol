@@ -85,7 +85,7 @@ const CustomOption = (props: OptionProps<TokenOption>) => {
             strength='strong'
             color={isSelected ? 'staticWhite' : 'subdued'}
           >
-            {props.data.tokenInfo.symbol}
+            {`$${props.data.tokenInfo.symbol}`}
           </Text>
         </Flex>
       </Flex>
