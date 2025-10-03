@@ -155,7 +155,7 @@ const {
   FOLLOWING_USERS_ROUTE,
   FOLLOWERS_USERS_ROUTE,
   LEADERBOARD_USERS_ROUTE,
-  COIN_DETAIL_ROUTE,
+  COIN_DETAIL_MOBILE_WEB_ROUTE,
   TRENDING_GENRES,
   APP_REDIRECT,
   TRACK_ID_PAGE,
@@ -965,7 +965,7 @@ const WebPlayer = (props) => {
               />
               <MobileRoute
                 exact
-                path={COIN_DETAIL_ROUTE}
+                path={COIN_DETAIL_MOBILE_WEB_ROUTE}
                 isMobile={isMobile}
                 component={ArtistCoinDetailsPage}
               />
