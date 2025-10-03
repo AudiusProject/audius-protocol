@@ -275,8 +275,8 @@ const tableColumnMap = {
 const sortMethodMap: Record<string, GetCoinsSortMethodEnum> = {
   price: GetCoinsSortMethodEnum.Price,
   marketCap: GetCoinsSortMethodEnum.MarketCap,
-  volume24h: GetCoinsSortMethodEnum.Volume,
-  createdDate: GetCoinsSortMethodEnum.CreatedAt,
+  v24hUSD: GetCoinsSortMethodEnum.Volume,
+  createdAt: GetCoinsSortMethodEnum.CreatedAt,
   holder: GetCoinsSortMethodEnum.Holder
 }
 

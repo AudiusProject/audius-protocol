@@ -306,7 +306,9 @@ export const YourCoins = () => {
           <Box
             css={{
               display: 'grid',
-              gridTemplateColumns: isSingleColumn ? '1fr' : '1fr 1fr',
+              gridTemplateColumns: isSingleColumn
+                ? 'minmax(0, 1fr)'
+                : 'minmax(0, 1fr) minmax(0, 1fr)',
               gap: '0'
             }}
           >
