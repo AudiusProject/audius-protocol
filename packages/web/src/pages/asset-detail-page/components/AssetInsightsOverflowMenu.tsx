@@ -19,6 +19,7 @@ import { useNavigate } from 'react-router-dom-v5-compat'
 import ActionDrawer from 'components/action-drawer/ActionDrawer'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { env } from 'services/env'
 
 import { copyToClipboard } from '../../../utils/clipboardUtil'
 import { openXLink } from '../../../utils/xShare'
@@ -55,8 +56,12 @@ export const AssetInsightsOverflowMenu = ({
 
   const onOpenDexscreener = () => {
     if (artistCoin?.mint) {
+      const isAudio = artistCoin.mint === env.WAUDIO_MINT_ADDRESS
       window.open(
-        route.dexscreenerUrl(artistCoin.mint),
+        route.dexscreenerUrl(
+          isAudio ? env.ETH_TOKEN_ADDRESS : artistCoin.mint,
+          isAudio ? 'ethereum' : 'solana'
+        ),
         '_blank',
         'noopener,noreferrer'
       )
