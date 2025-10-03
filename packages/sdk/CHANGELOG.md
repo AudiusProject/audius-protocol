@@ -1,5 +1,11 @@
 # @audius/sdk
 
+## 11.0.1
+
+### Patch Changes
+
+- 1c969f6: fix comms requests failing due to extra /v1 prefix
+
 ## 11.0.0
 
 ### Major Changes
