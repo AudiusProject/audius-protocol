@@ -34,6 +34,7 @@ export type CoinCardProps = {
   heldValue?: string | null
   dollarValue: string
   loading?: boolean
+  noDollarSignPrefix?: boolean
   onClick?: () => void
 }
 
@@ -45,6 +46,7 @@ export const CoinCard = ({
   heldValue,
   dollarValue,
   loading = false,
+  noDollarSignPrefix = false,
   onClick
 }: CoinCardProps) => {
   const { color, spacing } = useTheme()
@@ -91,7 +93,7 @@ export const CoinCard = ({
                   {balance}
                 </Text>
                 <Text variant='title' size='l' color='subdued'>
-                  ${symbol}
+                  {noDollarSignPrefix ? symbol : `$${symbol}`}
                 </Text>
               </Flex>
             </>
