@@ -184,6 +184,9 @@ const NavigationContainer = (props: NavigationContainerProps) => {
                         },
                         ArtistCoinsExplore: {
                           path: 'coins'
+                        },
+                        CoinDetailsScreen: {
+                          path: 'coins/:ticker'
                         }
                       }
                     },
@@ -359,6 +362,15 @@ const NavigationContainer = (props: NavigationContainerProps) => {
       }
 
       if (path.match(/^\/coins/)) {
+        const ticker = pathPart(path)(2)
+        // TODO: Handle coin launchpad route (/coins/create)
+        if (ticker && ticker !== 'create') {
+          return createFeedStackState({
+            name: 'CoinDetailsScreen',
+            params: { ticker }
+          })
+        }
+
         return createFeedStackState({
           name: 'ArtistCoinsExplore'
         })

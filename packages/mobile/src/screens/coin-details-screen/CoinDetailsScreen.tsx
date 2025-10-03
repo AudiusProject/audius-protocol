@@ -1,4 +1,4 @@
-import { useArtistCoin, useCurrentUserId } from '@audius/common/api'
+import { useArtistCoinByTicker, useCurrentUserId } from '@audius/common/api'
 import { route } from '@audius/common/utils'
 import { useRoute, useNavigation } from '@react-navigation/native'
 
@@ -12,11 +12,12 @@ import { CoinLeaderboardCard } from './components/CoinLeaderboardCard'
 import { ExternalWalletsCard } from './components/ExternalWalletsCard'
 
 export const CoinDetailsScreen = () => {
-  const { mint } = useRoute().params as { mint: string }
+  const { ticker } = useRoute().params as { ticker: string }
+  const { data: coin } = useArtistCoinByTicker({ ticker })
   const navigation = useNavigation()
-  const { data: coin } = useArtistCoin(mint)
   const { data: currentUserId } = useCurrentUserId()
-  const { ticker, ownerId } = coin ?? {}
+  const mint = coin?.mint ?? ''
+  const ownerId = coin?.ownerId ?? ''
 
   const isOwner = currentUserId === ownerId
 

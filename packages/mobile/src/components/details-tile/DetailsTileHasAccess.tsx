@@ -196,7 +196,7 @@ const DetailsTileOwnerSection = ({
               style={{ width: 24, height: 24 }}
             />
           </HexagonalIcon>
-          <HarmonyText variant='title'>{token?.ticker}</HarmonyText>
+          <HarmonyText variant='title'>${token?.ticker}</HarmonyText>
         </Flex>
       </Flex>
     )
@@ -265,10 +265,10 @@ export const DetailsTileHasAccess = ({
   )
 
   const handleTokenPress = useCallback(() => {
-    if (token?.mint) {
-      navigation.push('CoinDetailsScreen', { mint: token.mint })
+    if (token?.ticker) {
+      navigation.push('CoinDetailsScreen', { ticker: token.ticker })
     }
-  }, [navigation, token?.mint])
+  }, [navigation, token?.ticker])
 
   const renderUnlockedSpecialAccessDescription = useCallback(
     (args: {
@@ -352,7 +352,7 @@ export const DetailsTileHasAccess = ({
               style={[styles.description, styles.name]}
               onPress={handleTokenPress}
             >
-              {token?.ticker ?? messages.artistCoin}
+              {token?.ticker ? `$${token.ticker}` : messages.artistCoin}
             </Text>
             <Text style={styles.description}>
               {messages.unlockedTokenGatedSuffix(contentType)}
