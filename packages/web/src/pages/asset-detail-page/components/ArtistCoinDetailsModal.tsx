@@ -1,6 +1,7 @@
 import {
   useArtistCoin,
   useCoinGeckoCoin,
+  useUser,
   type CoinGeckoCoinResponse
 } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
@@ -20,6 +21,7 @@ import { env } from 'services/env'
 import { TokenIcon } from '../../../components/buy-sell-modal/TokenIcon'
 import ResponsiveModal from '../../../components/modal/ResponsiveModal'
 import { TokenInfoRow } from '../../artist-coins-launchpad-page/components/TokenInfoRow'
+import { LAUNCHPAD_COIN_DESCRIPTION } from '../../artist-coins-launchpad-page/constants'
 
 const { artistCoinDetails } = coinDetailsMessages
 
@@ -46,6 +48,7 @@ export const ArtistCoinDetailsModal = ({
   const isAudio = mint === env.WAUDIO_MINT_ADDRESS
   const { spacing } = useTheme()
   const { data: artistCoin } = useArtistCoin(mint)
+  const { data: artist } = useUser(artistCoin?.ownerId)
   const { data: coingeckoResponse } = useCoinGeckoCoin(
     { coinId: 'audius' },
     { enabled: isAudio }
@@ -102,13 +105,13 @@ export const ArtistCoinDetailsModal = ({
         ) : null}
 
         {/* On-Chain Description */}
-        {artistCoin?.description ? (
+        {artistCoin?.ticker && artist?.handle ? (
           <Flex direction='column' gap='xs' w='100%'>
             <Text variant='body' size='m' strength='strong' color='subdued'>
               {artistCoinDetails.onChainDescription}
             </Text>
             <Text variant='body' size='m' userSelect='text'>
-              {artistCoin.description}
+              {LAUNCHPAD_COIN_DESCRIPTION(artist.handle, artistCoin.ticker)}
             </Text>
           </Flex>
         ) : null}
