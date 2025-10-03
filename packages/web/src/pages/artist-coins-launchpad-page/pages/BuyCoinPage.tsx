@@ -319,7 +319,12 @@ export const BuyCoinPage = ({
             onChange={handleRadioChange}
             gap='xl'
           >
-            <Flex as='label' alignItems='center' gap='s'>
+            <Flex
+              as='label'
+              alignItems='center'
+              gap='s'
+              css={{ cursor: 'pointer' }}
+            >
               <Radio
                 value='no'
                 error={
@@ -330,7 +335,12 @@ export const BuyCoinPage = ({
                 {messages.radios.no}
               </Text>
             </Flex>
-            <Flex as='label' alignItems='center' gap='s'>
+            <Flex
+              as='label'
+              alignItems='center'
+              gap='s'
+              css={{ cursor: 'pointer' }}
+            >
               <Radio
                 value='yes'
                 error={
