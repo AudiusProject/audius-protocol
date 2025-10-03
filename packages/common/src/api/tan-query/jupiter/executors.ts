@@ -1,3 +1,4 @@
+import { FixedDecimal } from '@audius/fixed-decimal'
 import { SwapRequest } from '@jup-ag/api'
 import { createCloseAccountInstruction } from '@solana/spl-token'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
@@ -9,6 +10,7 @@ import {
 } from '~/services/Jupiter'
 import { TokenInfo } from '~/store/ui/buy-sell/types'
 import { TOKEN_LISTING_MAP } from '~/store/ui/shared/tokenConstants'
+import { convertBigIntToAmountObject } from '~/utils'
 
 import { RetryPolicy, STANDARD_RETRY_POLICY } from './retryPolicy'
 import {
@@ -68,6 +70,47 @@ export abstract class BaseSwapExecutor {
       this.dependencies.queryClient,
       this.dependencies.user
     )
+  }
+
+  /**
+   * Queries the actual on-chain token balance for a given token account.
+   * Returns the balance in both lamports (raw) and UI amount (with decimals applied).
+   */
+  protected async getTokenBalance(
+    tokenAccount: PublicKey,
+    decimals: number
+  ): Promise<{ amount: string; uiAmount: number }> {
+    const connection = this.dependencies.sdk.services.solanaClient.connection
+    const balance = await connection.getTokenAccountBalance(
+      tokenAccount,
+      'confirmed'
+    )
+
+    if (!balance.value) {
+      throw new Error(
+        `Failed to get token account balance for ${tokenAccount.toBase58()}`
+      )
+    }
+
+    const balanceAmount = convertBigIntToAmountObject(
+      BigInt(balance.value.amount),
+      decimals
+    )
+
+    // Use FixedDecimal to ensure precise conversion from the string representation
+    const uiAmount =
+      balance.value.uiAmount ??
+      Number(
+        new FixedDecimal(
+          balanceAmount.uiAmountString,
+          decimals
+        ).value.toString()
+      )
+
+    return {
+      amount: balance.value.amount,
+      uiAmount
+    }
   }
 }
 
@@ -453,6 +496,32 @@ export class IndirectSwapExecutor extends BaseSwapExecutor {
         findTokenByAddress(this.tokens, AUDIO_MINT)!
       )
 
+      // Query actual AUDIO balance from intermediate account
+      errorStage = 'INDIRECT_SWAP_STEP2_QUERY_BALANCE'
+      const actualAudioBalance = await this.getTokenBalance(
+        step1Result.intermediateAudioAta,
+        AUDIO_DECIMALS
+      )
+
+      // Validate we received a reasonable amount
+      if (actualAudioBalance.uiAmount <= 0) {
+        throw new Error(
+          `Invalid AUDIO balance in intermediate account: ${actualAudioBalance.uiAmount}`
+        )
+      }
+
+      // Use the predicted amount if we have enough, otherwise use actual balance
+      const predictedAmount = step1Result.firstQuote.outputAmount.uiAmount
+      const predictedFixed = new FixedDecimal(predictedAmount, AUDIO_DECIMALS)
+      const actualFixed = new FixedDecimal(
+        actualAudioBalance.uiAmount,
+        AUDIO_DECIMALS
+      )
+      const amountToSwap =
+        predictedFixed.value <= actualFixed.value
+          ? predictedAmount
+          : actualAudioBalance.uiAmount
+
       // Get quote: AUDIO -> OutputToken
       errorStage = 'INDIRECT_SWAP_STEP2_QUOTE'
       const { quoteResult: secondQuote } = await getJupiterQuoteByMintWithRetry(
@@ -461,7 +530,7 @@ export class IndirectSwapExecutor extends BaseSwapExecutor {
           outputMint: outputMintUiAddress,
           inputDecimals: AUDIO_DECIMALS,
           outputDecimals: outputTokenConfig.decimals,
-          amountUi: step1Result.firstQuote.outputAmount.uiAmount,
+          amountUi: amountToSwap,
           swapMode: 'ExactIn',
           onlyDirectRoutes: false
         }
