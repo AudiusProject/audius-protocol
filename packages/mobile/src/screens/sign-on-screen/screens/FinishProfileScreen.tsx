@@ -23,10 +23,11 @@ import type {
   NativeSyntheticEvent,
   TextInputFocusEventData
 } from 'react-native'
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { Paper, useTheme, Flex } from '@audius/harmony-native'
+import { Paper, useTheme, Flex, Text } from '@audius/harmony-native'
 import { ScrollView } from 'app/components/core'
 import { HarmonyTextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -44,7 +45,7 @@ const finishProfileFormikSchema = toFormikValidationSchema(finishProfileSchema)
 
 type FinishProfileValues = {
   displayName: string
-  profileImage?: Image
+  profileImage: Image
   coverPhoto?: Image
 }
 
@@ -75,11 +76,10 @@ export const FinishProfileScreen = () => {
     [dispatch, isFastReferral, navigation]
   )
 
-  const { value: handle } = useSelector(getHandleField)
-  const displayNameValue = savedDisplayName || handle || ''
+  const displayNameValue = savedDisplayName || ''
   const initialValues = {
-    profileImage: savedProfileImage || undefined,
-    coverPhoto: savedCoverPhoto || undefined,
+    profileImage: savedProfileImage || ({} as Image),
+    coverPhoto: savedCoverPhoto || ({} as Image),
     displayName: displayNameValue
   }
 
@@ -122,7 +122,7 @@ export const FinishProfileScreen = () => {
             </Paper>
           </Flex>
         </ScrollView>
-        <PageFooter requireDirty={false} />
+        <PageFooter prefix={<UploadProfilePhotoHelperText />} />
       </Page>
     </Formik>
   )
@@ -185,5 +185,27 @@ const AccountHeaderField = () => {
       handle={handle}
       isVerified={isVerified}
     />
+  )
+}
+
+const AnimatedText = Animated.createAnimatedComponent(Text)
+
+const UploadProfilePhotoHelperText = () => {
+  const [{ value: displayName }, { touched }] = useField('displayName')
+  const [{ value: profileImage }] = useField<Image>('profileImage')
+  const isVisible = displayName && touched && isEmpty(profileImage)
+  const { motion } = useTheme()
+
+  if (!isVisible) return null
+
+  return (
+    <AnimatedText
+      variant='body'
+      textAlign='center'
+      entering={FadeIn.duration(motion.calm.duration)}
+      exiting={FadeOut.duration(motion.calm.duration)}
+    >
+      {finishProfilePageMessages.uploadProfilePhoto}
+    </AnimatedText>
   )
 }
