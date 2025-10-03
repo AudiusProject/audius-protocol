@@ -46,6 +46,7 @@ import { ExternalLink } from 'components/link/ExternalLink'
 import Skeleton from 'components/skeleton/Skeleton'
 import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
+import { UserGeneratedText } from 'components/user-generated-text'
 import { UserTokenBadge } from 'components/user-token-badge/UserTokenBadge'
 import { useClaimFees } from 'hooks/useClaimFees'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
@@ -512,14 +513,15 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
               }
 
               return (
-                <Text
+                <UserGeneratedText
                   key={paragraph.slice(0, 10)}
                   variant='body'
                   size='m'
                   color='subdued'
+                  linkSource='profile page'
                 >
                   {paragraph}
-                </Text>
+                </UserGeneratedText>
               )
             })}
           </Flex>
