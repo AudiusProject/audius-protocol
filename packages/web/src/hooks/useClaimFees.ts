@@ -1,6 +1,7 @@
 import { type Coin } from '@audius/common/adapters'
 import { getArtistCoinQueryKey, useQueryContext } from '@audius/common/api'
 import { Feature } from '@audius/common/models'
+import { solana } from '@reown/appkit/networks'
 import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react'
 import { VersionedTransaction } from '@solana/web3.js'
 import {
@@ -41,6 +42,7 @@ export const useClaimFees = (
       receiverWalletAddress
     }: UseClaimFeesParams): Promise<ClaimFeesResponse> => {
       const sdk = await audiusSdk()
+      await appkitModal.switchNetwork(solana)
       const solanaProvider = appkitModal.getProvider<SolanaProvider>('solana')
       if (!solanaProvider) {
         throw new Error('Missing SolanaProvider')
