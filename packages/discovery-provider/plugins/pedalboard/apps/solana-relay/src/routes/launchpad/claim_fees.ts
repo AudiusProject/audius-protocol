@@ -1,4 +1,8 @@
 import { DynamicBondingCurveClient } from '@meteora-ag/dynamic-bonding-curve-sdk'
+import {
+  createTransferInstruction,
+  getAssociatedTokenAddressSync
+} from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import { Request, Response } from 'express'
 
@@ -10,6 +14,8 @@ interface ClaimFeesRequestBody {
   ownerWalletAddress: string
   receiverWalletAddress: string
 }
+
+const AUDIO_MINT = '9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM'
 
 export const claimFees = async (
   req: Request<unknown, unknown, ClaimFeesRequestBody>,
@@ -39,15 +45,30 @@ export const claimFees = async (
     const poolData = tokenPool.account
     const ownerWallet = new PublicKey(ownerWalletAddress)
     const receiverWallet = new PublicKey(receiverWalletAddress)
+    const maxQuoteAmount = poolData.creatorQuoteFee
 
     const claimFeesTx = await dbcClient.creator.claimCreatorTradingFee({
       pool: poolAddress,
       payer: ownerWallet,
       creator: ownerWallet,
       maxBaseAmount: poolData.creatorBaseFee, // Match max amount to the claimable amount (effectively no limit)
-      maxQuoteAmount: poolData.creatorQuoteFee, // Match max amount to the claimable amount (effectively no limit)
-      receiver: receiverWallet
+      maxQuoteAmount, // Match max amount to the claimable amount (effectively no limit)
+      receiver: ownerWallet
     })
+
+    const ownerWalletATA = getAssociatedTokenAddressSync(
+      new PublicKey(AUDIO_MINT),
+      ownerWallet,
+      false
+    )
+
+    const sendFromOwnerWallet = createTransferInstruction(
+      ownerWalletATA,
+      receiverWallet,
+      ownerWallet,
+      BigInt(maxQuoteAmount.toString())
+    )
+    claimFeesTx.instructions.push(sendFromOwnerWallet)
 
     claimFeesTx.recentBlockhash = (
       await connection.getLatestBlockhash()
@@ -58,6 +79,7 @@ export const claimFees = async (
       claimFeesTx: claimFeesTx.serialize({ requireAllSignatures: false })
     })
   } catch (e) {
+    logger.error(e)
     logger.error(
       'Error in claim_fees - unable to create creator claim fee transaction'
     )
