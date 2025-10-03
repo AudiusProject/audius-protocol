@@ -155,7 +155,7 @@ export const FAVORITING_USERS_ROUTE = '/favoriting_users'
 export const FOLLOWING_USERS_ROUTE = '/following'
 export const FOLLOWERS_USERS_ROUTE = '/followers'
 export const LEADERBOARD_USERS_ROUTE = '/leaderboard'
-export const COIN_DETAIL_ROUTE = '/coins/:ticker/details'
+export const COIN_DETAIL_ROUTE = '/coins/:ticker'
 export const SUPPORTING_USERS_ROUTE = '/supporting'
 export const TOP_SUPPORTERS_USERS_ROUTE = '/top-supporters'
 export const ACCOUNT_SETTINGS_PAGE = '/settings/account'
@@ -401,6 +401,13 @@ export const staticRoutes = new Set([
 
 export const profilePage = (handle: string | null | undefined) => {
   return `/${encodeUrlName(handle ?? '')}`
+}
+
+export const coinDetailPage = (ticker: string) => {
+  return COIN_DETAIL_ROUTE.replace(
+    ':ticker',
+    ticker.startsWith('$') ? ticker.slice(1) : ticker
+  )
 }
 
 export const collectionPage = (
