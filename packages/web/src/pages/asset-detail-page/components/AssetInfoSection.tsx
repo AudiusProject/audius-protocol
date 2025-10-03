@@ -344,7 +344,7 @@ const AssetDetailsSection = ({
               <Flex gap='xs' alignItems='center'>
                 <TextLink
                   onClick={handleClaimFees}
-                  variant={isClaimFeesPending ? 'subdued' : 'visible'}
+                  variant={isClaimFeesDisabled ? 'subdued' : 'visible'}
                   disabled={isClaimFeesDisabled}
                 >
                   {overflowMessages.claim}
@@ -605,8 +605,6 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
             isClaimFeesPending || !externalSolWallet || !currentUser?.spl_wallet
           }
           handleClaimFees={handleClaimFees}
-          externalSolWallet={externalSolWallet}
-          currentUser={currentUser}
         />
       ) : null}
     </Paper>
