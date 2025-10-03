@@ -64,7 +64,7 @@ const coinNameSchema = z.object({
     .string({ required_error: coinNameErrorMessages.missingNameError })
     .max(MAX_HANDLE_LENGTH, coinNameErrorMessages.nameTooLong)
     .min(1, coinNameErrorMessages.missingNameError)
-    .regex(/^[\x00-\x7F]*$/, coinNameErrorMessages.invalidCharacterError)
+    .regex(/^[\x20-\x7E]*$/, coinNameErrorMessages.invalidCharacterError)
 })
 
 const coinImageSchema = z.object({
