@@ -27,7 +27,8 @@ import {
   Paper,
   Divider,
   spacing,
-  Button
+  Button,
+  LoadingSpinner
 } from '@audius/harmony-native'
 import {
   TokenIcon,
@@ -216,9 +217,9 @@ export const EditCoinDetailsScreen = () => {
   if (isPending) {
     return (
       <Screen>
-        <ScreenContent>
-          <Text>Loading...</Text>
-        </ScreenContent>
+        <Flex h='100%' w='100%' justifyContent='center' alignItems='center'>
+          <LoadingSpinner />
+        </Flex>
       </Screen>
     )
   }
@@ -249,8 +250,7 @@ export const EditCoinDetailsScreen = () => {
                   <TokenIcon logoURI={coin?.logoUri} size='4xl' />
                   <Flex>
                     <Text variant='heading' size='s'>
-                      {/* {coin?.name} */}
-                      {'ASDF'}
+                      {coin?.name}
                     </Text>
                     <Text variant='title' size='l' color='subdued'>
                       {formatTickerFromUrl(coin?.ticker ?? '')}
