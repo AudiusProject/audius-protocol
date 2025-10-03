@@ -103,7 +103,7 @@ export const walletMessages = {
   receiveTokensLoadingSubtitle: 'Setting up your wallet',
   becomeMemberTitle: 'Become a member',
   becomeMemberBody: (coinTicker: string) =>
-    `Buy ${coinTicker} to gain access to exclusive members-only perks!`,
+    `Buy $${coinTicker} to gain access to exclusive members-only perks!`,
 
   // Linked Wallets messages
   linkedWallets: {

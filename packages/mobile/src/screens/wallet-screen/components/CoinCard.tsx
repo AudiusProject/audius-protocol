@@ -135,7 +135,7 @@ export const CoinCard = ({ mint, showUserBalance = true }: CoinCardProps) => {
                     ellipsizeMode='tail'
                     style={{ flexShrink: 1 }}
                   >
-                    {coinData?.ticker}
+                    ${coinData?.ticker}
                   </Text>
                 </Flex>
               </>

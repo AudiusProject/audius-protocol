@@ -72,7 +72,7 @@ export const priceAndAudienceMessages = {
     yourCoin: 'your coin',
     noCoins: 'No coins found. Launch a coin to enable this option.',
     description: (coinTicker: string) =>
-      `Anyone holding ${coinTicker} can stream.`
+      `Anyone holding $${coinTicker} can stream.`
   }
 }
 
