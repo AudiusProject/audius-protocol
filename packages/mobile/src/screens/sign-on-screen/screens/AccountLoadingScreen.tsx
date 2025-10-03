@@ -2,14 +2,20 @@
 
 import { useEffect } from 'react'
 
-import { getAccountReady } from '@audius/web/src/common/store/pages/signon/selectors'
-import { useSelector } from 'react-redux'
+import { finishSignUp } from '@audius/web/src/common/store/pages/signon/actions'
+import {
+  getAccountReady,
+  getStatus
+} from '@audius/web/src/common/store/pages/signon/selectors'
+import { EditingStatus } from '@audius/web/src/common/store/pages/signon/types'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { Flex } from '@audius/harmony-native'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { Heading, Page } from '../components/layout'
+import { useFastReferral } from '../hooks/useFastReferral'
 import type { SignOnScreenParamList } from '../types'
 
 const messages = {
@@ -20,14 +26,24 @@ const messages = {
 
 // The user just waits here until the account is created and before being shown the welcome modal on the trending page
 export const AccountLoadingScreen = () => {
+  const dispatch = useDispatch()
   const navigation = useNavigation<SignOnScreenParamList>()
-  const isAccountReady = useSelector(getAccountReady)
+  const isFastReferral = useFastReferral()
+  const accountReady = useSelector(getAccountReady)
+  const accountCreationStatus = useSelector(getStatus)
+
+  // Match web's logic: conditional check based on referral type
+  const isAccountReady = isFastReferral
+    ? accountReady
+    : accountReady || accountCreationStatus === EditingStatus.SUCCESS
 
   useEffect(() => {
     if (isAccountReady) {
+      // Mark sign up as finished so RootScreen shows HomeStack
+      dispatch(finishSignUp())
       navigation.navigate('HomeStack', { screen: 'Trending' })
     }
-  }, [isAccountReady, navigation])
+  }, [isAccountReady, dispatch, navigation])
 
   return (
     <Page gap='3xl' justifyContent='center' alignItems='center' pb='3xl'>

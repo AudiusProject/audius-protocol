@@ -129,7 +129,10 @@ export const SelectGenresScreen = () => {
             </Flex>
           </Paper>
         </ScrollView>
-        <PageFooter prefix={<SkipButton />} />
+        <PageFooter
+          buttonProps={{ disabled: false }}
+          postfix={<SkipButton />}
+        />
       </View>
     </Formik>
   )
