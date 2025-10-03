@@ -14,7 +14,7 @@ import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
 
 const messages = {
-  title: (ticker: string) => `${ticker + ' '}Leaderboard`
+  title: (ticker: string) => `${ticker} Members`
 }
 
 export const CoinLeaderboardScreen = () => {
