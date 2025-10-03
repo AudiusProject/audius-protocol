@@ -465,14 +465,12 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
     )
   }
 
-  const isReady = Boolean(mainContentRef?.current)
-
   return (
     <Flex ref={setTableNode} border='default' borderRadius='m'>
       <Table
         columns={columns}
         data={coins}
-        isVirtualized={isReady}
+        isVirtualized
         onSort={onSort}
         onClickRow={handleRowClick}
         isEmptyRow={isEmptyRow}
