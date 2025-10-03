@@ -84,7 +84,7 @@ export const ReceiveTokensDrawer = () => {
   return (
     <Drawer isOpen={isOpen} onClose={onClose} drawerHeader={renderHeader}>
       <Flex direction='column' gap='xl' ph='xl'>
-        <BalanceSection mint={mint} />
+        <BalanceSection mint={mint} isPolling={isOpen} pollingInterval={3000} />
 
         {/* QR Code and Explainer Section */}
         <Flex row gap='m' alignItems='center'>

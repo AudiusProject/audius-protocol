@@ -57,7 +57,12 @@ export const useTokenBalance = ({
       includeConnectedWallets: includeExternalWallets,
       includeStaked
     },
-    { enabled: isAudio }
+    {
+      enabled: isAudio,
+      refetchInterval: isPolling ? pollingInterval : undefined,
+      refetchOnWindowFocus: !isPolling,
+      ...queryOptions
+    }
   )
 
   // Artist coins query
@@ -95,6 +100,8 @@ export const useTokenBalance = ({
           decimals
         }
       },
+      refetchInterval: isPolling ? pollingInterval : undefined,
+      refetchOnWindowFocus: !isPolling,
       ...queryOptions,
       enabled: !isUsdc && queryOptions.enabled !== false
     }
