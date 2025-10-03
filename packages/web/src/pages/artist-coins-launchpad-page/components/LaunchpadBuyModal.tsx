@@ -1,6 +1,8 @@
 import { useContext, useEffect, useMemo, useState } from 'react'
 
+import { useWalletAudioBalance } from '@audius/common/api'
 import { buySellMessages } from '@audius/common/messages'
+import { Chain } from '@audius/common/models'
 import { useConnectedWallets } from '@audius/common/src/api/tan-query/wallets/useConnectedWallets'
 import { Name } from '@audius/common/src/models/Analytics'
 import { TOKEN_LISTING_MAP } from '@audius/common/src/store/ui/buy-audio/constants'
@@ -24,6 +26,7 @@ import {
   TokenAmountInput
 } from '@audius/harmony'
 import { FormikProvider, useFormikContext } from 'formik'
+import { usePrevious } from 'react-use'
 
 import { IconAUDIO } from 'components/buy-audio-modal/components/Icons'
 import { WALLET_GUIDE_URL } from 'components/buy-sell-modal'
@@ -359,6 +362,8 @@ enum BuyModalStep {
   Loading = 'loading'
 }
 
+const AUDIO_BALANCE_POLL_INTERVAL = 1000 // short 1s poll interval to check for balance changes
+
 export const LaunchpadBuyModal = ({
   isOpen,
   onClose
@@ -378,8 +383,34 @@ export const LaunchpadBuyModal = ({
     data: swapData
   } = useExternalWalletSwap()
 
+  const onInputTokenChange = (token: TokenInfo) => {
+    setSelectedInputToken(token)
+  }
+  const { data: connectedWallets } = useConnectedWallets()
+  const externalWalletAddress = useMemo(
+    () => getLastConnectedSolWallet(connectedWallets)?.address,
+    [connectedWallets]
+  )
+  const { data: audioBalance } = useWalletAudioBalance(
+    {
+      address: externalWalletAddress!,
+      chain: Chain.Sol
+    },
+    { refetchInterval: AUDIO_BALANCE_POLL_INTERVAL }
+  )
+  const prevAudioBalance = usePrevious(audioBalance)
+
+  // Due to RPC drift, we have to wait for the audio balance hook to show our changes
+  // This is because the audio balance hook is polling, so an optimistic change here is not sufficient
+  const hasAudioBalanceChanged = useMemo(() => {
+    return (
+      prevAudioBalance &&
+      audioBalance?.toString() !== prevAudioBalance?.toString()
+    )
+  }, [audioBalance, prevAudioBalance])
+
   useEffect(() => {
-    if (swapSuccess) {
+    if (swapSuccess && hasAudioBalanceChanged) {
       track(make({ eventName: Name.LAUNCHPAD_BUY_MODAL_SUCCESS }))
       setCurrentStep(BuyModalStep.Success)
     }
@@ -397,16 +428,14 @@ export const LaunchpadBuyModal = ({
       toast(toastMessage, 5000)
       setCurrentStep(BuyModalStep.Form)
     }
-  }, [swapSuccess, swapPending, swapError, toast, swapData])
-
-  const onInputTokenChange = (token: TokenInfo) => {
-    setSelectedInputToken(token)
-  }
-  const { data: connectedWallets } = useConnectedWallets()
-  const externalWalletAddress = useMemo(
-    () => getLastConnectedSolWallet(connectedWallets)?.address,
-    [connectedWallets]
-  )
+  }, [
+    swapSuccess,
+    swapPending,
+    swapError,
+    toast,
+    swapData,
+    hasAudioBalanceChanged
+  ])
   const {
     availableBalance,
     isBalanceLoading,

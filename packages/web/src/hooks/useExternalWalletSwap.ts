@@ -1,14 +1,11 @@
-import {
-  getWalletAudioBalanceQueryKey,
-  useQueryContext
-} from '@audius/common/api'
-import { Chain, ErrorLevel, Feature } from '@audius/common/models'
+import { useQueryContext } from '@audius/common/api'
+import { ErrorLevel, Feature } from '@audius/common/models'
 import { getExternalWalletBalanceQueryKey } from '@audius/common/src/api/tan-query/wallets/useExternalWalletBalance'
 import {
   getJupiterQuoteByMintWithRetry,
   jupiterInstance
 } from '@audius/common/src/services/Jupiter'
-import { AUDIO, FixedDecimal, type AudioWei } from '@audius/fixed-decimal'
+import { FixedDecimal } from '@audius/fixed-decimal'
 import { SwapRequest } from '@jup-ag/api'
 import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react'
 import { VersionedTransaction } from '@solana/web3.js'
@@ -80,14 +77,22 @@ export const useExternalWalletSwap = () => {
         const decoded = Buffer.from(swapTx.swapTransaction, 'base64')
         const transaction = VersionedTransaction.deserialize(decoded)
 
-        const txSignature =
-          await appKitSolanaProvider.signAndSendTransaction(transaction)
+        const signedTx = await appKitSolanaProvider.signTransaction(transaction)
         hookProgress.sentSwapTx = true
 
-        await sdk.services.solanaClient.connection.confirmTransaction(
-          txSignature,
-          'confirmed'
-        )
+        const txSignature =
+          await sdk.services.solanaClient.connection.sendTransaction(signedTx)
+
+        const result =
+          await sdk.services.solanaClient.connection.confirmTransaction(
+            txSignature,
+            'confirmed'
+          )
+        if (result.value.err) {
+          throw new Error(
+            `Transaction confirmed but failed: ${JSON.stringify(result.value.err)}`
+          )
+        }
         hookProgress.confirmedSwapTx = true
 
         return {
@@ -173,38 +178,6 @@ export const useExternalWalletSwap = () => {
               const outputAmount = result.outputAmount!
               const newAmount = currentAmount + outputAmount
               return new FixedDecimal(newAmount, oldBalance.decimalPlaces)
-            }
-          )
-        }
-
-        // Handle AUDIO separately since it's stored in a different query hook
-        if (isSpendingAudio || isReceivingAudio) {
-          // Update the wallet AUDIO balance based on the swap direction
-          const queryKey = getWalletAudioBalanceQueryKey({
-            address: params.walletAddress,
-            chain: Chain.Sol
-          })
-
-          queryClient.setQueryData(
-            queryKey,
-            (oldBalance: AudioWei | undefined) => {
-              const currentBalance = oldBalance ?? AUDIO(0).value
-              let newBalance = currentBalance
-
-              // If spending AUDIO (input token), subtract the input amount
-              if (isSpendingAudio && result.inputAmount) {
-                const inputAmountAudio = AUDIO(result.inputAmount).value
-                newBalance = AUDIO(newBalance - inputAmountAudio).value
-              }
-
-              // If receiving AUDIO (output token), add the output amount
-              if (isReceivingAudio && result.outputAmount) {
-                const outputAmountAudio = AUDIO(result.outputAmount).value
-                newBalance = AUDIO(newBalance + outputAmountAudio).value
-              }
-
-              // Ensure balance doesn't go negative
-              return newBalance >= 0 ? newBalance : AUDIO(0).value
             }
           )
         }
