@@ -134,10 +134,30 @@ export const useLaunchCoin = () => {
 
         /**
          * Pool creation - sign & send TX
+         * Mandatory step before we do anything else
          */
         await signAndSendTx(createPoolTxSerialized)
         errorMetadata.poolCreateConfirmed = true
         errorMetadata.lastStep = 'poolCreateConfirmed'
+
+        try {
+          // Perform sol->audio swap & first buy
+          if (firstBuyTxSerialized && initialBuyAmountAudio) {
+            // First buy
+            await signAndSendTx(firstBuyTxSerialized)
+            errorMetadata.firstBuyConfirmed = true
+            errorMetadata.lastStep = 'firstBuyConfirmed'
+          }
+        } catch (e) {
+          if (reportToSentry) {
+            reportToSentry({
+              error: e instanceof Error ? e : new Error(e as string),
+              name: 'First Buy Failure',
+              feature: Feature.ArtistCoins,
+              additionalInfo: errorMetadata
+            })
+          }
+        }
 
         /*
          * Add coin to Audius database
@@ -167,14 +187,6 @@ export const useLaunchCoin = () => {
               additionalInfo: errorMetadata
             })
           }
-        }
-
-        // Perform sol->audio swap & first buy
-        if (firstBuyTxSerialized && initialBuyAmountAudio) {
-          // First buy
-          await signAndSendTx(firstBuyTxSerialized)
-          errorMetadata.firstBuyConfirmed = true
-          errorMetadata.lastStep = 'firstBuyConfirmed'
         }
 
         return {
