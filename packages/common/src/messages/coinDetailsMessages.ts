@@ -22,7 +22,7 @@ export const coinDetailsMessages = {
     browseRewards: 'Browse Rewards',
     rewardTiers: 'Reward Tiers',
     discordDisabledTooltip: (coinTicker: string = '') =>
-      `Buy ${coinTicker} to access the members only Discord`
+      `Buy $${coinTicker} to access the members only Discord`
   },
   coinInsights: {
     title: 'Insights',
@@ -83,7 +83,7 @@ export const coinDetailsMessages = {
       artistHandle: string,
       coinAddress: string
     ) =>
-      `Check out @${artistHandle}'s artist coin ${coinTicker} on @Audius!\n\n${coinAddress}\n`
+      `Check out @${artistHandle}'s artist coin $${coinTicker} on @Audius!\n\n${coinAddress}\n`
   },
   artistCoinDetails: {
     title: 'Artist Coin Details',
