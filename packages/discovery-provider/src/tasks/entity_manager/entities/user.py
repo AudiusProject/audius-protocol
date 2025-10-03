@@ -36,7 +36,7 @@ from src.tasks.metadata import immutable_user_fields
 from src.utils.config import shared_config
 from src.utils.hardcoded_data import (
     genres_lower,
-    handle_badwords_lower,
+    has_badwords,
     moods_lower,
     reserved_handles_lower,
 )
@@ -188,7 +188,7 @@ def validate_user_handle(handle: Union[str, None]):
         raise IndexingValidationError(f"Handle {handle} is a genre name")
     if handle in moods_lower:
         raise IndexingValidationError(f"Handle {handle} is a mood name")
-    if any(badword in handle for badword in handle_badwords_lower):
+    if has_badwords(handle):
         raise IndexingValidationError(f"Handle {handle} contains a bad word")
     return handle
 
@@ -196,7 +196,7 @@ def validate_user_handle(handle: Union[str, None]):
 def validate_user_name(name: Union[str, None]):
     if not name:
         return name
-    if any(badword in name.lower() for badword in handle_badwords_lower):
+    if has_badwords(name):
         raise IndexingValidationError(f"Name {name} contains a bad word")
     return name
 
@@ -456,19 +456,17 @@ def add_associated_wallet(
                 f"Invalid signature for wallet {wallet_address}"
             )
 
-        # Check if wallet already exists
+        # Check if wallet already exists, and remove it from other users
         existing_wallet = None
         for _, wallet in params.existing_records["AssociatedWallet"].items():
-            if (
-                wallet.chain == chain
-                and wallet.user_id == user_id
-                and wallet.wallet == wallet_address
-            ):
-                existing_wallet = wallet
-                break
+            if wallet.chain == chain and wallet.wallet == wallet_address:
+                if wallet.user_id == user_id:
+                    existing_wallet = wallet
+                else:
+                    session.delete(wallet)
 
         if not existing_wallet:
-            # Create new wallet association only if it doesn't exist
+            # Create new wallet association only if it doesn't exist for this user
             associated_wallet_entry = AssociatedWallet(
                 user_id=user_id,
                 wallet=wallet_address,

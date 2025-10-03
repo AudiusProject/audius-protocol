@@ -31,7 +31,10 @@ import { ChangeEmailModalScreen } from 'app/screens/change-email-screen/ChangeEm
 import { ChatListScreen } from 'app/screens/chat-screen/ChatListScreen'
 import { ChatScreen } from 'app/screens/chat-screen/ChatScreen'
 import { ChatUserListScreen } from 'app/screens/chat-screen/ChatUserListScreen'
-import { CoinDetailsScreen } from 'app/screens/coin-details-screen'
+import {
+  CoinDetailsScreen,
+  EditCoinDetailsScreen
+} from 'app/screens/coin-details-screen'
 import { CollectionScreen } from 'app/screens/collection-screen/CollectionScreen'
 import { EditProfileScreen } from 'app/screens/edit-profile-screen'
 import { ProfileScreen } from 'app/screens/profile-screen'
@@ -123,7 +126,8 @@ export type AppTabScreenParamList = {
     initialSortDirection?: GetCoinsSortDirectionEnum
   }
   wallet: undefined
-  CoinDetailsScreen: { mint: string }
+  CoinDetailsScreen: { ticker: string }
+  EditCoinDetailsScreen: { ticker: string }
   Upload: {
     initialMetadata?: Partial<TrackMetadataForUpload>
   }
@@ -240,6 +244,10 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
       <Stack.Screen name='RewardsScreen' component={RewardsScreen} />
       <Stack.Screen name='wallet' component={WalletScreen} />
       <Stack.Screen name='CoinDetailsScreen' component={CoinDetailsScreen} />
+      <Stack.Screen
+        name='EditCoinDetailsScreen'
+        component={EditCoinDetailsScreen}
+      />
       <Stack.Screen
         name='ArtistCoinsExplore'
         component={ArtistCoinsExploreScreen}

@@ -99,7 +99,7 @@ const HasBalanceState = ({
           <TokenIcon logoURI={logoURI} size={64} />
           <Flex column gap='2xs'>
             <Text variant='heading' size='s'>
-              {coinName}
+              {coinName || `$${ticker}`}
             </Text>
             <Flex row gap='xs' alignItems='center'>
               <Text variant='title' size='l'>

@@ -1,4 +1,8 @@
+import { useMemo } from 'react'
+
+import { useArtistCoin, useQueryContext } from '@audius/common/api'
 import type { LaunchpadFormValues } from '@audius/common/models'
+import { formatCount } from '@audius/common/utils'
 import {
   Artwork,
   Flex,
@@ -12,6 +16,7 @@ import { useFormikContext } from 'formik'
 
 import { useFormImageUrl } from 'hooks/useFormImageUrl'
 
+import { AgreeToTerms } from '../components/AgreeToTerms'
 import { ArtistCoinsSubmitRow } from '../components/ArtistCoinsSubmitRow'
 import { StepHeader } from '../components/StepHeader'
 import { TokenInfoRow } from '../components/TokenInfoRow'
@@ -36,7 +41,34 @@ const messages = {
     "Remember! This is your one and only coin and its details can't be changed later."
 }
 
-const coinDetails = {
+// Helper functions for market cap calculations
+const formatAudioAmount = (amount: number): string => {
+  return `${formatCount(amount)} $AUDIO`
+}
+
+const calculateMarketCaps = (audioPriceUSD: number) => {
+  // Fixed AUDIO amounts as requested
+  const initialAudioAmount = 10000 // 10K AUDIO
+  const graduationAudioAmount = 1000000 // 1M AUDIO
+
+  // Calculate USD values based on current AUDIO price
+  const initialMarketCapUSD = initialAudioAmount * audioPriceUSD
+  const graduationMarketCapUSD = graduationAudioAmount * audioPriceUSD
+
+  return {
+    initialMarketCap: {
+      usd: `(~$${formatCount(initialMarketCapUSD, 2)})`,
+      audio: formatAudioAmount(initialAudioAmount)
+    },
+    graduationMarketCap: {
+      usd: `(~$${formatCount(graduationMarketCapUSD, 2)})`,
+      audio: formatAudioAmount(graduationAudioAmount)
+    }
+  }
+}
+
+// Default fallback values for display when config is not available
+const defaultCoinDetails = {
   initialPrice: '~$0.0₄415',
   totalSupply: '1,000,000,000',
   initialMarketCap: {
@@ -100,6 +132,20 @@ export const ReviewPage = ({ onContinue, onBack }: PhasePageProps) => {
   const { values } = useFormikContext<LaunchpadFormValues>()
   const imageUrl = useFormImageUrl(values.coinImage)
   const styles = useStyles()
+  const { env } = useQueryContext()
+  const { data: audioCoinData } = useArtistCoin(env.WAUDIO_MINT_ADDRESS)
+
+  // Calculate market caps with fixed AUDIO amounts and current AUDIO price
+  const coinDetails = useMemo(() => {
+    // Get current AUDIO price, fall back to 0.0612 if not available
+    const audioPriceUSD = audioCoinData?.price ?? 0.0612
+
+    const marketCaps = calculateMarketCaps(audioPriceUSD)
+    return {
+      ...defaultCoinDetails,
+      ...marketCaps
+    }
+  }, [audioCoinData?.price])
 
   const handleBack = () => {
     onBack?.()
@@ -262,13 +308,14 @@ export const ReviewPage = ({ onContinue, onBack }: PhasePageProps) => {
             </Flex>
           </Flex>
           <Hint icon={IconInfo}>{messages.hintMessage}</Hint>
+          <AgreeToTerms />
         </Paper>
       </Flex>
       <ArtistCoinsSubmitRow
         cancelText={messages.back}
         backIcon
         onContinue={handleContinue}
-        isValid={true} // There are no form fields changing on this page - no need to check validation here
+        isValid={values.termsAgreed} // Require checkbox to be checked before proceeding
         onBack={handleBack}
       />
     </>

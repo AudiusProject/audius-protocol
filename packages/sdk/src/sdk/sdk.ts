@@ -215,14 +215,20 @@ const initializeServices = (config: SdkConfig) => {
     })
 
   const middleware = [
-    addRequestSignatureMiddleware({ services: { audiusWalletClient, logger } })
+    addRequestSignatureMiddleware({
+      services: { audiusWalletClient, logger },
+      apiKey: config.apiKey,
+      apiSecret: config.apiSecret
+    })
   ]
 
   /* Solana Programs */
   const solanaRelay = config.services?.solanaRelay
     ? config.services.solanaRelay.withMiddleware(
         addRequestSignatureMiddleware({
-          services: { audiusWalletClient, logger }
+          services: { audiusWalletClient, logger },
+          apiKey: config.apiKey,
+          apiSecret: config.apiSecret
         })
       )
     : new SolanaRelay(
@@ -234,7 +240,9 @@ const initializeServices = (config: SdkConfig) => {
   const archiverService = config.services?.archiverService
     ? config.services.archiverService.withMiddleware(
         addRequestSignatureMiddleware({
-          services: { audiusWalletClient, logger }
+          services: { audiusWalletClient, logger },
+          apiKey: config.apiKey,
+          apiSecret: config.apiSecret
         })
       )
     : undefined
@@ -411,21 +419,31 @@ const initializeApis = ({
   appName?: string
   services: ServicesContainer
 }) => {
-  const basePath =
+  const apiEndpoint =
     config.environment === 'development'
       ? developmentConfig.network.apiEndpoint
       : config.environment === 'staging'
         ? stagingConfig.network.apiEndpoint
         : productionConfig.network.apiEndpoint
+  const basePath = `${apiEndpoint}/v1`
 
   const middleware = [
-    addAppInfoMiddleware({ apiKey, appName, services }),
-    addRequestSignatureMiddleware({ services })
+    addAppInfoMiddleware({
+      apiKey,
+      appName,
+      services,
+      basePath
+    }),
+    addRequestSignatureMiddleware({
+      services,
+      apiKey,
+      apiSecret: config.apiSecret
+    })
   ]
   const apiClientConfig = new Configuration({
     fetchApi: fetch,
     middleware,
-    basePath: `${basePath}/v1`
+    basePath
   })
 
   const tracks = new TracksApi(
@@ -477,7 +495,7 @@ const initializeApis = ({
 
   const chats = new ChatsApi(
     new Configuration({
-      basePath, // comms is not a v1 API
+      basePath: apiEndpoint, // comms is not a v1 API
       fetchApi: fetch,
       middleware
     }),
@@ -503,7 +521,7 @@ const initializeApis = ({
   )
 
   const generatedApiClientConfigFull = new ConfigurationFull({
-    basePath: `${basePath}/v1/full`,
+    basePath: `${basePath}/full`,
     fetchApi: fetch,
     middleware
   })

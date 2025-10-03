@@ -22,12 +22,14 @@ type AddressTileProps = {
   address?: string
   iconRight?: IconComponent
   shorten?: boolean
+  shortenLength?: number
 }
 
 export const AddressTile = ({
   address,
   iconRight: IconRight,
-  shorten = false
+  shorten = false,
+  shortenLength = 12
 }: AddressTileProps) => {
   const { toast } = useContext(ToastContext)
   const isMobile = useIsMobile()
@@ -71,7 +73,9 @@ export const AddressTile = ({
             }}
             variant='body'
           >
-            {isMobile || shorten ? shortenSPLAddress(address, 12) : address}
+            {isMobile || shorten
+              ? shortenSPLAddress(address, shortenLength)
+              : address}
           </Text>
         </Box>
         <Flex alignItems='center' borderLeft='default' ph='l'>

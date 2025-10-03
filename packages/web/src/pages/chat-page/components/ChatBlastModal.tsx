@@ -63,9 +63,9 @@ const messages = {
     placeholder: 'Tracks with Remixes'
   },
   coinHolders: {
-    label: (symbol: string) => `${symbol} Members`,
-    description: (symbol: string) =>
-      `Send a bulk message to every holder of ${symbol} on Audius.`,
+    label: (ticker: string) => `$${ticker} Members`,
+    description: (ticker: string) =>
+      `Send a bulk message to every holder of $${ticker} on Audius.`,
     placeholder: 'Coin Holders'
   }
 }

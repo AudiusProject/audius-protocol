@@ -26,14 +26,22 @@ type UseFormattedTokenBalanceReturn = {
  * Hook to get formatted balance and price information for any supported mint
  * @param mint - The mint symbol to get balance and price for
  * @param locale - Locale for number formatting (defaults to 'en-US')
+ * @param isPolling - Whether to enable polling for balance updates
+ * @param pollingInterval - Interval for polling in milliseconds (defaults to 3000ms)
  * @returns Object with formatted balance, price, and loading states
  */
 export const useFormattedTokenBalance = (
   mint: string,
-  locale: string = 'en-US'
+  locale: string = 'en-US',
+  isPolling?: boolean,
+  pollingInterval?: number
 ): UseFormattedTokenBalanceReturn => {
   const { data: tokenBalance, isPending: isTokenBalanceLoading } =
-    useTokenBalance({ mint })
+    useTokenBalance({
+      mint,
+      isPolling,
+      pollingInterval
+    })
 
   const { data, isPending: isTokenPriceLoading } = useArtistCoin(mint)
 

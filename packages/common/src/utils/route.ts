@@ -155,7 +155,7 @@ export const FAVORITING_USERS_ROUTE = '/favoriting_users'
 export const FOLLOWING_USERS_ROUTE = '/following'
 export const FOLLOWERS_USERS_ROUTE = '/followers'
 export const LEADERBOARD_USERS_ROUTE = '/leaderboard'
-export const COIN_DETAIL_ROUTE = '/coins/:ticker/details'
+export const COIN_DETAIL_MOBILE_WEB_ROUTE = '/coins/:ticker/details'
 export const SUPPORTING_USERS_ROUTE = '/supporting'
 export const TOP_SUPPORTERS_USERS_ROUTE = '/top-supporters'
 export const ACCOUNT_SETTINGS_PAGE = '/settings/account'
@@ -211,6 +211,8 @@ export const AUDIUS_HOT_AND_NEW =
 export const AUDIUS_HELP_LINK = 'https://help.audius.co/'
 export const AUDIUS_ARTIST_COIN_HELP_LINK =
   'https://help.audius.co/product/artist-coins'
+export const ARTIST_COIN_TERMS =
+  'https://audius.co/documents/ArtistCoinTerms.pdf'
 
 export const AUDIUS_CAREERS_LINK = 'https://www.tikilabs.com/careers'
 export const AUDIUS_PODCAST_LINK =
@@ -222,9 +224,9 @@ export const AUDIUS_TOKENS_HELP_LINK =
   'https://support.audius.co/product/tokens'
 
 // Dexscreener Links
-export const DEXSCREENER_BASE_URL = 'https://dexscreener.com/solana'
-export const dexscreenerUrl = (mint: string) =>
-  `${DEXSCREENER_BASE_URL}/${mint}`
+export const DEXSCREENER_BASE_URL = 'https://dexscreener.com'
+export const dexscreenerUrl = (mint: string, network: string = 'solana') =>
+  `${DEXSCREENER_BASE_URL}/${network}/${mint}`
 
 export const authenticatedRoutes = [
   FEED_PAGE,

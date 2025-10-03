@@ -15,6 +15,10 @@ import {
   IconCopy,
   IconExternalLink,
   IconGift,
+  IconInstagram,
+  IconLink,
+  IconX,
+  IconTikTok,
   Paper,
   PlainButton,
   Text
@@ -28,6 +32,40 @@ import { env } from 'app/services/env'
 
 const messages = coinDetailsMessages.coinInfo
 const overflowMessages = coinDetailsMessages.overflowMenu
+
+// Helper function to detect platform from URL
+const detectPlatform = (
+  url: string
+): 'x' | 'instagram' | 'tiktok' | 'website' => {
+  const cleanUrl = url.toLowerCase().trim()
+
+  if (cleanUrl.includes('twitter.com') || cleanUrl.includes('x.com')) {
+    return 'x'
+  }
+  if (cleanUrl.includes('instagram.com')) {
+    return 'instagram'
+  }
+  if (cleanUrl.includes('tiktok.com')) {
+    return 'tiktok'
+  }
+
+  return 'website'
+}
+
+// Get platform icon
+const getPlatformIcon = (platform: string) => {
+  switch (platform) {
+    case 'x':
+      return IconX
+    case 'instagram':
+      return IconInstagram
+    case 'tiktok':
+      return IconTikTok
+    case 'website':
+    default:
+      return IconLink
+  }
+}
 
 const BannerSection = ({ mint }: { mint: string }) => {
   const { data: coin, isLoading } = useArtistCoin(mint)
@@ -117,7 +155,8 @@ const CoinDescriptionSection = ({ coin }: { coin: Coin }) => {
       direction='column'
       alignItems='flex-start'
       alignSelf='stretch'
-      p='xl'
+      ph='xl'
+      pv='l'
       gap='l'
     >
       <Flex direction='column' gap='m'>
@@ -133,6 +172,33 @@ const CoinDescriptionSection = ({ coin }: { coin: Coin }) => {
           )
         })}
       </Flex>
+    </Flex>
+  )
+}
+
+const SocialLinksSection = ({ coin }: { coin: Coin }) => {
+  const socialLinks = [coin.link1, coin.link2, coin.link3, coin.link4].filter(
+    (link): link is string => link != null && link.trim() !== ''
+  )
+
+  if (socialLinks.length === 0) return null
+
+  return (
+    <Flex row gap='l' ph='xl' pt='l'>
+      {socialLinks.map((link, index) => {
+        const platform = detectPlatform(link)
+        const PlatformIcon = getPlatformIcon(platform)
+
+        return (
+          <PlainButton
+            key={index}
+            onPress={() => Linking.openURL(link)}
+            size='large'
+            iconLeft={PlatformIcon}
+            variant='subdued'
+          />
+        )
+      })}
     </Flex>
   )
 }
@@ -175,6 +241,7 @@ export const CoinInfoCard = ({ mint }: { mint: string }) => {
       style={{ overflow: 'hidden' }}
     >
       <BannerSection mint={mint} />
+      <SocialLinksSection coin={coin} />
       <CoinDescriptionSection coin={coin} />
       <Divider style={{ width: '100%' }} />
       <Flex direction='column' w='100%' ph='xl' pv='l'>

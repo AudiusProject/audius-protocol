@@ -71,6 +71,8 @@ const FORM_INPUT_DECIMALS = 8
 
 const INPUT_DEBOUNCE_TIME = 400
 
+const AUDIO_BALANCE_POLL_INTERVAL = 3000
+
 export const BuyCoinPage = ({
   onContinue,
   onBack,
@@ -114,10 +116,13 @@ export const BuyCoinPage = ({
     trackBuyModalClose()
     setIsBuyModalOpen(false)
   }
-  const { data: audioBalance } = useWalletAudioBalance({
-    address: connectedWallet?.address ?? '',
-    chain: connectedWallet?.chain ?? Chain.Sol
-  })
+  const { data: audioBalance } = useWalletAudioBalance(
+    {
+      address: connectedWallet?.address ?? '',
+      chain: connectedWallet?.chain ?? Chain.Sol
+    },
+    { refetchInterval: AUDIO_BALANCE_POLL_INTERVAL }
+  )
   const { audioBalanceString } = useMemo(() => {
     if (!audioBalance) {
       return { audioBalanceString: '0.00', audioBalanceInt: 0 }
@@ -319,7 +324,12 @@ export const BuyCoinPage = ({
             onChange={handleRadioChange}
             gap='xl'
           >
-            <Flex as='label' alignItems='center' gap='s'>
+            <Flex
+              as='label'
+              alignItems='center'
+              gap='s'
+              css={{ cursor: 'pointer' }}
+            >
               <Radio
                 value='no'
                 error={
@@ -330,7 +340,12 @@ export const BuyCoinPage = ({
                 {messages.radios.no}
               </Text>
             </Flex>
-            <Flex as='label' alignItems='center' gap='s'>
+            <Flex
+              as='label'
+              alignItems='center'
+              gap='s'
+              css={{ cursor: 'pointer' }}
+            >
               <Radio
                 value='yes'
                 error={

@@ -128,5 +128,5 @@ export const welcomeModalMessages = {
 }
 
 export const skipButtonMessages = {
-  skipThisStep: 'Skip this step'
+  skipThisStep: 'Skip'
 }

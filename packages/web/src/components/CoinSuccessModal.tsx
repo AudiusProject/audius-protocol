@@ -32,14 +32,16 @@ export const CoinSuccessModal = () => {
   const handleShareToX = () => {
     if (!coinData?.ticker || !coinData?.mint) return
 
-    const coinUrl = `https://audius.co${route.COIN_DETAIL_ROUTE.replace(':ticker', formatTickerForUrl(coinData.ticker))}`
-    const shareText = `My artist coin ${coinData.ticker} is live on @Audius. Be the first to buy and unlock my exclusive fan club!\n\n${coinData.mint}\n`
+    const coinUrl = `https://audius.co${route.ASSET_DETAIL_PAGE.replace(':ticker', formatTickerForUrl(coinData.ticker))}`
+    const shareText = `My artist coin $${coinData.ticker} is live on @Audius. Be the first to buy and unlock my exclusive fan club!\n\n${coinData.mint}\n`
     openXLink(coinUrl, shareText)
   }
 
   if (!coinData) return null
 
   const { mint, name, ticker, logoUri, amountUi, amountUsd } = coinData
+
+  const hasFirstBuyAmount = amountUi !== '0' || amountUsd !== '0'
 
   return (
     <>
@@ -56,9 +58,12 @@ export const CoinSuccessModal = () => {
             </Text>
 
             {/* Purchase Summary */}
+
             <Flex column gap='m' w='100%'>
               <Text variant='label' size='l' color='subdued'>
-                {launchpadMessages.modal.purchaseSummary}
+                {hasFirstBuyAmount
+                  ? launchpadMessages.modal.purchaseSummaryTitle
+                  : launchpadMessages.modal.yourCoinTitle}
               </Text>
               <Paper
                 p='m'
@@ -82,18 +87,29 @@ export const CoinSuccessModal = () => {
                     <Text variant='title' size='m' color='default'>
                       {name}
                     </Text>
-                    <Flex
-                      alignItems='center'
-                      justifyContent='space-between'
-                      w='100%'
-                    >
-                      <Text variant='title' size='s' strength='weak'>
-                        {amountUi} <Text color='subdued'>${ticker}</Text>
+                    {hasFirstBuyAmount ? (
+                      <Flex
+                        alignItems='center'
+                        justifyContent='space-between'
+                        w='100%'
+                      >
+                        <Text variant='title' size='s' strength='weak'>
+                          {amountUi} <Text color='subdued'>${ticker}</Text>
+                        </Text>
+                        <Text variant='title' size='s' strength='weak'>
+                          ${amountUsd}
+                        </Text>
+                      </Flex>
+                    ) : (
+                      <Text
+                        color='subdued'
+                        variant='title'
+                        size='s'
+                        strength='weak'
+                      >
+                        ${ticker}
                       </Text>
-                      <Text variant='title' size='s' strength='weak'>
-                        ${amountUsd}
-                      </Text>
-                    </Flex>
+                    )}
                   </Flex>
                 </Flex>
               </Paper>
@@ -104,7 +120,7 @@ export const CoinSuccessModal = () => {
               <Text variant='label' size='l' color='subdued'>
                 {launchpadMessages.modal.addressTitle}
               </Text>
-              <AddressTile address={mint} />
+              <AddressTile address={mint} shorten shortenLength={16} />
             </Flex>
 
             {/* Action Buttons */}

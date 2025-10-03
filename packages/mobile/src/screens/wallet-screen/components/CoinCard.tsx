@@ -53,16 +53,16 @@ export const CoinCard = ({ mint, showUserBalance = true }: CoinCardProps) => {
   )
 
   const { data: coinData, isPending: coinsDataLoading } = useArtistCoin(mint)
-
+  const ticker = coinData?.ticker ?? ''
   const icon = coinData?.logoUri ?? ''
 
   const onPress = useCallback(() => {
     if (isArtistCoinsEnabled) {
-      navigation.navigate('CoinDetailsScreen', { mint })
+      navigation.navigate('CoinDetailsScreen', { ticker })
     } else {
       navigation.navigate('AudioScreen')
     }
-  }, [mint, navigation, isArtistCoinsEnabled])
+  }, [ticker, navigation, isArtistCoinsEnabled])
 
   const {
     tokenBalanceFormatted: balance,
@@ -135,7 +135,7 @@ export const CoinCard = ({ mint, showUserBalance = true }: CoinCardProps) => {
                     ellipsizeMode='tail'
                     style={{ flexShrink: 1 }}
                   >
-                    {coinData?.ticker}
+                    ${coinData?.ticker}
                   </Text>
                 </Flex>
               </>

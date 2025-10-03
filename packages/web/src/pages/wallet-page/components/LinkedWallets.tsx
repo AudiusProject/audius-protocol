@@ -187,32 +187,13 @@ const WalletRowsList = ({
   </Flex>
 )
 
-const WalletEmptyState = () => {
-  const { toast } = useContext(ToastContext)
-
-  const handleAddWalletSuccess = useCallback(async () => {
-    toast(
-      walletMessages.linkedWallets.newWalletConnected,
-      NEW_WALLET_CONNECTED_TOAST_TIMEOUT_MILLIS
-    )
-  }, [toast])
-
-  const handleAddWalletError = useCallback(
-    async (e: unknown) => {
-      if (e instanceof AlreadyAssociatedError) {
-        toast(walletMessages.linkedWallets.walletAlreadyAdded)
-      } else {
-        toast(walletMessages.linkedWallets.error)
-      }
-    },
-    [toast]
-  )
-
-  const { openAppKitModal } = useConnectAndAssociateWallets(
-    handleAddWalletSuccess,
-    handleAddWalletError
-  )
-
+const WalletEmptyState = ({
+  openAppKitModal,
+  isPending
+}: {
+  openAppKitModal: () => void
+  isPending: boolean
+}) => {
   return (
     <Flex column pv='m' ph='l' w='100%' gap='l'>
       <Text variant='body' size='m' color='subdued'>
@@ -225,6 +206,8 @@ const WalletEmptyState = () => {
         onClick={() => {
           openAppKitModal()
         }}
+        isLoading={isPending}
+        disabled={isPending}
       >
         {walletMessages.linkedWallets.addWallet}
       </Button>
@@ -240,7 +223,10 @@ export const LinkedWallets = () => {
   const walletCount = connectedWallets?.length ?? 0
 
   const handleAddWalletSuccess = useCallback(async () => {
-    toast(walletMessages.linkedWallets.newWalletConnected, COPIED_TOAST_TIMEOUT)
+    toast(
+      walletMessages.linkedWallets.newWalletConnected,
+      NEW_WALLET_CONNECTED_TOAST_TIMEOUT_MILLIS
+    )
   }, [toast])
 
   const handleAddWalletError = useCallback(
@@ -302,7 +288,10 @@ export const LinkedWallets = () => {
       ) : hasWallets ? (
         <WalletRowsList connectedWallets={connectedWallets} />
       ) : (
-        <WalletEmptyState />
+        <WalletEmptyState
+          openAppKitModal={openAppKitModal}
+          isPending={isConnectingWallets}
+        />
       )}
     </Paper>
   )

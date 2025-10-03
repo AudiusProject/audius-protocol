@@ -28,13 +28,10 @@ export const useArtistCoinMessageHeader = ({
     return null
   }
 
-  let artistCoinSymbol
-  let artistCoin
+  let ticker
   if (coin) {
-    artistCoin = coin
-    // Get symbol directly from the coin data
-    artistCoinSymbol = artistCoin.ticker
+    ticker = `$${coin.ticker}`
   }
 
-  return artistCoinSymbol
+  return ticker
 }

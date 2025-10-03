@@ -6,7 +6,8 @@ export const launchpadMessages = {
     congratsTitle: '🎉 Congrats!',
     congratsDescription:
       'Congrats on launching your artist coin on Audius! Time to share the good news with your fans.',
-    purchaseSummary: 'Purchase Summary',
+    purchaseSummaryTitle: 'Purchase Summary',
+    yourCoinTitle: 'Your Coin',
     addressTitle: 'Coin Address',
     shareToX: 'Share To X',
     uploadCoinGatedTrack: 'Upload Coin Gated Track'

@@ -27,7 +27,8 @@ export const FIELDS = {
   payAmount: 'payAmount',
   receiveAmount: 'receiveAmount',
   usdcValue: 'usdcValue',
-  wantsToBuy: 'wantsToBuy'
+  wantsToBuy: 'wantsToBuy',
+  termsAgreed: 'termsAgreed'
 }
 
 const MAX_COIN_SYMBOL_LENGTH = 10
@@ -50,7 +51,8 @@ const coinSymbolSchema = z.object({
 
 export const coinNameErrorMessages = {
   nameTooLong: 'Coin name is too long (max 30 characters)',
-  missingNameError: 'Please enter a coin name'
+  missingNameError: 'Please enter a coin name',
+  invalidCharacterError: 'Coin name cannot contain emojis or special characters'
 }
 
 export const coinImageErrorMessages = {
@@ -62,6 +64,7 @@ const coinNameSchema = z.object({
     .string({ required_error: coinNameErrorMessages.missingNameError })
     .max(MAX_HANDLE_LENGTH, coinNameErrorMessages.nameTooLong)
     .min(1, coinNameErrorMessages.missingNameError)
+    .regex(/^[\x00-\x7F]*$/, coinNameErrorMessages.invalidCharacterError)
 })
 
 const coinImageSchema = z.object({
@@ -143,7 +146,11 @@ export const setupFormSchema = ({
         required_error: 'Please select an option'
       }),
       [FIELDS.payAmount]: z.string().optional(),
-      [FIELDS.receiveAmount]: z.string().optional()
+      [FIELDS.receiveAmount]: z.string().optional(),
+      [FIELDS.termsAgreed]: z.boolean().refine((val) => val === true, {
+        message:
+          'You must agree to the terms of service and artist coins terms to continue'
+      })
     })
     .superRefine((values, context) => {
       // Only validate buy fields if user wants to buy

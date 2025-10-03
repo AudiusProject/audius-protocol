@@ -2,7 +2,7 @@ import { useCallback, useContext, useState } from 'react'
 
 import { useArtistCoin, useCurrentUserId, useUser } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
-import { COIN_DETAIL_ROUTE } from '@audius/common/src/utils/route'
+import { COIN_DETAIL_MOBILE_WEB_ROUTE } from '@audius/common/src/utils/route'
 import { formatTickerForUrl, route } from '@audius/common/utils'
 import {
   PopupMenu,
@@ -19,6 +19,7 @@ import { useNavigate } from 'react-router-dom-v5-compat'
 import ActionDrawer from 'components/action-drawer/ActionDrawer'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { env } from 'services/env'
 
 import { copyToClipboard } from '../../../utils/clipboardUtil'
 import { openXLink } from '../../../utils/xShare'
@@ -55,8 +56,12 @@ export const AssetInsightsOverflowMenu = ({
 
   const onOpenDexscreener = () => {
     if (artistCoin?.mint) {
+      const isAudio = artistCoin.mint === env.WAUDIO_MINT_ADDRESS
       window.open(
-        route.dexscreenerUrl(artistCoin.mint),
+        route.dexscreenerUrl(
+          isAudio ? env.ETH_TOKEN_ADDRESS : artistCoin.mint,
+          isAudio ? 'ethereum' : 'solana'
+        ),
         '_blank',
         'noopener,noreferrer'
       )
@@ -67,7 +72,7 @@ export const AssetInsightsOverflowMenu = ({
     if (isMobile) {
       if (artistCoin?.ticker) {
         navigate(
-          COIN_DETAIL_ROUTE.replace(
+          COIN_DETAIL_MOBILE_WEB_ROUTE.replace(
             ':ticker',
             formatTickerForUrl(artistCoin.ticker)
           )
@@ -84,7 +89,7 @@ export const AssetInsightsOverflowMenu = ({
     const isArtistOwner = currentUserId === artistCoin.ownerId
     const coinUrl =
       window.location.origin +
-      route.COIN_DETAIL_ROUTE.replace(
+      route.ASSET_DETAIL_PAGE.replace(
         ':ticker',
         formatTickerForUrl(artistCoin.ticker)
       )
