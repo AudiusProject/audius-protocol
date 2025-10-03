@@ -126,7 +126,7 @@ export type AppTabScreenParamList = {
     initialSortDirection?: GetCoinsSortDirectionEnum
   }
   wallet: undefined
-  CoinDetailsScreen: { mint: string }
+  CoinDetailsScreen: { ticker: string }
   EditCoinDetailsScreen: { ticker: string }
   Upload: {
     initialMetadata?: Partial<TrackMetadataForUpload>

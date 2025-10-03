@@ -52,7 +52,7 @@ const CoinRow = ({ coin, onPress }: CoinRowProps) => {
               {coin.name}
             </Text>
             <Text variant='body' size='s' color='subdued'>
-              {coin.ticker}
+              ${coin.ticker}
             </Text>
           </Flex>
 
@@ -144,7 +144,7 @@ export const ArtistCoinsExploreScreen = () => {
 
   const handleCoinPress = useCallback(
     (ticker: string) => {
-      navigation.navigate('CoinDetailsScreen', { mint: ticker })
+      navigation.navigate('CoinDetailsScreen', { ticker })
     },
     [navigation]
   )
@@ -216,7 +216,7 @@ export const ArtistCoinsExploreScreen = () => {
                 <CoinRow
                   key={coin.mint}
                   coin={coin}
-                  onPress={() => handleCoinPress(coin.mint ?? '')}
+                  onPress={() => handleCoinPress(coin.ticker ?? '')}
                 />
               ))}
             </Flex>

@@ -38,7 +38,7 @@ const ZeroBalanceState = ({
       <Flex row gap='s' alignItems='center'>
         <TokenIcon logoURI={logoURI} size={64} />
         <Text variant='heading' size='l' color='subdued'>
-          {title}
+          ${title}
         </Text>
       </Flex>
       <Paper
@@ -92,14 +92,14 @@ const HasBalanceState = ({
           <TokenIcon logoURI={logoURI} size={64} />
           <Flex column gap='2xs'>
             <Text variant='heading' size='s'>
-              {coinName}
+              {coinName || `$${title}`}
             </Text>
             <Flex row gap='xs' alignItems='center'>
               <Text variant='title' size='l'>
                 {tokenBalanceFormatted}
               </Text>
               <Text variant='title' size='l' color='subdued'>
-                {title}
+                ${title}
               </Text>
             </Flex>
           </Flex>

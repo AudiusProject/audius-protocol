@@ -372,7 +372,7 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
                   style={[styles.description, styles.name]}
                   onPress={handleTokenPress}
                 >
-                  1 {token?.ticker}
+                  1 ${token?.ticker}
                 </Text>
                 <Text style={styles.description}>
                   {messages.lockedTokenGatedSuffix}
