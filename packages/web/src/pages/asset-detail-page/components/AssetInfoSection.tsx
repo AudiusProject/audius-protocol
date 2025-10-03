@@ -448,7 +448,7 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
   }, [mint, toast])
 
   const handleClaimFees = useCallback(() => {
-    if (!externalSolWallet || !mint || !currentUser?.spl_wallet) {
+    if (!externalSolWallet || !mint || !currentUser?.wallet) {
       toast(toastMessages.feesClaimFailed)
       reportToSentry({
         error: new Error('Unknown error while claiming fees'),
@@ -467,7 +467,7 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
     claimFees({
       tokenMint: mint,
       ownerWalletAddress: externalSolWallet.address,
-      receiverWalletAddress: currentUser.spl_wallet // Using same wallet for owner and receiver
+      ownerEthAddress: currentUser.wallet!
     })
   }, [externalSolWallet, mint, currentUser, claimFees, toast, coin])
 
@@ -604,9 +604,7 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
           unclaimedFees={unclaimedFees}
           formattedUnclaimedFees={formattedUnclaimedFees}
           isClaimFeesPending={isClaimFeesPending}
-          isClaimFeesDisabled={
-            isClaimFeesPending || !externalSolWallet || !currentUser?.spl_wallet
-          }
+          isClaimFeesDisabled={isClaimFeesPending || !externalSolWallet}
           handleClaimFees={handleClaimFees}
         />
       ) : null}
