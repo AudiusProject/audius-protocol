@@ -175,6 +175,15 @@ const NavigationContainer = (props: NavigationContainerProps) => {
                         } as any, // Nested navigator typing with own params is broken, see: https://github.com/react-navigation/react-navigation/issues/9897
                         SettingsScreen: {
                           path: 'settings'
+                        },
+                        RewardsScreen: {
+                          path: 'rewards'
+                        },
+                        wallet: {
+                          path: 'wallet'
+                        },
+                        ArtistCoinsExplore: {
+                          path: 'coins'
                         }
                       }
                     },
@@ -334,6 +343,24 @@ const NavigationContainer = (props: NavigationContainerProps) => {
           params: {
             id
           }
+        })
+      }
+
+      if (path.match(/^\/rewards/)) {
+        return createFeedStackState({
+          name: 'RewardsScreen'
+        })
+      }
+
+      if (path.match(/^\/wallet/)) {
+        return createFeedStackState({
+          name: 'wallet'
+        })
+      }
+
+      if (path.match(/^\/coins/)) {
+        return createFeedStackState({
+          name: 'ArtistCoinsExplore'
         })
       }
 
