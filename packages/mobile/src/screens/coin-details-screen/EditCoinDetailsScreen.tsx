@@ -122,7 +122,6 @@ const SocialLinksSection = () => {
               onChangeText={(value) => handleLinkChange(index, value)}
               startIcon={PlatformIcon}
               error={hasError}
-              helperText={hasError ? fieldError : undefined}
               required={false}
               style={{ paddingHorizontal: 0 }}
             />
@@ -231,11 +230,8 @@ export const EditCoinDetailsScreen = () => {
 
   return (
     <Formik {...formConfiguration}>
-      {({ handleSubmit: formikSubmit, errors }) => (
-        <Screen
-          title={coin?.name ?? coinDetailsMessages.editCoinDetails.pageTitle}
-          topbarRight={null}
-        >
+      {({ handleSubmit: formikSubmit }) => (
+        <Screen title={coin?.name ?? `$${coin?.ticker}`} topbarRight={null}>
           <ScreenContent>
             <KeyboardAwareScrollView keyboardShouldPersistTaps='handled'>
               <Paper
@@ -253,7 +249,7 @@ export const EditCoinDetailsScreen = () => {
                       {coin?.name}
                     </Text>
                     <Text variant='title' size='l' color='subdued'>
-                      {formatTickerFromUrl(coin?.ticker ?? '')}
+                      {`$${coin?.ticker}`}
                     </Text>
                   </Flex>
                 </Flex>
