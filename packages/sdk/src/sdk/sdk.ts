@@ -495,7 +495,7 @@ const initializeApis = ({
 
   const chats = new ChatsApi(
     new Configuration({
-      basePath, // comms is not a v1 API
+      basePath: apiEndpoint, // comms is not a v1 API
       fetchApi: fetch,
       middleware
     }),
