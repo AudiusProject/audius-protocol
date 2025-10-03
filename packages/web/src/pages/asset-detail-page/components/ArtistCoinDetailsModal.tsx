@@ -48,7 +48,12 @@ export const ArtistCoinDetailsModal = ({
       size='s'
       isFullscreen
     >
-      <Flex direction='column' gap='l' p='l'>
+      <Flex
+        direction='column'
+        gap='l'
+        p='l'
+        css={{ overflowY: 'auto', maxHeight: '100%' }}
+      >
         {/* Token Info Section */}
         <Flex direction='column' gap='m'>
           <Flex alignItems='center' gap='m'>
