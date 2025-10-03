@@ -75,7 +75,7 @@ export const SelectGenresPage = () => {
         validationSchema={toFormikValidationSchema(selectGenresSchema)}
         validateOnMount
       >
-        {({ isValid }) => (
+        {() => (
           <Page
             as={Form}
             centered
@@ -114,12 +114,7 @@ export const SelectGenresPage = () => {
                 })}
               </Flex>
             </Flex>
-            <PageFooter
-              centered
-              sticky
-              buttonProps={{ disabled: !isValid }}
-              prefix={<SkipButton />}
-            />
+            <PageFooter centered sticky postfix={<SkipButton />} />
           </Page>
         )}
       </Formik>

@@ -78,21 +78,25 @@ export const useDetermineAllowedRoute = () => {
       }
 
       // TODO: These checks below here may need to fall under a different route umbrella separate from sign up
-      if (signUpState.genres && signUpState.genres.length > 0) {
-        // Already have genres selected
-        allowedRoutes.push(SignUpPath.selectArtists)
+      // Always allow SelectArtistsPage after SelectGenresPage (even if no genres selected)
+      allowedRoutes.push(SignUpPath.selectArtists)
 
-        if (signUpState.selectedUserIds?.length >= 3 || isDevEnvironment) {
-          // Already have 3 artists followed, ready to finish sign up
-          allowedRoutes.push(SignUpPath.appCta)
+      // Allow completion pages if user has selected artists, OR account creation has started/completed
+      const hasCompletedSelection =
+        (signUpState.genres && signUpState.genres.length > 0) ||
+        (signUpState.selectedUserIds && signUpState.selectedUserIds.length > 0) ||
+        isDevEnvironment
 
-          if (
-            signUpState.status === EditingStatus.SUCCESS ||
-            isAccountComplete
-          ) {
-            allowedRoutes.push(SignUpPath.completedRedirect)
-          }
-        }
+      const accountCreationStarted =
+        signUpState.status === EditingStatus.LOADING ||
+        signUpState.status === EditingStatus.SUCCESS
+
+      if (hasCompletedSelection || accountCreationStarted) {
+        // User has either made selections or account creation has started/completed
+        allowedRoutes.push(SignUpPath.appCta)
+        // Allow completed redirect route once account creation has started
+        // The redirect page will wait for account to be ready
+        allowedRoutes.push(SignUpPath.completedRedirect)
       }
     } else {
       // Still before the "has account" phase

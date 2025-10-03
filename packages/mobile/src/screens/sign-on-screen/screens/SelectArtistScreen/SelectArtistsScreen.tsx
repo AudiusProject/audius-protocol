@@ -94,12 +94,14 @@ export const SelectArtistsScreen = () => {
             disabled: selectedArtists.length < 3,
             onPress: handleSubmit
           }}
-          prefix={<SkipButton />}
           postfix={
-            <Text variant='body'>
-              {selectArtistsPageMessages.selected} {selectedArtists.length || 0}
-              /3
-            </Text>
+            <>
+              <Text variant='body'>
+                {selectArtistsPageMessages.selected} {selectedArtists.length || 0}
+                /3
+              </Text>
+              <SkipButton />
+            </>
           }
         />
       </Flex>

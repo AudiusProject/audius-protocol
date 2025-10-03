@@ -190,7 +190,7 @@ type PageFooterProps = {
 } & Omit<PaperProps & BoxProps, 'prefix'>
 
 export const PageFooter = (props: PageFooterProps) => {
-  const { prefix, postfix, buttonProps, centered, sticky, ...other } = props
+  const { prefix, postfix, buttonProps, centered, sticky, ...other} = props
   const { isMobile } = useMedia()
   // On the MobileCTAPage we use this footer outside a formik context, hence the default values
   const { isSubmitting, touched, isValid } = useFormikContext() ?? {
@@ -198,6 +198,9 @@ export const PageFooter = (props: PageFooterProps) => {
     touched: true,
     isValid: true
   }
+
+  // Show buttons side-by-side on desktop when there's a postfix (Skip button)
+  const showButtonsSideBySide = !isMobile && postfix && !prefix
 
   return (
     <Paper
@@ -220,18 +223,41 @@ export const PageFooter = (props: PageFooterProps) => {
       {...other}
     >
       {prefix}
-      <Button
-        type='submit'
-        iconRight={IconArrowRight}
-        fullWidth
-        isLoading={isSubmitting}
-        css={!isMobile && centered && { width: 343 }}
-        disabled={!touched || !isValid}
-        {...buttonProps}
-      >
-        {messages.continue}
-      </Button>
-      {postfix}
+      {showButtonsSideBySide ? (
+        <Flex
+          w='100%'
+          justifyContent='space-between'
+          alignItems='center'
+          gap='l'
+          css={centered ? { maxWidth: 343 } : undefined}
+        >
+          {postfix}
+          <Button
+            type='submit'
+            iconRight={IconArrowRight}
+            isLoading={isSubmitting}
+            disabled={!touched || !isValid}
+            {...buttonProps}
+          >
+            {messages.continue}
+          </Button>
+        </Flex>
+      ) : (
+        <>
+          <Button
+            type='submit'
+            iconRight={IconArrowRight}
+            fullWidth
+            isLoading={isSubmitting}
+            css={!isMobile && centered && { width: 343 }}
+            disabled={!touched || !isValid}
+            {...buttonProps}
+          >
+            {messages.continue}
+          </Button>
+          {postfix}
+        </>
+      )}
     </Paper>
   )
 }
