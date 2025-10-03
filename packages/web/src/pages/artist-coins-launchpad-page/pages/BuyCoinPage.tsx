@@ -34,7 +34,7 @@ import { ArtistCoinsSubmitRow } from '../components/ArtistCoinsSubmitRow'
 import { LaunchpadBuyModal } from '../components/LaunchpadBuyModal'
 import type { PhasePageProps } from '../components/types'
 import { AMOUNT_OF_STEPS } from '../constants'
-import { getLatestConnectedWallet, useLaunchpadAnalytics } from '../utils'
+import { getLastConnectedSolWallet, useLaunchpadAnalytics } from '../utils'
 import { FIELDS } from '../validation'
 
 const messages = {
@@ -92,7 +92,7 @@ export const BuyCoinPage = ({
   const [isReceiveAmountChanging, setIsReceiveAmountChanging] = useState(false)
   const { data: connectedWallets } = useConnectedWallets()
   const connectedWallet = useMemo(
-    () => getLatestConnectedWallet(connectedWallets),
+    () => getLastConnectedSolWallet(connectedWallets),
     [connectedWallets]
   )
 
@@ -319,7 +319,12 @@ export const BuyCoinPage = ({
             onChange={handleRadioChange}
             gap='xl'
           >
-            <Flex as='label' alignItems='center' gap='s'>
+            <Flex
+              as='label'
+              alignItems='center'
+              gap='s'
+              css={{ cursor: 'pointer' }}
+            >
               <Radio
                 value='no'
                 error={
@@ -330,7 +335,12 @@ export const BuyCoinPage = ({
                 {messages.radios.no}
               </Text>
             </Flex>
-            <Flex as='label' alignItems='center' gap='s'>
+            <Flex
+              as='label'
+              alignItems='center'
+              gap='s'
+              css={{ cursor: 'pointer' }}
+            >
               <Radio
                 value='yes'
                 error={

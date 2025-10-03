@@ -37,7 +37,7 @@ import { useExternalWalletSwap } from 'hooks/useExternalWalletSwap'
 import { make, track } from 'services/analytics'
 import zIndex from 'utils/zIndex'
 
-import { getLatestConnectedWallet } from '../utils'
+import { getLastConnectedSolWallet } from '../utils'
 
 const INPUT_TOKEN_MAP: Record<string, TokenInfo & { minSwapAmount?: number }> =
   {
@@ -57,7 +57,7 @@ const INPUT_TOKEN_MAP: Record<string, TokenInfo & { minSwapAmount?: number }> =
 
 const INPUT_TOKEN_LIST = Object.values(INPUT_TOKEN_MAP)
 
-const DEFAULT_INPUT_TOKEN = INPUT_TOKEN_MAP.USDC
+const DEFAULT_INPUT_TOKEN = INPUT_TOKEN_MAP.SOL
 
 const OUTPUT_TOKEN: TokenInfo = {
   ...TOKEN_LISTING_MAP.AUDIO,
@@ -284,11 +284,13 @@ const ConfirmationStep = ({
               title={buySellMessages.youPay}
               tokenInfo={values.selectedInputToken}
               amount={formattedPayAmount ?? ''}
+              hideUSDCTooltip
             />
             <SwapBalanceSection
               title={buySellMessages.youReceive}
               tokenInfo={values.selectedOutputToken}
               amount={formattedReceiveAmount ?? ''}
+              hideUSDCTooltip
             />
           </Flex>
 
@@ -402,7 +404,7 @@ export const LaunchpadBuyModal = ({
   }
   const { data: connectedWallets } = useConnectedWallets()
   const externalWalletAddress = useMemo(
-    () => getLatestConnectedWallet(connectedWallets)?.address,
+    () => getLastConnectedSolWallet(connectedWallets)?.address,
     [connectedWallets]
   )
   const {

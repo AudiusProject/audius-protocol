@@ -53,6 +53,10 @@ export const TokenSelectButton = ({
     setIsVisible(false)
   }, [tempSelectedToken, tokensMap, onTokenChange])
 
+  const handleRequestClose = useCallback(() => {
+    setIsVisible(false)
+  }, [])
+
   // Convert tokens to selection data format
   const tokenOptions: ListSelectionData[] = useMemo(
     () =>
@@ -105,6 +109,7 @@ export const TokenSelectButton = ({
         visible={isVisible}
         animationType='slide'
         presentationStyle='pageSheet'
+        onRequestClose={handleRequestClose}
       >
         <ListSelectionScreen
           screenTitle={title}

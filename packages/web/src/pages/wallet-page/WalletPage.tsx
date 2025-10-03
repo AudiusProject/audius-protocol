@@ -38,7 +38,9 @@ export const WalletPage = () => {
     <Flex
       direction='column'
       gap='l'
-      mb='xl'
+      mb={isMobile ? undefined : 'xl'}
+      mv={isMobile ? '3xl' : undefined}
+      p={isMobile ? 'l' : undefined}
       w='100%'
       css={{
         '@media (min-width: 768px) and (max-width: 1024px)': {

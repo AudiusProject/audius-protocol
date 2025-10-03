@@ -17,7 +17,9 @@ import {
   LaunchCoinSchema,
   FirstBuyQuoteResponse,
   FirstBuyQuoteRequest,
-  LaunchpadConfigResponse
+  LaunchpadConfigResponse,
+  ClaimFeesRequest,
+  ClaimFeesResponse
 } from './types'
 
 /**
@@ -300,6 +302,37 @@ export class SolanaRelay extends BaseAPI {
 
     return await new runtime.JSONApiResponse(response, (json) => {
       return json as LaunchpadConfigResponse
+    }).value()
+  }
+
+  /**
+   * Claims creator trading fees from a dynamic bonding curve pool.
+   */
+  public async claimFees(
+    params: ClaimFeesRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
+  ): Promise<ClaimFeesResponse> {
+    const headerParameters: runtime.HTTPHeaders = {
+      'Content-Type': 'application/json'
+    }
+    const queryParameters: runtime.HTTPQuery = {
+      tokenMint: params.tokenMint,
+      ownerWalletAddress: params.ownerWalletAddress,
+      receiverWalletAddress: params.receiverWalletAddress
+    }
+
+    const response = await this.request(
+      {
+        path: '/launchpad/claim_fees',
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters
+      },
+      initOverrides
+    )
+
+    return await new runtime.JSONApiResponse(response, (json) => {
+      return json as ClaimFeesResponse
     }).value()
   }
 }

@@ -18,7 +18,7 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import { useLaunchpadConfig } from 'hooks/useLaunchpadConfig'
 import { reportToSentry } from 'store/errors/reportToSentry'
 
-import { getLatestConnectedWallet } from './utils'
+import { getLastConnectedSolWallet } from './utils'
 
 export const FIELDS = {
   coinName: 'coinName',
@@ -27,7 +27,8 @@ export const FIELDS = {
   payAmount: 'payAmount',
   receiveAmount: 'receiveAmount',
   usdcValue: 'usdcValue',
-  wantsToBuy: 'wantsToBuy'
+  wantsToBuy: 'wantsToBuy',
+  termsAgreed: 'termsAgreed'
 }
 
 const MAX_COIN_SYMBOL_LENGTH = 10
@@ -143,7 +144,11 @@ export const setupFormSchema = ({
         required_error: 'Please select an option'
       }),
       [FIELDS.payAmount]: z.string().optional(),
-      [FIELDS.receiveAmount]: z.string().optional()
+      [FIELDS.receiveAmount]: z.string().optional(),
+      [FIELDS.termsAgreed]: z.boolean().refine((val) => val === true, {
+        message:
+          'You must agree to the terms of service and artist coins terms to continue'
+      })
     })
     .superRefine((values, context) => {
       // Only validate buy fields if user wants to buy
@@ -215,7 +220,7 @@ export const useLaunchpadFormSchema = () => {
   }, [firstBuyQuoteData])
 
   const connectedWallet = useMemo(
-    () => getLatestConnectedWallet(connectedWallets),
+    () => getLastConnectedSolWallet(connectedWallets),
     [connectedWallets]
   )
   const { data: audioBalance } = useWalletAudioBalance({

@@ -5,7 +5,6 @@ import {
   getWalletSolBalanceOptions,
   useConnectedWallets,
   useCurrentAccountUser,
-  useCurrentUserId,
   useQueryContext,
   useUserCreatedCoins
 } from '@audius/common/api'
@@ -41,7 +40,7 @@ import {
 } from './components/LaunchpadModals'
 import { LAUNCHPAD_COIN_DESCRIPTION, MIN_SOL_BALANCE, Phase } from './constants'
 import { BuyCoinPage, ReviewPage, SetupPage, SplashPage } from './pages'
-import { getLatestConnectedWallet, useLaunchpadAnalytics } from './utils'
+import { getLastConnectedSolWallet, useLaunchpadAnalytics } from './utils'
 import { useLaunchpadFormSchema } from './validation'
 
 const messages = {
@@ -71,7 +70,7 @@ const LaunchpadPageContent = ({
   const { data: connectedWallets } = useConnectedWallets()
   const { toast } = useContext(ToastContext)
   const connectedWallet = useMemo(
-    () => getLatestConnectedWallet(connectedWallets),
+    () => getLastConnectedSolWallet(connectedWallets),
     [connectedWallets]
   )
   const {
@@ -174,7 +173,7 @@ const LaunchpadPageContent = ({
     async (error: unknown) => {
       // If wallet is already linked, continue with the flow
       if (error instanceof AlreadyAssociatedError) {
-        const lastConnectedWallet = getLatestConnectedWallet(connectedWallets)
+        const lastConnectedWallet = getLastConnectedSolWallet(connectedWallets)
         if (lastConnectedWallet) {
           const { isValid: isValidWalletBalance, walletBalanceLamports } =
             await getIsValidWalletBalance(lastConnectedWallet?.address)
@@ -305,19 +304,14 @@ const LaunchpadPageContent = ({
 }
 
 export const LaunchpadPage = () => {
-  // const { data: currentUser } = useCurrentAccountUser()
-  const { data: currentUserId } = useCurrentUserId()
+  const { data: currentUser } = useCurrentAccountUser()
   const { data: createdCoins } = useUserCreatedCoins({
-    userId: currentUserId
+    userId: currentUser?.user_id
   })
-
-  // TODO (PE-6821) This is temporarily disabled to allow for testing
-  const isVerified = true // currentUser?.is_verified ?? false
   const hasExistingArtistCoin = (createdCoins?.length ?? 0) > 0
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const { toast } = useContext(ToastContext)
-  const { data: user } = useCurrentAccountUser()
   const { data: connectedWallets } = useConnectedWallets()
   const { validationSchema } = useLaunchpadFormSchema()
   const [formValues, setFormValues] = useState<LaunchpadFormValues | null>(null)
@@ -326,7 +320,7 @@ export const LaunchpadPage = () => {
   const navigate = useNavigate()
 
   const connectedWallet = useMemo(
-    () => getLatestConnectedWallet(connectedWallets),
+    () => getLastConnectedSolWallet(connectedWallets),
     [connectedWallets]
   )
   const {
@@ -480,9 +474,9 @@ export const LaunchpadPage = () => {
 
       // Get the most recent connected Solana wallet (last in the array)
       const connectedWallet: ConnectedWallet | undefined =
-        getLatestConnectedWallet(connectedWallets)
+        getLastConnectedSolWallet(connectedWallets)
 
-      if (!user || !connectedWallet) {
+      if (!currentUser || !connectedWallet) {
         toast(messages.errors.unknownError)
         reportToSentry({
           error: new Error(
@@ -491,7 +485,7 @@ export const LaunchpadPage = () => {
           name: 'Launchpad Submit Error',
           feature: Feature.ArtistCoins,
           additionalInfo: {
-            user,
+            currentUser,
             connectedWallet,
             formValues
           }
@@ -544,12 +538,12 @@ export const LaunchpadPage = () => {
       } else {
         trackCoinCreationStarted(connectedWallet.address, formValues)
         launchCoin({
-          userId: user.user_id,
+          userId: currentUser.user_id,
           name: formValues.coinName,
           symbol: formValues.coinSymbol,
           image: formValues.coinImage!,
           description: LAUNCHPAD_COIN_DESCRIPTION(
-            user.handle,
+            currentUser.handle,
             formValues.coinSymbol
           ),
           walletPublicKey: connectedWallet.address,
@@ -559,7 +553,7 @@ export const LaunchpadPage = () => {
     },
     [
       connectedWallets,
-      user,
+      currentUser,
       isFirstBuyError,
       toast,
       launchCoinResponse,
@@ -572,7 +566,7 @@ export const LaunchpadPage = () => {
   )
 
   // Redirect if user is not verified or already has an artist coin
-  if (!isVerified || hasExistingArtistCoin) {
+  if (hasExistingArtistCoin) {
     return <Navigate to={route.COINS_EXPLORE_PAGE} replace />
   }
 
@@ -585,7 +579,8 @@ export const LaunchpadPage = () => {
         payAmount: '',
         receiveAmount: '',
         usdcValue: '',
-        wantsToBuy: 'no'
+        wantsToBuy: 'no',
+        termsAgreed: false
       }}
       validationSchema={validationSchema}
       validateOnMount={true}

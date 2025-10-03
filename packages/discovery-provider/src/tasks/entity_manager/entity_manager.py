@@ -648,7 +648,6 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                 entities_to_fetch[entity_type].add(entity_id)
             if entity_type == EntityType.USER:
                 entities_to_fetch[EntityType.USER_EVENT].add(user_id)
-                entities_to_fetch[EntityType.ASSOCIATED_WALLET].add(user_id)
                 if action == Action.UPDATE:
                     entities_to_fetch[EntityType.COLLECTIBLES].add(user_id)
                 if action == Action.MUTE or action == Action.UNMUTE:
@@ -898,7 +897,9 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                             email_owner_user_id
                         )
             if entity_type == EntityType.ASSOCIATED_WALLET:
-                entities_to_fetch[EntityType.ASSOCIATED_WALLET].add(user_id)
+                wallet = json_metadata.get("wallet_address")
+                if wallet:
+                    entities_to_fetch[EntityType.ASSOCIATED_WALLET].add(wallet)
             if entity_type == EntityType.COLLECTIBLES:
                 entities_to_fetch[EntityType.COLLECTIBLES].add(user_id)
                 entities_to_fetch[EntityType.USER].add(user_id)
@@ -1028,7 +1029,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
                 literal_column(f"row_to_json({AssociatedWallet.__tablename__})"),
             )
             .filter(
-                AssociatedWallet.user_id.in_(entities_to_fetch["AssociatedWallet"]),
+                AssociatedWallet.wallet.in_(entities_to_fetch["AssociatedWallet"]),
                 AssociatedWallet.is_current == True,
             )
             .all()

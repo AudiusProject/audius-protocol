@@ -1,6 +1,8 @@
 import {
   getArtistCoinsQueryKey,
+  getCurrentAccountQueryKey,
   getUserCreatedCoinsQueryKey,
+  getUserQueryKey,
   useQueryContext
 } from '@audius/common/api'
 import {
@@ -89,10 +91,19 @@ export const useLaunchCoin = () => {
           // Triggers 3rd party wallet to sign the transaction, doesnt send to Solana just yet
           const signature =
             await solanaProvider.signAndSendTransaction(deserializedTx)
-          await sdk.services.solanaClient.connection.confirmTransaction(
-            signature,
-            'confirmed'
-          )
+          const result =
+            await sdk.services.solanaClient.connection.confirmTransaction(
+              signature,
+              'confirmed'
+            )
+
+          // Check if the transaction actually succeeded
+          if (result.value.err) {
+            throw new Error(
+              `Transaction confirmed but failed: ${JSON.stringify(result.value.err)}`
+            )
+          }
+
           return signature
         }
 
@@ -138,7 +149,7 @@ export const useLaunchCoin = () => {
             userId: Id.parse(userId),
             createCoinRequest: {
               mint: mintPublicKey,
-              ticker: `$${symbolUpper}`,
+              ticker: `${symbolUpper}`,
               decimals: LAUNCHPAD_COIN_DECIMALS,
               name,
               logoUri: imageUri,
@@ -187,6 +198,13 @@ export const useLaunchCoin = () => {
     onSuccess: (_result, params, _context) => {
       // Invalidate the list of artist coins to add it to the list
       queryClient.invalidateQueries({ queryKey: getArtistCoinsQueryKey() })
+      // Invalidate the user to refresh their badge info
+      queryClient.invalidateQueries({
+        queryKey: getUserQueryKey(params.userId)
+      })
+      queryClient.invalidateQueries({
+        queryKey: getCurrentAccountQueryKey()
+      })
       // Invalidate our user - this will refresh their badge info
       // NOTE: this will eventually move to the users metadata
       queryClient.invalidateQueries({

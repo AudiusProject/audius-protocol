@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useContext } from 'react'
+import { Fragment, useCallback, useContext, useState } from 'react'
 
 import {
   UserCoin,
@@ -35,6 +35,8 @@ import { useBuySellRegionSupport } from 'components/buy-sell-modal'
 import Skeleton from 'components/skeleton/Skeleton'
 import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
+import { useIsMobile } from 'hooks/useIsMobile'
+import { OpenAppDrawer } from 'pages/asset-detail-page/components/OpenAppDrawer'
 
 import { AudioCoinCard } from './AudioCoinCard'
 import { CoinCard } from './CoinCard'
@@ -146,8 +148,15 @@ const messages = {
   buySellNotSupported: 'This is not supported in your region'
 }
 
-const YourCoinsHeader = ({ isLoading }: { isLoading: boolean }) => {
+const YourCoinsHeader = ({
+  isLoading,
+  openOpenAppDrawer
+}: {
+  isLoading: boolean
+  openOpenAppDrawer: () => void
+}) => {
   const { onOpen: openBuySellModal } = useBuySellModal()
+  const isMobile = useIsMobile()
   const isManagedAccount = useIsManagedAccount()
   const { toast } = useContext(ToastContext)
   const { isEnabled: isWalletUIBuySellEnabled } = useFeatureFlag(
@@ -186,7 +195,7 @@ const YourCoinsHeader = ({ isLoading }: { isLoading: boolean }) => {
             <Button
               variant='secondary'
               size='small'
-              onClick={handleBuySellClick}
+              onClick={isMobile ? openOpenAppDrawer : handleBuySellClick}
               disabled={!isBuySellSupported}
             >
               {messages.buySell}
@@ -247,6 +256,16 @@ export const YourCoins = () => {
   )
   const { color } = useTheme()
   const navigate = useNavigate()
+  const { isMobile } = useMedia()
+  const [isOpenAppDrawerOpen, setIsOpenAppDrawerOpen] = useState(false)
+
+  const onOpenOpenAppDrawer = useCallback(() => {
+    setIsOpenAppDrawerOpen(true)
+  }, [])
+
+  const onCloseOpenAppDrawer = useCallback(() => {
+    setIsOpenAppDrawerOpen(false)
+  }, [])
 
   const { data: artistCoins, isPending: isLoadingCoins } = useUserCoins({
     userId: currentUserId
@@ -276,7 +295,10 @@ export const YourCoins = () => {
 
   return (
     <Paper column shadow='far' borderRadius='l' css={{ overflow: 'hidden' }}>
-      <YourCoinsHeader isLoading={isLoadingCoins} />
+      <YourCoinsHeader
+        isLoading={isLoadingCoins}
+        openOpenAppDrawer={onOpenOpenAppDrawer}
+      />
       <Flex column>
         {isLoadingCoins || !currentUserId ? (
           <YourCoinsSkeleton />
@@ -284,7 +306,9 @@ export const YourCoins = () => {
           <Box
             css={{
               display: 'grid',
-              gridTemplateColumns: isSingleColumn ? '1fr' : '1fr 1fr',
+              gridTemplateColumns: isSingleColumn
+                ? 'minmax(0, 1fr)'
+                : 'minmax(0, 1fr) minmax(0, 1fr)',
               gap: '0'
             }}
           >
@@ -340,6 +364,12 @@ export const YourCoins = () => {
             })}
           </Box>
         )}
+        {isMobile ? (
+          <OpenAppDrawer
+            isOpen={isOpenAppDrawerOpen}
+            onClose={onCloseOpenAppDrawer}
+          />
+        ) : null}
       </Flex>
     </Paper>
   )

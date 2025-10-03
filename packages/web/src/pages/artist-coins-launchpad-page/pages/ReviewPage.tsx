@@ -12,6 +12,7 @@ import { useFormikContext } from 'formik'
 
 import { useFormImageUrl } from 'hooks/useFormImageUrl'
 
+import { AgreeToTerms } from '../components/AgreeToTerms'
 import { ArtistCoinsSubmitRow } from '../components/ArtistCoinsSubmitRow'
 import { StepHeader } from '../components/StepHeader'
 import { TokenInfoRow } from '../components/TokenInfoRow'
@@ -262,13 +263,14 @@ export const ReviewPage = ({ onContinue, onBack }: PhasePageProps) => {
             </Flex>
           </Flex>
           <Hint icon={IconInfo}>{messages.hintMessage}</Hint>
+          <AgreeToTerms />
         </Paper>
       </Flex>
       <ArtistCoinsSubmitRow
         cancelText={messages.back}
         backIcon
         onContinue={handleContinue}
-        isValid={true} // There are no form fields changing on this page - no need to check validation here
+        isValid={values.termsAgreed} // Require checkbox to be checked before proceeding
         onBack={handleBack}
       />
     </>

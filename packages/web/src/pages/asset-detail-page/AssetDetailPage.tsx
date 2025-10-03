@@ -104,7 +104,7 @@ export const AssetDetailPage = () => {
   ) : (
     <DesktopAssetDetailPageContent
       mint={coin?.mint ?? ''}
-      title={coin?.ticker ?? ''}
+      title={coin?.name ?? ''}
       ticker={coin?.ticker ?? ''}
       isOwner={isOwner}
     />
