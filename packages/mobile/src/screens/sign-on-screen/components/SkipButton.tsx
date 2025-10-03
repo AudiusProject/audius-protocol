@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 
 import { skipButtonMessages } from '@audius/common/messages'
-import { finishSignUp } from '@audius/web/src/common/store/pages/signon/actions'
+import { signUp } from '@audius/web/src/common/store/pages/signon/actions'
 import { useDispatch } from 'react-redux'
 
-import { PlainButton } from '@audius/harmony-native'
+import { Button } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import type { SignOnScreenParamList } from '../types'
@@ -14,13 +14,14 @@ export const SkipButton = () => {
   const dispatch = useDispatch()
 
   const handleSkip = useCallback(() => {
-    dispatch(finishSignUp())
+    // User is skipping genre/artist selection, create account now
+    dispatch(signUp())
     navigation.navigate('AccountLoading')
   }, [dispatch, navigation])
 
   return (
-    <PlainButton onPress={handleSkip}>
+    <Button variant='secondary' fullWidth onPress={handleSkip}>
       {skipButtonMessages.skipThisStep}
-    </PlainButton>
+    </Button>
   )
 }
