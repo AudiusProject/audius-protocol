@@ -6,13 +6,11 @@ import {
   useUser,
   useUserCoins,
   useConnectedWallets,
-  useCurrentAccountUser,
-  type ConnectedWallet
+  useCurrentAccountUser
 } from '@audius/common/api'
 import { useDiscordOAuthLink } from '@audius/common/hooks'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { Feature, WidthSizes } from '@audius/common/models'
-import type { User } from '@audius/common/models'
 import {
   formatCurrencyWithSubscript,
   removeNullable,
