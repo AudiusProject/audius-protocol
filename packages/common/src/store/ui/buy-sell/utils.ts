@@ -48,13 +48,6 @@ export const createPairFromSymbols = (
   const baseToken = findTokenBySymbol(baseSymbol, tokens)
   const quoteToken = findTokenBySymbol(quoteSymbol, tokens)
 
-  if (baseToken) {
-    baseToken.symbol = `$${baseSymbol}`
-  }
-  if (quoteToken) {
-    quoteToken.symbol = `$${quoteSymbol}`
-  }
-
   if (!baseToken || !quoteToken) return null
 
   return {
