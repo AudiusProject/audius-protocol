@@ -6,13 +6,11 @@ import {
   useUser,
   useUserCoins,
   useConnectedWallets,
-  useCurrentAccountUser,
-  type ConnectedWallet
+  useCurrentAccountUser
 } from '@audius/common/api'
 import { useDiscordOAuthLink } from '@audius/common/hooks'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { Feature, WidthSizes } from '@audius/common/models'
-import type { User } from '@audius/common/models'
 import {
   formatCurrencyWithSubscript,
   getTokenDecimalPlaces,
@@ -270,9 +268,8 @@ type AssetDetailsSectionProps = {
   unclaimedFees: number
   formattedUnclaimedFees: string
   isClaimFeesPending: boolean
+  isClaimFeesDisabled: boolean
   handleClaimFees: () => void
-  externalSolWallet: ConnectedWallet | undefined
-  currentUser: User | null | undefined
 }
 
 const AssetDetailsSection = ({
@@ -282,8 +279,7 @@ const AssetDetailsSection = ({
   formattedUnclaimedFees,
   isClaimFeesPending,
   handleClaimFees,
-  externalSolWallet,
-  currentUser
+  isClaimFeesDisabled
 }: AssetDetailsSectionProps) => {
   return (
     <Flex
@@ -349,11 +345,7 @@ const AssetDetailsSection = ({
                 <TextLink
                   onClick={handleClaimFees}
                   variant={isClaimFeesPending ? 'subdued' : 'visible'}
-                  disabled={
-                    isClaimFeesPending ||
-                    !externalSolWallet ||
-                    !currentUser?.spl_wallet
-                  }
+                  disabled={isClaimFeesDisabled}
                 >
                   {overflowMessages.claim}
                 </TextLink>
@@ -609,6 +601,9 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
           unclaimedFees={unclaimedFees}
           formattedUnclaimedFees={formattedUnclaimedFees}
           isClaimFeesPending={isClaimFeesPending}
+          isClaimFeesDisabled={
+            isClaimFeesPending || !externalSolWallet || !currentUser?.spl_wallet
+          }
           handleClaimFees={handleClaimFees}
           externalSolWallet={externalSolWallet}
           currentUser={currentUser}
