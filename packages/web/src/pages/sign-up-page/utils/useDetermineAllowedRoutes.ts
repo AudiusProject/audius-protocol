@@ -84,7 +84,8 @@ export const useDetermineAllowedRoute = () => {
       // Allow completion pages if user has selected artists, OR account creation has started/completed
       const hasCompletedSelection =
         (signUpState.genres && signUpState.genres.length > 0) ||
-        (signUpState.selectedUserIds && signUpState.selectedUserIds.length > 0) ||
+        (signUpState.selectedUserIds &&
+          signUpState.selectedUserIds.length > 0) ||
         isDevEnvironment
 
       const accountCreationStarted =

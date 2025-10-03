@@ -1,6 +1,6 @@
 import { useArtistCoinByTicker, useCoinGeckoCoin } from '@audius/common/api'
 import {
-  formatTickerFromUrl,
+  formatTickerForUrl,
   formatCurrencyWithSubscript
 } from '@audius/common/utils'
 import { FixedDecimal } from '@audius/fixed-decimal'
@@ -50,7 +50,7 @@ export const ArtistCoinDetailsPage = () => {
     ticker
   })
   const { spacing } = useTheme()
-  const isAudio = formatTickerFromUrl(ticker) === '$AUDIO'
+  const isAudio = formatTickerForUrl(ticker) === 'AUDIO'
   const { data: coingeckoResponse } = useCoinGeckoCoin(
     { coinId: 'audius' },
     { enabled: isAudio }
