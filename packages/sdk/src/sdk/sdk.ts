@@ -423,8 +423,8 @@ const initializeApis = ({
     config.environment === 'development'
       ? developmentConfig.network.apiEndpoint
       : config.environment === 'staging'
-      ? stagingConfig.network.apiEndpoint
-      : productionConfig.network.apiEndpoint
+        ? stagingConfig.network.apiEndpoint
+        : productionConfig.network.apiEndpoint
   const basePath = `${apiEndpoint}/v1`
 
   const middleware = [
