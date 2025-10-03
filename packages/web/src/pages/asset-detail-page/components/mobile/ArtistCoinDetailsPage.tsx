@@ -1,5 +1,8 @@
-import { useArtistCoinByTicker } from '@audius/common/api'
-import { formatCurrencyWithSubscript } from '@audius/common/utils'
+import { useArtistCoinByTicker, useCoinGeckoCoin } from '@audius/common/api'
+import {
+  formatTickerForUrl,
+  formatCurrencyWithSubscript
+} from '@audius/common/utils'
 import { FixedDecimal } from '@audius/fixed-decimal'
 import { Divider, Flex, Text, useTheme } from '@audius/harmony'
 import { useLocation } from 'react-router-dom-v5-compat'
@@ -7,6 +10,11 @@ import { useLocation } from 'react-router-dom-v5-compat'
 import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import { TokenInfoRow } from 'pages/artist-coins-launchpad-page/components'
+
+import {
+  convertCoinGeckoResponseToStatsDetailsProps,
+  type TokenDetailsStatsSectionProps
+} from '../ArtistCoinDetailsModal'
 
 const messages = {
   details: 'Details',
@@ -42,6 +50,11 @@ export const ArtistCoinDetailsPage = () => {
     ticker
   })
   const { spacing } = useTheme()
+  const isAudio = formatTickerForUrl(ticker) === 'AUDIO'
+  const { data: coingeckoResponse } = useCoinGeckoCoin(
+    { coinId: 'audius' },
+    { enabled: isAudio }
+  )
 
   return (
     <MobilePageContainer fullHeight>
@@ -98,75 +111,82 @@ export const ArtistCoinDetailsPage = () => {
           <Divider />
 
           {/* Token Details */}
-          <Flex direction='column' gap='m'>
-            <TokenInfoRow
-              label={messages.totalSupply}
-              value={
-                artistCoin?.totalSupply
-                  ? new FixedDecimal(
-                      artistCoin.totalSupply.toString(),
-                      0
-                    ).toLocaleString()
-                  : messages.unknown
-              }
-              hasTooltip
-              tooltipContent={tooltipContent.totalSupply}
-              variant='block'
-            />
-
-            <TokenInfoRow
-              label={messages.marketCap}
-              value={
-                artistCoin?.marketCap
-                  ? `$${new FixedDecimal(artistCoin.marketCap.toString(), 2).toLocaleString()}`
-                  : messages.unknown
-              }
-              hasTooltip
-              tooltipContent={tooltipContent.marketCap}
-              variant='block'
-            />
-
-            <TokenInfoRow
-              label={messages.price}
-              value={
-                artistCoin?.price
-                  ? formatCurrencyWithSubscript(artistCoin.price)
-                  : messages.unknown
-              }
-              hasTooltip
-              tooltipContent={tooltipContent.price}
-              variant='block'
-            />
-
-            <TokenInfoRow
-              label={messages.liquidity}
-              value={
-                artistCoin?.liquidity
-                  ? `$${new FixedDecimal(artistCoin.liquidity.toString(), 2).toLocaleString()}`
-                  : messages.unknown
-              }
-              hasTooltip
-              tooltipContent={tooltipContent.liquidity}
-              variant='block'
-            />
-
-            <TokenInfoRow
-              label={messages.circulatingSupply}
-              value={
-                artistCoin?.circulatingSupply
-                  ? new FixedDecimal(
-                      artistCoin.circulatingSupply.toString(),
-                      0
-                    ).toLocaleString()
-                  : messages.unknown
-              }
-              hasTooltip
-              tooltipContent={tooltipContent.circulatingSupply}
-              variant='block'
-            />
-          </Flex>
+          <TokenDetailsStatsSection
+            {...(isAudio
+              ? convertCoinGeckoResponseToStatsDetailsProps(coingeckoResponse)
+              : artistCoin)}
+          />
         </Flex>
       </Flex>
     </MobilePageContainer>
+  )
+}
+
+const TokenDetailsStatsSection = (props?: TokenDetailsStatsSectionProps) => {
+  return (
+    <Flex direction='column' gap='m'>
+      <TokenInfoRow
+        label={messages.totalSupply}
+        value={
+          props?.totalSupply
+            ? new FixedDecimal(props.totalSupply.toString(), 0).toLocaleString()
+            : messages.unknown
+        }
+        hasTooltip
+        tooltipContent={tooltipContent.totalSupply}
+        variant='block'
+      />
+
+      <TokenInfoRow
+        label={messages.marketCap}
+        value={
+          props?.marketCap
+            ? `$${new FixedDecimal(props.marketCap.toString(), 2).toLocaleString()}`
+            : messages.unknown
+        }
+        hasTooltip
+        tooltipContent={tooltipContent.marketCap}
+        variant='block'
+      />
+
+      <TokenInfoRow
+        label={messages.price}
+        value={
+          props?.price
+            ? formatCurrencyWithSubscript(props.price)
+            : messages.unknown
+        }
+        hasTooltip
+        tooltipContent={tooltipContent.price}
+        variant='block'
+      />
+
+      <TokenInfoRow
+        label={messages.liquidity}
+        value={
+          props?.liquidity
+            ? `$${new FixedDecimal(props.liquidity.toString(), 2).toLocaleString()}`
+            : messages.unknown
+        }
+        hasTooltip
+        tooltipContent={tooltipContent.liquidity}
+        variant='block'
+      />
+
+      <TokenInfoRow
+        label={messages.circulatingSupply}
+        value={
+          props?.circulatingSupply
+            ? new FixedDecimal(
+                props.circulatingSupply.toString(),
+                0
+              ).toLocaleString()
+            : messages.unknown
+        }
+        hasTooltip
+        tooltipContent={tooltipContent.circulatingSupply}
+        variant='block'
+      />
+    </Flex>
   )
 }
