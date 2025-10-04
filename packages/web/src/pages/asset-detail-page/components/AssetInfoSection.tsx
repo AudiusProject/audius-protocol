@@ -11,6 +11,7 @@ import { useDiscordOAuthLink } from '@audius/common/hooks'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { Feature, WidthSizes } from '@audius/common/models'
 import {
+  formatCurrencyWithSubscript,
   getTokenDecimalPlaces,
   removeNullable,
   route,
