@@ -385,14 +385,6 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
   const discordOAuthLink = useDiscordOAuthLink(userToken?.ticker)
   const { balance: userTokenBalance } = userToken ?? {}
 
-  // Get wallet addresses for claim fee
-  const { data: connectedWallets } = useConnectedWallets()
-
-  const externalSolWallet = useMemo(
-    () => getLastConnectedSolWallet(connectedWallets),
-    [connectedWallets]
-  )
-
   // Claim fee hook
   const { mutate: claimFees, isPending: isClaimFeesPending } = useClaimFees({
     onSuccess: () => {
@@ -449,31 +441,35 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
     toast(overflowMessages.copiedToClipboard)
   }, [mint, toast])
 
-  const handleClaimFees = useCallback(() => {
-    if (!externalSolWallet || !mint) {
-      toast(toastMessages.feesClaimFailed)
-      reportToSentry({
-        error: new Error('Unknown error while claiming fees'),
-        feature: Feature.ArtistCoins,
-        name: 'No external Solana wallet connected',
-        additionalInfo: {
-          coin,
-          mint,
-          externalSolWallet,
-          currentUser
-        }
+  const coinCreatorWalletAddress =
+    coin?.dynamicBondingCurve?.creatorWalletAddress
+  const handleClaimFees = useCallback(
+    (walletAddress: string) => {
+      claimFees({
+        tokenMint: mint,
+        ownerWalletAddress: walletAddress
       })
+    },
+    [mint, claimFees]
+  )
+
+  const getCoinCreatorWalletAddress = useCallback(async () => {
+    const solanaProvider = appkitModal.getProvider<SolanaProvider>('solana')
+    const accounts = await solanaProvider!.getAccounts()
+    return accounts.find(
+      (account) => account.address === coinCreatorWalletAddress
+    )
+  }, [coinCreatorWalletAddress])
+
+  const { openAppKitModal } = useConnectWallets(async () => {
+    const creatorWalletAddress = await getCoinCreatorWalletAddress()
+    if (!creatorWalletAddress) {
+      // If we hit this blocl the user has not connected the wallet they used to launch the coin
+      // TODO: how do we need to prompt the user here?
+      toast(toastMessages.feesClaimFailed)
       return
     }
-
-    claimFees({
-      tokenMint: mint,
-      ownerWalletAddress: externalSolWallet.address
-    })
-  }, [externalSolWallet, mint, currentUser, claimFees, toast, coin])
-
-  const { openAppKitModal } = useConnectWallets(() => {
-    handleClaimFees()
+    handleClaimFees(creatorWalletAddress.address)
   })
 
   const handleClaimFeesClick = useCallback(async () => {
@@ -483,10 +479,17 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
       await appkitModal.switchNetwork(solana)
       openAppKitModal('solana')
     } else {
+      const creatorWalletAddress = await getCoinCreatorWalletAddress()
+      if (!creatorWalletAddress) {
+        // If we hit this blocl the user has not connected the wallet they used to launch the coin
+        // TODO: how do we need to prompt the user here?
+        toast(toastMessages.feesClaimFailed)
+        return
+      }
       // appkit wallet is connected, can just initiate claim fees flow immediately
-      handleClaimFees()
+      handleClaimFees(creatorWalletAddress.address)
     }
-  }, [handleClaimFees, openAppKitModal])
+  }, [openAppKitModal, getCoinCreatorWalletAddress, handleClaimFees, toast])
 
   if (isLoading || !coin) {
     return <AssetInfoSectionSkeleton />
@@ -621,7 +624,7 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
           unclaimedFees={unclaimedFees}
           formattedUnclaimedFees={formattedUnclaimedFees}
           isClaimFeesPending={isClaimFeesPending}
-          isClaimFeesDisabled={isClaimFeesPending || !externalSolWallet}
+          isClaimFeesDisabled={isClaimFeesPending}
           handleClaimFees={handleClaimFeesClick}
         />
       ) : null}
