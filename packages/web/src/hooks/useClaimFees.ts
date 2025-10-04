@@ -5,6 +5,7 @@ import {
   QUERY_KEYS
 } from '@audius/common/api'
 import { Feature } from '@audius/common/models'
+import { createUserBankIfNeeded } from '@audius/common/services'
 import { solana } from '@reown/appkit/networks'
 import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react'
 import { VersionedTransaction } from '@solana/web3.js'
@@ -15,12 +16,13 @@ import {
 } from '@tanstack/react-query'
 
 import { appkitModal } from 'app/ReownAppKitModal'
+import { track } from 'services/analytics'
 import { reportToSentry } from 'store/errors/reportToSentry'
 
 export type UseClaimFeesParams = {
   tokenMint: string
   ownerWalletAddress: string
-  receiverWalletAddress: string
+  ownerEthAddress: string
 }
 
 export type ClaimFeesResponse = {
@@ -43,7 +45,7 @@ export const useClaimFees = (
     mutationFn: async ({
       tokenMint,
       ownerWalletAddress,
-      receiverWalletAddress
+      ownerEthAddress
     }: UseClaimFeesParams): Promise<ClaimFeesResponse> => {
       const sdk = await audiusSdk()
       await appkitModal.switchNetwork(solana)
@@ -54,12 +56,20 @@ export const useClaimFees = (
       if (!ownerWalletAddress) {
         throw new Error('Missing owner wallet address')
       }
+      if (!ownerEthAddress) {
+        throw new Error('Missing owner ETH address')
+      }
+      const userBank = await createUserBankIfNeeded(sdk, {
+        recordAnalytics: track,
+        mint: 'wAUDIO',
+        ethAddress: ownerEthAddress
+      })
 
       // Get the claim fee transaction from the relay
       const claimFeesResponse = await sdk.services.solanaRelay.claimFees({
         tokenMint,
         ownerWalletAddress,
-        receiverWalletAddress
+        receiverWalletAddress: userBank.toString()
       })
 
       const { claimFeesTx: claimFeesTxSerialized } = claimFeesResponse
