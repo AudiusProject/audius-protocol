@@ -95,7 +95,10 @@ export const useTokenSwapForm = ({
     inputToken,
     outputToken,
     inputAmount: parseNumericAmount(initialInputValue),
-    externalWalletAddress
+    externalWalletAddress,
+    queryOptions: {
+      refetchInterval: 5000
+    }
   })
 
   const swapCalculations = useSwapCalculations({

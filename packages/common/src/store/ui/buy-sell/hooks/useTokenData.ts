@@ -6,7 +6,7 @@
 
 import { useMemo } from 'react'
 
-import { useTokenBalance, useTokenExchangeRate } from '~/api'
+import { QueryOptions, useTokenBalance, useTokenExchangeRate } from '~/api'
 import { useExternalWalletBalance } from '~/api/tan-query/wallets/useExternalWalletBalance'
 import { getTokenDecimalPlaces } from '~/utils'
 
@@ -21,13 +21,15 @@ export type UseTokenDataProps = {
   outputToken: TokenInfo
   inputAmount: number
   externalWalletAddress?: string
+  queryOptions?: QueryOptions
 }
 
 export const useTokenData = ({
   inputToken,
   outputToken,
   inputAmount,
-  externalWalletAddress
+  externalWalletAddress,
+  queryOptions
 }: UseTokenDataProps): TokenDataHookResult => {
   // Get token balance from internal wallet
   const {
@@ -37,7 +39,8 @@ export const useTokenData = ({
     mint: inputToken.address,
     includeExternalWallets: false,
     includeStaked: false,
-    enabled: !externalWalletAddress
+    enabled: !externalWalletAddress,
+    ...queryOptions
   })
 
   // Get token balance from an explicit external wallet
@@ -49,7 +52,7 @@ export const useTokenData = ({
       walletAddress: externalWalletAddress,
       mint: inputToken.address
     },
-    { enabled: !!externalWalletAddress }
+    { ...queryOptions, enabled: !!externalWalletAddress }
   )
 
   // Use whichever balance based on configuration
