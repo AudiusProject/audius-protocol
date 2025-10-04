@@ -474,7 +474,7 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
     const solanaAccount = appkitModal.getAccount('solana')
     const connectedAddress = solanaAccount?.address
 
-    // appkit wallet is not connected atm, need to prompt connect flow first
+    // appkit wallet is not connected, need to prompt connect flow first
     if (!connectedAddress) {
       openAppKitModal('solana')
     } else if (connectedAddress !== coinCreatorWalletAddress) {
@@ -483,7 +483,8 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
       await appkitModal.disconnect('solana')
       openAppKitModal('solana')
     } else {
-      // appkit wallet is connected with the correct address, can just initiate claim fees flow immediately
+      // appkit wallet is connected with the correct address,
+      // can just initiate claim fees flow immediately
       handleClaimFees(connectedAddress)
     }
   }, [openAppKitModal, handleClaimFees, coinCreatorWalletAddress])
