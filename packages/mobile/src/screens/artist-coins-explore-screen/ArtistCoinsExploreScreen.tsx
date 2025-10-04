@@ -35,7 +35,7 @@ import { env } from 'app/services/env'
 
 import { GradientText, TokenIcon, Screen } from '../../components/core'
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 50
 const COIN_ROW_HEIGHT = 50 // Estimated height for FlashList optimization
 
 type CoinRowProps = {
