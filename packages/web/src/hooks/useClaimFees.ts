@@ -1,11 +1,11 @@
 import { type Coin } from '@audius/common/adapters'
 import {
   getArtistCoinQueryKey,
+  useCurrentAccountUser,
   useQueryContext,
   QUERY_KEYS
 } from '@audius/common/api'
 import { Feature } from '@audius/common/models'
-import { solana } from '@reown/appkit/networks'
 import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react'
 import { VersionedTransaction } from '@solana/web3.js'
 import {
@@ -20,7 +20,6 @@ import { reportToSentry } from 'store/errors/reportToSentry'
 export type UseClaimFeesParams = {
   tokenMint: string
   ownerWalletAddress: string
-  receiverWalletAddress: string
 }
 
 export type ClaimFeesResponse = {
@@ -38,15 +37,14 @@ export const useClaimFees = (
 ) => {
   const { audiusSdk } = useQueryContext()
   const queryClient = useQueryClient()
+  const { data: currentUser } = useCurrentAccountUser()
 
   return useMutation<ClaimFeesResponse, Error, UseClaimFeesParams>({
     mutationFn: async ({
       tokenMint,
-      ownerWalletAddress,
-      receiverWalletAddress
+      ownerWalletAddress
     }: UseClaimFeesParams): Promise<ClaimFeesResponse> => {
       const sdk = await audiusSdk()
-      await appkitModal.switchNetwork(solana)
       const solanaProvider = appkitModal.getProvider<SolanaProvider>('solana')
       if (!solanaProvider) {
         throw new Error('Missing SolanaProvider')
@@ -54,12 +52,24 @@ export const useClaimFees = (
       if (!ownerWalletAddress) {
         throw new Error('Missing owner wallet address')
       }
+      let splWallet = currentUser?.spl_wallet?.toString()
+      if (!splWallet) {
+        const { userBank } =
+          await sdk.services.claimableTokensClient.getOrCreateUserBank({
+            ethWallet: currentUser?.erc_wallet,
+            mint: 'wAUDIO'
+          })
+        splWallet = userBank.toBase58()
+      }
 
+      if (!splWallet) {
+        throw new Error('Unable to get or create wAUDIO SPL wallet address')
+      }
       // Get the claim fee transaction from the relay
       const claimFeesResponse = await sdk.services.solanaRelay.claimFees({
         tokenMint,
         ownerWalletAddress,
-        receiverWalletAddress
+        receiverWalletAddress: splWallet.toString()
       })
 
       const { claimFeesTx: claimFeesTxSerialized } = claimFeesResponse
