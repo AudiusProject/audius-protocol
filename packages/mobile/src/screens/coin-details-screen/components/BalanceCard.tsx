@@ -19,27 +19,34 @@ import { useNavigation } from 'app/hooks/useNavigation'
 const messages = coinDetailsMessages.balance
 
 type BalanceStateProps = {
-  title: string
+  ticker: string
   logoURI?: string
   onBuy?: () => void
   onReceive?: () => void
   onSend?: () => void
+  coinName: string
 }
 
 const ZeroBalanceState = ({
-  title,
+  ticker,
   logoURI,
   onBuy,
-  onReceive
+  onReceive,
+  coinName
 }: BalanceStateProps) => {
   const isManagerMode = useIsManagedAccount()
   return (
     <Flex column gap='l' w='100%'>
       <Flex row gap='s' alignItems='center'>
         <TokenIcon logoURI={logoURI} size={64} />
-        <Text variant='heading' size='l' color='subdued'>
-          ${title}
-        </Text>
+        <Flex column gap='2xs'>
+          <Text variant='heading' size='s'>
+            {coinName}
+          </Text>
+          <Text variant='title' size='l' color='subdued'>
+            ${ticker}
+          </Text>
+        </Flex>
       </Flex>
       <Paper
         column
@@ -53,7 +60,7 @@ const ZeroBalanceState = ({
         <Text variant='heading' size='s'>
           {messages.becomeAMember}
         </Text>
-        <Text>{messages.hintDescription(title)}</Text>
+        <Text>{messages.hintDescription(ticker)}</Text>
       </Paper>
       <Flex column gap='s'>
         <Button
@@ -73,7 +80,7 @@ const ZeroBalanceState = ({
 }
 
 const HasBalanceState = ({
-  title,
+  ticker,
   logoURI,
   onBuy,
   onSend,
@@ -92,14 +99,14 @@ const HasBalanceState = ({
           <TokenIcon logoURI={logoURI} size={64} />
           <Flex column gap='2xs'>
             <Text variant='heading' size='s'>
-              {coinName || `$${title}`}
+              {coinName || `$${ticker}`}
             </Text>
             <Flex row gap='xs' alignItems='center'>
               <Text variant='title' size='l'>
                 {tokenBalanceFormatted}
               </Text>
               <Text variant='title' size='l' color='subdued'>
-                ${title}
+                ${ticker}
               </Text>
             </Flex>
           </Flex>
@@ -178,14 +185,15 @@ export const BalanceCard = ({ mint }: { mint: string }) => {
       {!tokenBalance?.balance ||
       Number(tokenBalance.balance.toString()) === 0 ? (
         <ZeroBalanceState
-          title={title}
+          ticker={title}
           logoURI={logoURI}
           onBuy={handleBuy}
           onReceive={handleReceive}
+          coinName={coinName}
         />
       ) : (
         <HasBalanceState
-          title={title}
+          ticker={title}
           logoURI={logoURI}
           onBuy={handleBuy}
           onSend={handleSend}

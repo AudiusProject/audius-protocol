@@ -100,11 +100,8 @@ export const FinishProfilePage = () => {
   const initialValues = {
     profileImage: savedProfileImage || undefined,
     coverPhoto: savedCoverPhoto || undefined,
-    displayName: savedDisplayName || handle.value || ''
+    displayName: savedDisplayName || ''
   }
-
-  // Ensure display name is always set to handle if empty
-  const displayNameValue = savedDisplayName || handle.value || ''
 
   const setCoverPhoto = useCallback(
     (value: ImageFieldValue) => {
@@ -192,7 +189,6 @@ export const FinishProfilePage = () => {
               label={finishProfilePageMessages.displayName}
               placeholder={finishProfilePageMessages.inputPlaceholder}
               maxLength={MAX_DISPLAY_NAME_LENGTH}
-              value={displayNameValue}
               onChange={(e) => setDisplayName(e.currentTarget.value)}
               css={(theme) => ({
                 padding: theme.spacing.l

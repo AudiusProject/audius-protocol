@@ -51,7 +51,8 @@ const coinSymbolSchema = z.object({
 
 export const coinNameErrorMessages = {
   nameTooLong: 'Coin name is too long (max 30 characters)',
-  missingNameError: 'Please enter a coin name'
+  missingNameError: 'Please enter a coin name',
+  invalidCharacterError: 'Coin name cannot contain emojis or special characters'
 }
 
 export const coinImageErrorMessages = {
@@ -63,6 +64,7 @@ const coinNameSchema = z.object({
     .string({ required_error: coinNameErrorMessages.missingNameError })
     .max(MAX_HANDLE_LENGTH, coinNameErrorMessages.nameTooLong)
     .min(1, coinNameErrorMessages.missingNameError)
+    .regex(/^[\x20-\x7E]*$/, coinNameErrorMessages.invalidCharacterError)
 })
 
 const coinImageSchema = z.object({

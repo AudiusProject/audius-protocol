@@ -200,7 +200,7 @@ export const useAudioBalance = (
           : [])
       ]
     },
-    { enabled: isUserFetched }
+    { ...options, enabled: isUserFetched }
   )
   let accountBalance = AUDIO(0).value
 
