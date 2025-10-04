@@ -124,6 +124,8 @@ export const coinDetailsMessages = {
   },
   toasts: {
     feesClaimed: 'Fees claimed successfully!',
-    feesClaimFailed: 'Unable to claim fees. Please try again.'
+    feesClaimFailed: 'Unable to claim fees. Please try again.',
+    incorrectWalletLinked:
+      'Incorrect wallet linked. Use the same wallet used to launch the coin.'
   }
 }

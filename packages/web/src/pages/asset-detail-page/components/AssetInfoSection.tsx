@@ -5,7 +5,6 @@ import {
   useArtistCoin,
   useUser,
   useUserCoins,
-  useConnectedWallets,
   useCurrentAccountUser
 } from '@audius/common/api'
 import { useDiscordOAuthLink } from '@audius/common/hooks'
@@ -38,8 +37,6 @@ import {
   useTheme
 } from '@audius/harmony'
 import { HashId } from '@audius/sdk'
-import { solana } from '@reown/appkit/networks'
-import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react'
 import { useDispatch } from 'react-redux'
 
 import { appkitModal } from 'app/ReownAppKitModal'
@@ -52,7 +49,6 @@ import { UserTokenBadge } from 'components/user-token-badge/UserTokenBadge'
 import { useClaimFees } from 'hooks/useClaimFees'
 import { useConnectWallets } from 'hooks/useConnectWallets'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
-import { getLastConnectedSolWallet } from 'pages/artist-coins-launchpad-page/utils'
 import { env } from 'services/env'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import { copyToClipboard } from 'utils/clipboardUtil'
@@ -402,6 +398,7 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
           totalArtistEarnings
         }
       })
+      console.error(error)
       toast(toastMessages.feesClaimFailed)
     }
   })
@@ -453,43 +450,40 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
     [mint, claimFees]
   )
 
-  const getCoinCreatorWalletAddress = useCallback(async () => {
-    const solanaProvider = appkitModal.getProvider<SolanaProvider>('solana')
-    const accounts = await solanaProvider!.getAccounts()
-    return accounts.find(
-      (account) => account.address === coinCreatorWalletAddress
-    )
-  }, [coinCreatorWalletAddress])
-
   const { openAppKitModal } = useConnectWallets(async () => {
-    const creatorWalletAddress = await getCoinCreatorWalletAddress()
-    if (!creatorWalletAddress) {
-      // If we hit this blocl the user has not connected the wallet they used to launch the coin
-      // TODO: how do we need to prompt the user here?
+    const solanaAccount = appkitModal.getAccount('solana')
+    const connectedAddress = solanaAccount?.address
+
+    if (!coinCreatorWalletAddress) {
+      // If we hit this block the user has not launched the coin
       toast(toastMessages.feesClaimFailed)
       return
     }
-    handleClaimFees(creatorWalletAddress.address)
+    if (!connectedAddress || connectedAddress !== coinCreatorWalletAddress) {
+      // If we hit this block the user has not connected the wallet they used to launch the coin
+      toast(toastMessages.incorrectWalletLinked)
+      return
+    }
+    handleClaimFees(connectedAddress)
   })
 
   const handleClaimFeesClick = useCallback(async () => {
-    const solanaProvider = appkitModal.getProvider<SolanaProvider>('solana')
+    const solanaAccount = appkitModal.getAccount('solana')
+    const connectedAddress = solanaAccount?.address
+
     // appkit wallet is not connected atm, need to prompt connect flow first
-    if (!solanaProvider) {
-      await appkitModal.switchNetwork(solana)
+    if (!connectedAddress) {
+      openAppKitModal('solana')
+    } else if (connectedAddress !== coinCreatorWalletAddress) {
+      // If we hit this block the user has not connected the wallet they used to launch the coin
+      // Disconnect the current Solana wallet to allow connecting a different one
+      await appkitModal.disconnect('solana')
       openAppKitModal('solana')
     } else {
-      const creatorWalletAddress = await getCoinCreatorWalletAddress()
-      if (!creatorWalletAddress) {
-        // If we hit this blocl the user has not connected the wallet they used to launch the coin
-        // TODO: how do we need to prompt the user here?
-        toast(toastMessages.feesClaimFailed)
-        return
-      }
-      // appkit wallet is connected, can just initiate claim fees flow immediately
-      handleClaimFees(creatorWalletAddress.address)
+      // appkit wallet is connected with the correct address, can just initiate claim fees flow immediately
+      handleClaimFees(connectedAddress)
     }
-  }, [openAppKitModal, getCoinCreatorWalletAddress, handleClaimFees, toast])
+  }, [openAppKitModal, handleClaimFees, coinCreatorWalletAddress])
 
   if (isLoading || !coin) {
     return <AssetInfoSectionSkeleton />
