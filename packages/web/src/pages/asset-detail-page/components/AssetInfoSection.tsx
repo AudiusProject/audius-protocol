@@ -404,21 +404,25 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
   })
 
   const unclaimedFees = coin?.dynamicBondingCurve?.creatorQuoteFee ?? 0
-  const formattedUnclaimedFees = useMemo(() => {
-    const value = wAUDIO(BigInt(unclaimedFees))
+
+  const formatFeeNumber = (input: number) => {
+    const value = wAUDIO(BigInt(input))
     const decimalPlaces = getTokenDecimalPlaces(Number(value.toString()))
     return formatCurrencyWithSubscript(
-      Number(value.trunc(decimalPlaces).toString())
+      Number(value.trunc(decimalPlaces).toString()),
+      'en-US',
+      ''
     )
+  }
+  const formattedUnclaimedFees = useMemo(() => {
+    return formatFeeNumber(unclaimedFees)
   }, [unclaimedFees])
   const totalArtistEarnings =
     coin?.dynamicBondingCurve?.totalTradingQuoteFee ?? 0
-  const formattedTotalArtistEarnings = useMemo(() => {
-    // Here we divide by 2 because the artist only gets half of the fees (this value includes the AUDIO network fees)
-    const value = wAUDIO(BigInt(Math.trunc(totalArtistEarnings / 2)))
-    const decimalPlaces = getTokenDecimalPlaces(Number(value.toString()))
-    return Number(value.trunc(decimalPlaces).toString()).toString()
-  }, [totalArtistEarnings])
+  const formattedTotalArtistEarnings = useMemo(
+    () => formatFeeNumber(Math.trunc(totalArtistEarnings / 2)),
+    [totalArtistEarnings]
+  )
   const descriptionParagraphs = coin?.description?.split('\n') ?? []
 
   const openDiscord = () => {
