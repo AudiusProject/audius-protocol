@@ -211,7 +211,7 @@ export const ArtistCoinsExploreScreen = () => {
     if (!isFetching && hasMore && coinsData && coinsData.length === PAGE_SIZE) {
       setOffset((prev) => prev + PAGE_SIZE)
     }
-  }, [isFetching, hasMore, coinsData, offset, allCoins.length])
+  }, [isFetching, hasMore, coinsData])
 
   useEffect(() => {
     const routeParams = route.params as any
