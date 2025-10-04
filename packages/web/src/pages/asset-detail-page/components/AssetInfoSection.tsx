@@ -38,8 +38,11 @@ import {
   useTheme
 } from '@audius/harmony'
 import { HashId } from '@audius/sdk'
+import { solana } from '@reown/appkit/networks'
+import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react'
 import { useDispatch } from 'react-redux'
 
+import { appkitModal } from 'app/ReownAppKitModal'
 import { ExternalLink } from 'components/link/ExternalLink'
 import Skeleton from 'components/skeleton/Skeleton'
 import { ToastContext } from 'components/toast/ToastContext'
@@ -47,6 +50,7 @@ import Tooltip from 'components/tooltip/Tooltip'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { UserTokenBadge } from 'components/user-token-badge/UserTokenBadge'
 import { useClaimFees } from 'hooks/useClaimFees'
+import { useConnectWallets } from 'hooks/useConnectWallets'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { getLastConnectedSolWallet } from 'pages/artist-coins-launchpad-page/utils'
 import { env } from 'services/env'
@@ -344,7 +348,7 @@ const AssetDetailsSection = ({
               <Flex gap='xs' alignItems='center'>
                 <TextLink
                   onClick={handleClaimFees}
-                  variant={isClaimFeesPending ? 'subdued' : 'visible'}
+                  variant={isClaimFeesDisabled ? 'subdued' : 'visible'}
                   disabled={isClaimFeesDisabled}
                 >
                   {overflowMessages.claim}
@@ -383,6 +387,7 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
 
   // Get wallet addresses for claim fee
   const { data: connectedWallets } = useConnectedWallets()
+
   const externalSolWallet = useMemo(
     () => getLastConnectedSolWallet(connectedWallets),
     [connectedWallets]
@@ -445,7 +450,7 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
   }, [mint, toast])
 
   const handleClaimFees = useCallback(() => {
-    if (!externalSolWallet || !mint || !currentUser?.spl_wallet) {
+    if (!externalSolWallet || !mint) {
       toast(toastMessages.feesClaimFailed)
       reportToSentry({
         error: new Error('Unknown error while claiming fees'),
@@ -463,10 +468,25 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
 
     claimFees({
       tokenMint: mint,
-      ownerWalletAddress: externalSolWallet.address,
-      receiverWalletAddress: currentUser.spl_wallet // Using same wallet for owner and receiver
+      ownerWalletAddress: externalSolWallet.address
     })
   }, [externalSolWallet, mint, currentUser, claimFees, toast, coin])
+
+  const { openAppKitModal } = useConnectWallets(() => {
+    handleClaimFees()
+  })
+
+  const handleClaimFeesClick = useCallback(async () => {
+    const solanaProvider = appkitModal.getProvider<SolanaProvider>('solana')
+    // appkit wallet is not connected atm, need to prompt connect flow first
+    if (!solanaProvider) {
+      await appkitModal.switchNetwork(solana)
+      openAppKitModal('solana')
+    } else {
+      // appkit wallet is connected, can just initiate claim fees flow immediately
+      handleClaimFees()
+    }
+  }, [handleClaimFees, openAppKitModal])
 
   if (isLoading || !coin) {
     return <AssetInfoSectionSkeleton />
@@ -601,12 +621,8 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
           unclaimedFees={unclaimedFees}
           formattedUnclaimedFees={formattedUnclaimedFees}
           isClaimFeesPending={isClaimFeesPending}
-          isClaimFeesDisabled={
-            isClaimFeesPending || !externalSolWallet || !currentUser?.spl_wallet
-          }
-          handleClaimFees={handleClaimFees}
-          externalSolWallet={externalSolWallet}
-          currentUser={currentUser}
+          isClaimFeesDisabled={isClaimFeesPending || !externalSolWallet}
+          handleClaimFees={handleClaimFeesClick}
         />
       ) : null}
     </Paper>
