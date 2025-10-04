@@ -183,8 +183,10 @@ export const ArtistCoinsExploreScreen = () => {
   const coins = allCoins
 
   const handleCoinPress = useCallback(
-    (ticker: string) => {
-      navigation.navigate('CoinDetailsScreen', { ticker })
+    (ticker?: string) => {
+      if (ticker) {
+        navigation.navigate('CoinDetailsScreen', { ticker })
+      }
     },
     [navigation]
   )
@@ -216,7 +218,7 @@ export const ArtistCoinsExploreScreen = () => {
 
   const renderCoinRow: ListRenderItem<Coin> = useCallback(
     ({ item }) => (
-      <CoinRow coin={item} onPress={() => handleCoinPress(item.ticker ?? '')} />
+      <CoinRow coin={item} onPress={() => handleCoinPress(item.ticker)} />
     ),
     [handleCoinPress]
   )
@@ -231,7 +233,6 @@ export const ArtistCoinsExploreScreen = () => {
         </Flex>
       )
     }
-    return null
   }, [isFetching, offset])
 
   return (
@@ -282,7 +283,7 @@ export const ArtistCoinsExploreScreen = () => {
             keyExtractor={keyExtractor}
             estimatedItemSize={COIN_ROW_HEIGHT}
             onEndReached={handleLoadMore}
-            onEndReachedThreshold={0.2}
+            onEndReachedThreshold={0.8}
             ListFooterComponent={renderFooter}
             showsVerticalScrollIndicator={false}
           />
