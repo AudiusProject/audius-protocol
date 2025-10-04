@@ -9,7 +9,9 @@ const db = initializeDiscoveryDb(config.discoveryDbConnectionString)
 
 export const getKeypair = async (logger: Logger): Promise<Keypair> => {
   const [deleted] = await db<SolKeypairs>('sol_keypairs')
-    .limit(1)
+    .whereIn('public_key', function () {
+      this.select('public_key').from('sol_keypairs').limit(1)
+    })
     .delete()
     .returning(['private_key'])
   if (!deleted) {
