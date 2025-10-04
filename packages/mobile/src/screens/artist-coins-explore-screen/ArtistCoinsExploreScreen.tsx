@@ -35,7 +35,7 @@ import { env } from 'app/services/env'
 
 import { GradientText, TokenIcon, Screen } from '../../components/core'
 
-const PAGE_SIZE = 50
+const PAGE_SIZE = 10
 const COIN_ROW_HEIGHT = 50 // Estimated height for FlashList optimization
 
 type CoinRowProps = {
@@ -134,12 +134,20 @@ export const ArtistCoinsExploreScreen = () => {
   const [offset, setOffset] = useState(0)
   const [allCoins, setAllCoins] = useState<Coin[]>([])
   const [hasMore, setHasMore] = useState(true)
+  const [isLoadingNewSearch, setIsLoadingNewSearch] = useState(false)
 
   // Set status bar to light content for dark header
   useStatusBarStyle('light-content')
 
   // Debounce search value to avoid excessive API calls
-  useDebounce(() => setDebouncedSearchValue(searchValue), 300, [searchValue])
+  useDebounce(
+    () => {
+      setDebouncedSearchValue(searchValue)
+      setIsLoadingNewSearch(false)
+    },
+    300,
+    [searchValue]
+  )
 
   const {
     data: coinsData,
@@ -178,7 +186,8 @@ export const ArtistCoinsExploreScreen = () => {
     setOffset(0)
     setAllCoins([])
     setHasMore(true)
-  }, [debouncedSearchValue, sortMethod, sortDirection])
+    setIsLoadingNewSearch(true)
+  }, [searchValue, sortMethod, sortDirection])
 
   const coins = allCoins
 
@@ -202,7 +211,7 @@ export const ArtistCoinsExploreScreen = () => {
     if (!isFetching && hasMore && coinsData && coinsData.length === PAGE_SIZE) {
       setOffset((prev) => prev + PAGE_SIZE)
     }
-  }, [isFetching, hasMore, coinsData])
+  }, [isFetching, hasMore, coinsData, offset, allCoins.length])
 
   useEffect(() => {
     const routeParams = route.params as any
@@ -214,7 +223,8 @@ export const ArtistCoinsExploreScreen = () => {
     }
   }, [route.params])
 
-  const shouldShowNoCoinsContent = !isPending && coins.length === 0
+  const shouldShowNoCoinsContent =
+    !isPending && !isFetching && !isLoadingNewSearch && coins.length === 0
 
   const renderCoinRow: ListRenderItem<Coin> = useCallback(
     ({ item }) => (
@@ -233,6 +243,7 @@ export const ArtistCoinsExploreScreen = () => {
         </Flex>
       )
     }
+    return null
   }, [isFetching, offset])
 
   return (
@@ -270,7 +281,7 @@ export const ArtistCoinsExploreScreen = () => {
           </TouchableOpacity>
         </Flex>
         <Divider orientation='horizontal' />
-        {isPending && offset === 0 ? (
+        {(isPending && offset === 0) || isLoadingNewSearch ? (
           <Flex justifyContent='center' alignItems='center' p='4xl'>
             <LoadingSpinner />
           </Flex>
