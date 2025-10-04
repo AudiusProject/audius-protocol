@@ -7,8 +7,7 @@ import { mainnet } from '@reown/appkit/networks'
 import {
   EventsControllerState,
   useAppKit,
-  useDisconnect,
-  useAppKitState
+  useDisconnect
 } from '@reown/appkit/react'
 import { useSwitchAccount, useAccount } from 'wagmi'
 
