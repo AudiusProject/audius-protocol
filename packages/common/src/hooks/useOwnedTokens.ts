@@ -18,7 +18,10 @@ import { ownedCoinsFilter } from '~/utils'
  */
 export const useOwnedTokens = (allTokens: TokenInfo[]) => {
   const { data: currentUserId } = useCurrentUserId()
-  const { data: userCoins } = useUserCoins({ userId: currentUserId })
+  const { data: userCoins } = useUserCoins(
+    { userId: currentUserId },
+    { refetchInterval: 5000 }
+  )
   const { data: usdcBalance } = useUSDCBalance()
   const { env } = useQueryContext()
   const { isEnabled: isArtistCoinsEnabled } = useFeatureFlag(

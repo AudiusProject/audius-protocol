@@ -1,6 +1,9 @@
 import { type Coin } from '@audius/common/adapters'
-import { getArtistCoinQueryKey, useQueryContext } from '@audius/common/api'
-import { QUERY_KEYS } from '@audius/common/api'
+import {
+  getArtistCoinQueryKey,
+  useQueryContext,
+  QUERY_KEYS
+} from '@audius/common/api'
 import { Feature } from '@audius/common/models'
 import { solana } from '@reown/appkit/networks'
 import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react'
