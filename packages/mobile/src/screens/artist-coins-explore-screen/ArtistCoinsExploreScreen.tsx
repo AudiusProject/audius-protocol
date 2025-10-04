@@ -8,7 +8,9 @@ import {
 } from '@audius/common/api'
 import { walletMessages } from '@audius/common/messages'
 import { useRoute } from '@react-navigation/native'
-import { ImageBackground, ScrollView, TouchableOpacity } from 'react-native'
+import type { ListRenderItem } from '@shopify/flash-list'
+import { FlashList } from '@shopify/flash-list'
+import { ImageBackground, TouchableOpacity } from 'react-native'
 import { useDebounce } from 'react-use'
 
 import {
@@ -32,6 +34,9 @@ import { useStatusBarStyle } from 'app/hooks/useStatusBarStyle'
 import { env } from 'app/services/env'
 
 import { GradientText, TokenIcon, Screen } from '../../components/core'
+
+const PAGE_SIZE = 50
+const COIN_ROW_HEIGHT = 50 // Estimated height for FlashList optimization
 
 type CoinRowProps = {
   coin: Coin
@@ -126,6 +131,9 @@ export const ArtistCoinsExploreScreen = () => {
   const [sortDirection, setSortDirection] = useState<GetCoinsSortDirectionEnum>(
     GetCoinsSortDirectionEnum.Desc
   )
+  const [offset, setOffset] = useState(0)
+  const [allCoins, setAllCoins] = useState<Coin[]>([])
+  const [hasMore, setHasMore] = useState(true)
 
   // Set status bar to light content for dark header
   useStatusBarStyle('light-content')
@@ -133,14 +141,46 @@ export const ArtistCoinsExploreScreen = () => {
   // Debounce search value to avoid excessive API calls
   useDebounce(() => setDebouncedSearchValue(searchValue), 300, [searchValue])
 
-  const { data: coinsData, isPending } = useArtistCoins({
+  const {
+    data: coinsData,
+    isPending,
+    isFetching
+  } = useArtistCoins({
     sortMethod,
     sortDirection,
-    query: debouncedSearchValue
+    query: debouncedSearchValue,
+    limit: PAGE_SIZE,
+    offset
   })
-  const coins = coinsData?.filter(
-    (coin) => coin.mint !== env.WAUDIO_MINT_ADDRESS
-  )
+
+  // Accumulate coins when new data arrives
+  useEffect(() => {
+    if (coinsData) {
+      const filteredCoins = coinsData.filter(
+        (coin) => coin.mint !== env.WAUDIO_MINT_ADDRESS
+      )
+
+      if (offset === 0) {
+        // First page - replace all coins
+        setAllCoins(filteredCoins)
+      } else {
+        // Subsequent pages - append new coins
+        setAllCoins((prev) => [...prev, ...filteredCoins])
+      }
+
+      // Check if we have more data
+      setHasMore(filteredCoins.length > 0)
+    }
+  }, [coinsData, offset])
+
+  // Reset pagination when search or sort changes
+  useEffect(() => {
+    setOffset(0)
+    setAllCoins([])
+    setHasMore(true)
+  }, [debouncedSearchValue, sortMethod, sortDirection])
+
+  const coins = allCoins
 
   const handleCoinPress = useCallback(
     (ticker: string) => {
@@ -156,6 +196,12 @@ export const ArtistCoinsExploreScreen = () => {
     })
   }, [navigation, sortMethod, sortDirection])
 
+  const handleLoadMore = useCallback(() => {
+    if (!isFetching && hasMore && coinsData && coinsData.length === PAGE_SIZE) {
+      setOffset((prev) => prev + PAGE_SIZE)
+    }
+  }, [isFetching, hasMore, coinsData])
+
   useEffect(() => {
     const routeParams = route.params as any
     if (routeParams?.sortMethod) {
@@ -166,7 +212,27 @@ export const ArtistCoinsExploreScreen = () => {
     }
   }, [route.params])
 
-  const shouldShowNoCoinsContent = !coins || coins.length === 0
+  const shouldShowNoCoinsContent = !isPending && coins.length === 0
+
+  const renderCoinRow: ListRenderItem<Coin> = useCallback(
+    ({ item }) => (
+      <CoinRow coin={item} onPress={() => handleCoinPress(item.ticker ?? '')} />
+    ),
+    [handleCoinPress]
+  )
+
+  const keyExtractor = useCallback((coin: Coin) => coin.mint, [])
+
+  const renderFooter = useCallback(() => {
+    if (isFetching && offset > 0) {
+      return (
+        <Flex justifyContent='center' alignItems='center' p='l'>
+          <LoadingSpinner />
+        </Flex>
+      )
+    }
+    return null
+  }, [isFetching, offset])
 
   return (
     <Screen
@@ -203,25 +269,24 @@ export const ArtistCoinsExploreScreen = () => {
           </TouchableOpacity>
         </Flex>
         <Divider orientation='horizontal' />
-        <ScrollView showsVerticalScrollIndicator={false}>
-          {isPending ? (
-            <Flex justifyContent='center' alignItems='center' p='4xl'>
-              <LoadingSpinner />
-            </Flex>
-          ) : shouldShowNoCoinsContent ? (
-            <NoCoinsContent />
-          ) : (
-            <Flex pt='s'>
-              {coins.map((coin) => (
-                <CoinRow
-                  key={coin.mint}
-                  coin={coin}
-                  onPress={() => handleCoinPress(coin.ticker ?? '')}
-                />
-              ))}
-            </Flex>
-          )}
-        </ScrollView>
+        {isPending && offset === 0 ? (
+          <Flex justifyContent='center' alignItems='center' p='4xl'>
+            <LoadingSpinner />
+          </Flex>
+        ) : shouldShowNoCoinsContent ? (
+          <NoCoinsContent />
+        ) : (
+          <FlashList
+            data={coins}
+            renderItem={renderCoinRow}
+            keyExtractor={keyExtractor}
+            estimatedItemSize={COIN_ROW_HEIGHT}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.2}
+            ListFooterComponent={renderFooter}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
       </Paper>
       <PlayBarChin />
     </Screen>
