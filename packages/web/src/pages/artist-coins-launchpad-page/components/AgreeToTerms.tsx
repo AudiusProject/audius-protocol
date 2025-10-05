@@ -8,7 +8,7 @@ import { ExternalTextLink } from 'components/link'
 const messages = {
   termsText: 'By checking this box I agree to the latest',
   termsOfService: 'terms of service',
-  artistCoinsTerms: 'artist coins terms'
+  artistCoinsTerms: 'Artist Coin terms'
 }
 
 export const AgreeToTerms = () => {
