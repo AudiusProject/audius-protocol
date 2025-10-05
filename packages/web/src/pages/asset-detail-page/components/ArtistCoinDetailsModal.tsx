@@ -96,26 +96,24 @@ export const ArtistCoinDetailsModal = ({
 
         {/* Coin Address */}
         {artistCoin?.mint ? (
-          <Flex direction='column' gap='xs' w='100%'>
-            <Text variant='body' size='m' strength='strong' color='subdued'>
-              {artistCoinDetails.coinAddress}
-            </Text>
-            <Text variant='body' size='m' userSelect='text'>
-              {artistCoin.mint}
-            </Text>
-          </Flex>
+          <TokenInfoRow
+            label={artistCoinDetails.coinAddress}
+            value={artistCoin.mint}
+            hasTooltip
+            tooltipContent={artistCoinDetails.tooltips.coinAddress}
+            variant='block'
+          />
         ) : null}
 
         {/* On-Chain Description */}
         {artistCoin?.ticker && artistHandle ? (
-          <Flex direction='column' gap='xs' w='100%'>
-            <Text variant='body' size='m' strength='strong' color='subdued'>
-              {artistCoinDetails.onChainDescription}
-            </Text>
-            <Text variant='body' size='m' userSelect='text'>
-              {LAUNCHPAD_COIN_DESCRIPTION(artistHandle, artistCoin.ticker)}
-            </Text>
-          </Flex>
+          <TokenInfoRow
+            label={artistCoinDetails.onChainDescription}
+            value={LAUNCHPAD_COIN_DESCRIPTION(artistHandle, artistCoin.ticker)}
+            hasTooltip
+            tooltipContent={artistCoinDetails.tooltips.onChainDescription}
+            variant='block'
+          />
         ) : null}
 
         <Divider />
@@ -140,10 +138,7 @@ export const ArtistCoinDetailsModal = ({
 }
 
 export type TokenDetailsStatsSectionProps = Partial<
-  Pick<
-    Coin,
-    'totalSupply' | 'marketCap' | 'price' | 'liquidity' | 'circulatingSupply'
-  >
+  Pick<Coin, 'totalSupply' | 'marketCap' | 'price' | 'liquidity'>
 >
 
 export const convertCoinGeckoResponseToStatsDetailsProps = (
@@ -156,8 +151,7 @@ export const convertCoinGeckoResponseToStatsDetailsProps = (
     totalSupply: coingeckoResponse.market_data.total_supply,
     marketCap: coingeckoResponse.market_data.market_cap.usd,
     price: coingeckoResponse.market_data.current_price.usd,
-    liquidity: coingeckoResponse.market_data.total_volume.usd,
-    circulatingSupply: coingeckoResponse.market_data.circulating_supply
+    liquidity: coingeckoResponse.market_data.total_volume.usd
   }
 }
 
@@ -200,16 +194,6 @@ const TokenDetailsStatsSection = (props?: TokenDetailsStatsSectionProps) => {
           value={`$${props.liquidity.toLocaleString()}`}
           hasTooltip
           tooltipContent={artistCoinDetails.tooltips.liquidity}
-          variant='block'
-        />
-      ) : null}
-
-      {props?.circulatingSupply ? (
-        <TokenInfoRow
-          label={artistCoinDetails.circulatingSupply}
-          value={props.circulatingSupply.toLocaleString()}
-          hasTooltip
-          tooltipContent={artistCoinDetails.tooltips.circulatingSupply}
           variant='block'
         />
       ) : null}

@@ -299,7 +299,10 @@ const AssetDetailsSection = ({
           <Text variant='body' size='s' strength='strong'>
             {overflowMessages.vestingSchedule}
           </Text>
-          <Tooltip text={overflowMessages.vestingSchedule} mount='body'>
+          <Tooltip
+            text={overflowMessages.tooltips.vestingSchedule}
+            mount='body'
+          >
             <IconInfo size='s' color='subdued' />
           </Tooltip>
         </Flex>
@@ -316,7 +319,7 @@ const AssetDetailsSection = ({
           <Text variant='body' size='s' strength='strong'>
             {overflowMessages.artistEarnings}
           </Text>
-          <Tooltip text={overflowMessages.artistEarnings} mount='body'>
+          <Tooltip text={overflowMessages.tooltips.artistEarnings} mount='body'>
             <IconInfo size='s' color='subdued' />
           </Tooltip>
         </Flex>
@@ -334,7 +337,10 @@ const AssetDetailsSection = ({
             <Text variant='body' size='s' strength='strong'>
               {overflowMessages.unclaimedFees}
             </Text>
-            <Tooltip text={overflowMessages.unclaimedFees} mount='body'>
+            <Tooltip
+              text={overflowMessages.tooltips.unclaimedFees}
+              mount='body'
+            >
               <IconInfo size='s' color='subdued' />
             </Tooltip>
           </Flex>
