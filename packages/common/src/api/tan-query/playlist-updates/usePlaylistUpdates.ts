@@ -57,10 +57,10 @@ export const usePlaylistUpdates = <TResult = PlaylistUpdate[]>(
         playlistUpdateFromSDK
       )
     },
-    enabled: !!currentUserId,
     refetchInterval: PLAYLIST_UPDATES_POLLING_FREQ_MS,
     refetchOnWindowFocus: true,
-    ...options
+    ...options,
+    enabled: !!currentUserId && options?.enabled !== false
   })
 }
 
@@ -80,12 +80,4 @@ export const usePlaylistHasUpdate = (playlistId: ID) =>
 export const useAllPlaylistUpdateIds = () =>
   usePlaylistUpdates({
     select: (updates) => updates.map((u) => u.playlist_id)
-  })
-
-/**
- * Returns the count of playlists with unviewed updates.
- */
-export const usePlaylistUpdatesCount = () =>
-  usePlaylistUpdates({
-    select: (updates) => updates.length
   })

@@ -20,8 +20,8 @@ let sdkInstance: AudiusSdkWithServices
 const initSdk = async () => {
   inProgress = true
 
-  // For now, the only solana relay we want to use is on DN 1, so hardcode
-  // the selection there.
+  // For now, we only want to use a single validator node's solana relay, so
+  // hardcode the selection to the configured endpoint.
   const solanaRelay = new SolanaRelay(
     new Configuration({
       basePath: '/solana',
@@ -55,7 +55,6 @@ const initSdk = async () => {
     })
   )
 
-  // Overrides some DN configuration from optimizely
   const audiusWalletClient = await getAudiusWalletClient()
 
   const audiusSdk = createSdkWithServices({
@@ -77,7 +76,7 @@ const initSdk = async () => {
 export const audiusSdk = async () => {
   if (inProgress) {
     await new Promise((resolve) => {
-      sdkEventEmitter.addListener(SDK_LOADED_EVENT_NAME, resolve)
+      sdkEventEmitter.once(SDK_LOADED_EVENT_NAME, resolve)
     })
     return sdkInstance
   } else if (!sdkInstance) {

@@ -119,9 +119,13 @@ export class SolanaClient {
           0
         )
         const baseFee = (orderedFees[percentileIndex] ?? 0) * multiplier
-        const microLamports = Math.min(
-          Math.max(baseFee, priorityFee.minimumMicroLamports ?? 0),
-          priorityFee.maximumMicroLamports ?? Number.MAX_SAFE_INTEGER
+        // Round since the multiplier can produce a fractional fee, which
+        // setComputeUnitPrice rejects (it converts the value to a BigInt)
+        const microLamports = Math.round(
+          Math.min(
+            Math.max(baseFee, priorityFee.minimumMicroLamports ?? 0),
+            priorityFee.maximumMicroLamports ?? Number.MAX_SAFE_INTEGER
+          )
         )
         if (microLamports !== undefined) {
           instructions.push(

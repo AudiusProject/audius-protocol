@@ -4,7 +4,7 @@ import { RendezvousHash } from '../../utils/rendezvous'
 import type { LoggerService } from '../Logger'
 
 import { getDefaultStorageNodeSelectorConfig } from './getDefaultConfig'
-import { isNodeHealthy } from './getNStorageNodes'
+import { isNodeHealthy } from './isNodeHealthy'
 import type {
   HealthCheckResponseData,
   StorageNode,
@@ -33,7 +33,9 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
     this.nodes = this.config.bootstrapNodes ?? []
     this.selectionState = 'healthy_only'
 
-    this.updateAvailableStorageNodes(this.config.endpoint)
+    this.updateAvailableStorageNodes(this.config.endpoint).catch((e) => {
+      this.logger.warn('Failed to update list of available storage nodes', e)
+    })
   }
 
   private async updateAvailableStorageNodes(endpoint: string) {
@@ -47,16 +49,19 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
 
     const responseData: { data: HealthCheckResponseData } =
       await healthCheckResponse.json()
-    const contentNodes = responseData.data.network?.content_nodes
+    const storageNodes = responseData.data.network?.content_nodes
 
-    if (!contentNodes) {
+    if (!storageNodes) {
       this.logger.warn(
-        'API health check did not contain any available content nodes'
+        'API health check did not contain any available storage nodes'
       )
       return
     }
 
-    this.nodes = contentNodes
+    this.nodes = storageNodes
+    // Drop any ordering computed from the bootstrap nodes so the next
+    // selection uses the refreshed list
+    this.orderedNodes = undefined
     this.selectionState = 'healthy_only'
   }
 
@@ -87,7 +92,7 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
 
     if (selectedNode) {
       this.selectedNode = selectedNode
-      this.logger.info('Selected content node', this.selectedNode)
+      this.logger.info('Selected storage node', this.selectedNode)
     } else {
       // No healthy nodes found
       this.selectedNode = null
@@ -102,23 +107,26 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
     if (!this.orderedNodes?.length) {
       this.orderedNodes = this.orderNodes(new Date().toString())
     }
+    // Hold a local reference: the list can be replaced by a node list refresh
+    // while we await health checks below
+    const orderedNodes = this.orderedNodes
 
-    if (this.orderedNodes.length === 0) {
+    if (orderedNodes.length === 0) {
       return undefined
     }
 
     const currentNodeIndex = this.selectedNode
-      ? this.orderedNodes.indexOf(this.selectedNode)
+      ? orderedNodes.indexOf(this.selectedNode)
       : -1
 
     let selectedNode: string | undefined
     let nextNodeIndex = currentNodeIndex
 
-    while (nextNodeIndex !== this.orderedNodes.length - 1) {
+    while (nextNodeIndex !== orderedNodes.length - 1) {
       nextNodeIndex++
-      const nextNode = this.orderedNodes[nextNodeIndex]
-      if (!nextNode) continue // should never happen unless this.orderedNodes has falsy values
-      if (await isNodeHealthy(nextNode)) {
+      const nextNode = orderedNodes[nextNodeIndex]
+      if (!nextNode) continue // should never happen unless orderedNodes has falsy values
+      if (await isNodeHealthy(nextNode, this.logger)) {
         selectedNode = nextNode
         break
       }

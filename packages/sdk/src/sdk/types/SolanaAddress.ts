@@ -11,9 +11,8 @@ export const SolanaAddressSchema = z
   .max(44, 'Solana address must not exceed 44 characters')
   .refine((val) => {
     try {
-      // @ts-ignore - need an unused variable to check if the destinationWallet is valid
-      const ignored = new PublicKey(val)
-      return true
+      // Throws if the address is not a valid public key
+      return !!new PublicKey(val)
     } catch (err) {
       console.debug(err)
       return false

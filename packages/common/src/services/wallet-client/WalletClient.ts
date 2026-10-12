@@ -8,10 +8,7 @@ import { ID } from '~/models/Identifiers'
 import { SolanaWalletAddress } from '~/models/Wallet'
 import { isNullOrUndefined } from '~/utils/typeUtils'
 
-import {
-  AudiusBackend,
-  pollForTokenBalanceChange
-} from '../audius-backend'
+import { AudiusBackend, pollForTokenBalanceChange } from '../audius-backend'
 import { Env } from '../env'
 
 export const MIN_TRANSFERRABLE_WEI = AUDIO('0.001').value

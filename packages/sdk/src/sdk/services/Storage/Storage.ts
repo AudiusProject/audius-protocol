@@ -108,20 +108,23 @@ export class Storage implements StorageService {
                     transcode: 0
                   })
                 },
-                onSuccess: async () => {
+                onSuccess: () => {
                   const uploadId = upload?.url?.split('/').pop()
                   if (!uploadId) {
                     reject(new Error('No upload ID received'))
                     return
                   }
-                  const res = await this.pollProcessingStatus(
+                  // tus does not await onSuccess, so failures from polling
+                  // must be forwarded to reject explicitly.
+                  this.pollProcessingStatus(
                     uploadId,
                     metadata.template,
                     cachedTotal,
                     onProgress,
                     ac.signal
                   )
-                  resolve(res)
+                    .then(resolve)
+                    .catch(reject)
                 }
               })
 
@@ -185,14 +188,14 @@ export class Storage implements StorageService {
     secondOffset: number
     userId: number
   }) {
-    const contentNodeEndpoint = await this.storageNodeSelector.getSelectedNode()
+    const storageNodeEndpoint = await this.storageNodeSelector.getSelectedNode()
 
-    if (!contentNodeEndpoint) {
-      throw new Error('No content node available')
+    if (!storageNodeEndpoint) {
+      throw new Error('No validator node available')
     }
 
     const url = new URL(
-      `${contentNodeEndpoint}/generate_preview/${cid}/${secondOffset}`
+      `${storageNodeEndpoint}/generate_preview/${cid}/${secondOffset}`
     )
     url.searchParams.set('userId', String(userId))
 
@@ -232,10 +235,11 @@ export class Storage implements StorageService {
         : MAX_IMAGE_RESIZE_TIMEOUT_MS
 
     while (Date.now() - start < maxPollingMs) {
+      // Checked outside the try so the abort isn't swallowed and retried below
+      if (abortSignal?.aborted) {
+        throw new Error('Upload aborted')
+      }
       try {
-        if (abortSignal?.aborted) {
-          throw new Error('Upload aborted')
-        }
         const resp = await this.getProcessingStatus(id)
         if (resp?.status === 'done') {
           if (template !== 'audio' || resp.results?.['320']) {

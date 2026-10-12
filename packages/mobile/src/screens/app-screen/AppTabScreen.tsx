@@ -391,10 +391,7 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
               <Stack.Screen
                 name='Chat'
                 component={ChatScreen}
-                getId={({ params }) =>
-                  // @ts-ignore hard to correctly type navigation params (PAY-1141)
-                  params?.chatId
-                }
+                getId={({ params }) => params?.chatId}
                 options={{ ...screenOptions, fullScreenGestureEnabled: false }}
               />
             </Stack.Group>

@@ -417,7 +417,8 @@ export const useCoinExchangeRate = (
         )
       }
     },
-    enabled: !!params.inputMint && !!params.outputMint,
-    ...options
+    ...options,
+    enabled:
+      !!params.inputMint && !!params.outputMint && options?.enabled !== false
   })
 }

@@ -856,7 +856,14 @@ export class ChatsApi
 
   private async getPublicKey(userId: string): Promise<Uint8Array> {
     if (!this.publicKeyCache[userId]) {
-      this.publicKeyCache[userId] = this.fetchPublicKey(userId)
+      const promise = this.fetchPublicKey(userId)
+      this.publicKeyCache[userId] = promise
+      // Don't cache failures, so a transient error can be retried
+      promise.catch(() => {
+        if (this.publicKeyCache[userId] === promise) {
+          delete this.publicKeyCache[userId]
+        }
+      })
     }
     const cachedPromise = this.publicKeyCache[userId]
     if (!cachedPromise) {
@@ -1021,7 +1028,12 @@ export class ChatsApi
           })
         }
       }
-      handleAsync()
+      handleAsync().catch((e) => {
+        this.logger.error(
+          '[audius-sdk]: Error: Failed to handle websocket event',
+          e
+        )
+      })
     })
     ws.addEventListener('open', () => {
       this.eventEmitter.emit('open')
