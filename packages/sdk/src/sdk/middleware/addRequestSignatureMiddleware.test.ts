@@ -105,6 +105,40 @@ describe('addRequestSignatureMiddleware', () => {
     expect(ctx?.init.headers).not.toHaveProperty('Encoded-Data-Signature')
   })
 
+  it('does not reuse a cached signature once the wallet is gone', async () => {
+    const appWalletClient = createAppWalletClient({
+      apiKey: '',
+      apiSecret:
+        '4ac8b3eff248bfbf20b324b575c1b333d42c6db3dbe19fd587c3d1e11323a25a'
+    })
+    const getAddresses = vi.fn(() => appWalletClient.getAddresses())
+    const services = {
+      audiusWalletClient: {
+        ...appWalletClient,
+        getAddresses,
+        signMessage: appWalletClient.signMessage.bind(appWalletClient)
+      } as any,
+      logger: { warn: vi.fn() } as any
+    }
+
+    const m = addRequestSignatureMiddleware({ services })
+    const request = () =>
+      m.pre?.({
+        fetch,
+        url: 'example.com',
+        init: { headers: { 'x-something': 'value' } }
+      })
+
+    const ctx = await request()
+    expect(ctx?.init.headers).toHaveProperty('Encoded-Data-Signature')
+
+    // Simulate logging out
+    getAddresses.mockRejectedValue(new HedgehogWalletNotFoundError())
+    const ctx2 = await request()
+    expect(ctx2?.init.headers).not.toHaveProperty('Encoded-Data-Message')
+    expect(ctx2?.init.headers).not.toHaveProperty('Encoded-Data-Signature')
+  })
+
   it('logs warning for other errors', async () => {
     const mockLogger = {
       warn: vi.fn()

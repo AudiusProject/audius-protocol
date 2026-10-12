@@ -121,6 +121,27 @@ describe('StorageNodeSelector', () => {
     ])
   })
 
+  it('falls back to bootstrap nodes when the node list fetch fails', async () => {
+    server.use(
+      rest.get(`${discoveryNode}/health_check`, (_req, res) => {
+        return res.networkError('Failed to connect')
+      })
+    )
+    const bootstrapNodes = [storageNodeA, storageNodeB]
+
+    const storageNodeSelector = new StorageNodeSelector({
+      bootstrapNodes,
+      logger,
+      endpoint: discoveryNode
+    })
+
+    expect(
+      [storageNodeA.endpoint, storageNodeB.endpoint].includes(
+        (await storageNodeSelector.getSelectedNode())!
+      )
+    ).toBe(true)
+  })
+
   it('tries selecting all nodes', async () => {
     server.use(
       rest.get(`${storageNodeA.endpoint}/health_check`, (_req, res, ctx) => {
