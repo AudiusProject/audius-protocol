@@ -2,7 +2,7 @@ import { USDC } from '@audius/fixed-decimal'
 
 import { ExtendedPaymentSplit } from '../api/generated/default'
 import { LoggerService } from '../services'
-import { ClaimableTokensClient } from '../services/Solana/programs/ClaimableTokensClient'
+import type { ClaimableTokensClient } from '../services/Solana/programs/ClaimableTokensClient'
 
 /**
  * 1. Converts amounts to bigints
