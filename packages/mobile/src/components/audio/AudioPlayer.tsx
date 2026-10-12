@@ -59,6 +59,7 @@ import {
 
 import { useChromecast } from './GoogleCast'
 import { addTracksAroundCurrent } from './addTracksAroundCurrent'
+import { RESTART_THRESHOLD_SEC, SKIP_DURATION_SEC } from './constants'
 import { useSavePodcastProgress } from './useSavePodcastProgress'
 
 export const DEFAULT_IMAGE_URL =
@@ -90,9 +91,6 @@ const {
 const { getIsReachable } = reachabilitySelectors
 const { getNftAccessSignatureMap } = gatedContentSelectors
 
-// TODO: These constants are the same in now playing drawer. Move them to shared location
-const SKIP_DURATION_SEC = 15
-const RESTART_THRESHOLD_SEC = 3
 const RECORD_LISTEN_SECONDS = 1
 const TRACK_END_BUFFER = 2
 
