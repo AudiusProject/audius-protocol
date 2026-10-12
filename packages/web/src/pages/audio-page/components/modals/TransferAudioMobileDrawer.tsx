@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { registerNiceModalId } from '@audius/common/services'
 import { IconTokenGold as IconGold } from '@audius/harmony'
 import NiceModal, { useModal } from '@ebay/nice-modal-react'
 
@@ -27,8 +26,5 @@ const TransferAudioMobileDrawer = NiceModal.create(() => {
     </Drawer>
   )
 })
-
-NiceModal.register('TransferAudioMobileWarning', TransferAudioMobileDrawer)
-registerNiceModalId('TransferAudioMobileWarning')
 
 export default TransferAudioMobileDrawer

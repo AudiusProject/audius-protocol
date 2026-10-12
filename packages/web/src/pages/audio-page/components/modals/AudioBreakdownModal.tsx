@@ -3,7 +3,6 @@ import {
   useAssociatedWallets,
   useWalletAudioBalances
 } from '@audius/common/api'
-import { registerNiceModalId } from '@audius/common/services'
 import { AUDIO } from '@audius/fixed-decimal'
 import { IconInfo, Tooltip } from '@audius/harmony'
 import NiceModal, { useModal } from '@ebay/nice-modal-react'
@@ -119,8 +118,5 @@ const AudioBreakdownModal = NiceModal.create(() => {
     </ModalDrawer>
   )
 })
-
-NiceModal.register('AudioBreakdown', AudioBreakdownModal)
-registerNiceModalId('AudioBreakdown')
 
 export default AudioBreakdownModal

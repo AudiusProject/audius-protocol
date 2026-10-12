@@ -2,7 +2,6 @@ import { useCallback, useEffect, useContext } from 'react'
 
 import { useCurrentAccountUser, useCurrentAccount } from '@audius/common/api'
 import { ChallengeName } from '@audius/common/models'
-import { registerNiceModalId } from '@audius/common/services'
 import {
   challengesSelectors,
   audioRewardsPageSelectors,
@@ -148,6 +147,3 @@ export const ChallengeRewardsModal = NiceModal.create(() => {
     </ModalDrawer>
   )
 })
-
-NiceModal.register('ChallengeRewards', ChallengeRewardsModal)
-registerNiceModalId('ChallengeRewards')

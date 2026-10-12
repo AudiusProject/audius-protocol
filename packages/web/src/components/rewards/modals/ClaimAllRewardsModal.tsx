@@ -4,7 +4,6 @@ import {
   formatCooldownChallenges,
   useChallengeCooldownSchedule
 } from '@audius/common/hooks'
-import { registerNiceModalId } from '@audius/common/services'
 import {
   ClaimStatus,
   audioRewardsPageActions,
@@ -198,6 +197,3 @@ export const ClaimAllRewardsModal = NiceModal.create(() => {
     </Modal>
   )
 })
-
-NiceModal.register('ClaimAllRewards', ClaimAllRewardsModal)
-registerNiceModalId('ClaimAllRewards')

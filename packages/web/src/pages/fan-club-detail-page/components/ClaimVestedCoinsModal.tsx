@@ -2,7 +2,6 @@ import { useCallback, useState } from 'react'
 
 import { useFanClubByTicker } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
-import { registerNiceModalId } from '@audius/common/services'
 import { useClaimVestedCoinsModal } from '@audius/common/store'
 import { FixedDecimal } from '@audius/fixed-decimal'
 import {
@@ -194,6 +193,3 @@ export const ClaimVestedCoinsModal = NiceModal.create(() => {
     </ResponsiveModal>
   )
 })
-
-NiceModal.register('ClaimVestedCoinsModal', ClaimVestedCoinsModal)
-registerNiceModalId('ClaimVestedCoinsModal')

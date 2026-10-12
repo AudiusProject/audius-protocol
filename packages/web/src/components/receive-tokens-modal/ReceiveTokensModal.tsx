@@ -7,7 +7,6 @@ import {
   useRootWalletAddress
 } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
-import { registerNiceModalId } from '@audius/common/services'
 import { useReceiveTokensModal } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
@@ -173,6 +172,3 @@ export const ReceiveTokensModal = NiceModal.create(() => {
     </ResponsiveModal>
   )
 })
-
-NiceModal.register('ReceiveTokensModal', ReceiveTokensModal)
-registerNiceModalId('ReceiveTokensModal')

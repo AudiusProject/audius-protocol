@@ -24,7 +24,7 @@ import {
   PurchaseVendor,
   USDCPurchaseConditions
 } from '@audius/common/models'
-import { FeatureFlags, registerNiceModalId } from '@audius/common/services'
+import { FeatureFlags } from '@audius/common/services'
 import {
   buyUSDCActions,
   usePremiumContentPurchaseModal,
@@ -355,6 +355,3 @@ export const PremiumContentPurchaseModal = NiceModal.create(() => {
     </ModalDrawer>
   )
 })
-
-NiceModal.register('PremiumContentPurchaseModal', PremiumContentPurchaseModal)
-registerNiceModalId('PremiumContentPurchaseModal')
