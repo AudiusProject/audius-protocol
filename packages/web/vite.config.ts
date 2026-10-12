@@ -111,6 +111,24 @@ export default defineConfig(async ({ mode }) => {
           }
         }
       },
+      // bip39 bundles every language's wordlist; keys only use English
+      {
+        name: 'bip39-english-only',
+        enforce: 'pre',
+        resolveId(source, importer) {
+          if (
+            importer?.includes('/bip39/') &&
+            /^\.\/wordlists\/(?!english\.json$)\w+\.json$/.test(source)
+          ) {
+            return '\0bip39-empty-wordlist'
+          }
+        },
+        load(id) {
+          if (id === '\0bip39-empty-wordlist') {
+            return 'export default []'
+          }
+        }
+      },
       {
         transformIndexHtml(html) {
           // Replace HTML env vars with values from the system env

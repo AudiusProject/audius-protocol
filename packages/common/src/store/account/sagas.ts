@@ -91,7 +91,6 @@ function* initializeMetricsForUser({
   accountUser: UserMetadata
   web3WalletAddress: string
 }) {
-  const solanaWalletService = yield* getContext('solanaWalletService')
   const analytics = yield* getContext('analytics')
   const sdk = yield* getSDK()
   const queryClient = yield* getContext('queryClient')
@@ -106,7 +105,6 @@ function* initializeMetricsForUser({
 
     const { user: web3User } = accountData ?? {}
 
-    let solanaWallet
     let managerUserId
     let managerHandle
 
@@ -114,21 +112,6 @@ function* initializeMetricsForUser({
     if (web3User && web3User.user_id !== accountUser.user_id) {
       managerUserId = web3User.user_id
       managerHandle = web3User.handle
-    } else {
-      // If not a managed account, identify the Solana wallet associated with
-      // the hedgehog wallet
-      try {
-        const keypair = yield* call([
-          solanaWalletService,
-          solanaWalletService.getKeypair
-        ])
-        if (!keypair) {
-          throw new Error('No keypair found')
-        }
-        solanaWallet = keypair.publicKey.toBase58()
-      } catch (e) {
-        console.error('Failed to fetch Solana root wallet during identify()', e)
-      }
     }
 
     const traits = {
@@ -138,8 +121,7 @@ function* initializeMetricsForUser({
       name: accountUser.name,
       userId: accountUser.user_id,
       managerHandle,
-      managerUserId,
-      solanaWallet
+      managerUserId
     }
 
     yield* call([analytics, analytics.identify], traits)

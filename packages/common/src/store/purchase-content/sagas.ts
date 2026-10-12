@@ -42,7 +42,8 @@ import {
   buyUSDCFlowFailed,
   buyUSDCFlowSucceeded,
   onrampCanceled,
-  onrampOpened
+  onrampOpened,
+  startRecoveryIfNecessary
 } from '~/store/buy-usdc/slice'
 import { BuyUSDCError } from '~/store/buy-usdc/types'
 import {
@@ -1184,6 +1185,9 @@ function* watchEagerCreateUserBank() {
     } catch (e) {
       console.error(`eagerCreateUserBank failed: ${e}`)
     }
+    // Move any USDC left in the root wallet by an interrupted onramp into the
+    // user bank before the user picks a payment method.
+    yield* put(startRecoveryIfNecessary())
   })
 }
 
