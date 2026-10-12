@@ -7,11 +7,9 @@ import type {
   TextStyle,
   ViewStyle
 } from 'react-native'
-import type {
-  TabBarProps,
-  TabItemProps
-} from 'react-native-collapsible-tab-view'
 import type { AnimatedStyle, SharedValue } from 'react-native-reanimated'
+
+import type { TabBarProps, TabItemProps } from 'app/components/collapsible-tabs'
 
 type TabName = string
 
