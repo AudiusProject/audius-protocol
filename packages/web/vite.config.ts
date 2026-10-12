@@ -208,7 +208,11 @@ export default defineConfig(async ({ mode }) => {
         path: require.resolve('path-browserify'),
         url: require.resolve('url'),
         zlib: require.resolve('browserify-zlib'),
-        crypto: require.resolve('crypto-browserify'),
+        // Client deps only fall back to Node crypto when Web Crypto is
+        // missing, so skip shipping crypto-browserify to the browser
+        crypto: ssr
+          ? require.resolve('crypto-browserify')
+          : path.resolve(__dirname, 'src/crypto-shim.ts'),
         http: require.resolve('stream-http'),
         https: require.resolve('https-browserify'),
         stream: require.resolve('stream-browserify'),
