@@ -1,3 +1,4 @@
+import { generatePrivateKey } from 'viem/accounts'
 import { describe, it, expect, vi } from 'vitest'
 
 import { createAppWalletClient, Logger } from '../services'
@@ -108,8 +109,7 @@ describe('addRequestSignatureMiddleware', () => {
   it('does not reuse a cached signature once the wallet is gone', async () => {
     const appWalletClient = createAppWalletClient({
       apiKey: '',
-      apiSecret:
-        '4ac8b3eff248bfbf20b324b575c1b333d42c6db3dbe19fd587c3d1e11323a25a'
+      apiSecret: generatePrivateKey()
     })
     const getAddresses = vi.fn(() => appWalletClient.getAddresses())
     const services = {
