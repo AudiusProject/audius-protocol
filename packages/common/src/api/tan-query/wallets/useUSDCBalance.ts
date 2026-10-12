@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { UsdcWei } from '@audius/fixed-decimal'
-import { TokenAccountNotFoundError } from '@solana/spl-token'
-import { Commitment } from '@solana/web3.js'
+import type { Commitment } from '@solana/web3.js'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -10,7 +9,6 @@ import { useCurrentAccountUser } from '~/api'
 import { useQueryContext } from '~/api/tan-query/utils'
 import { Status } from '~/models/Status'
 import { StringUSDC } from '~/models/Wallet'
-import { getUserbankAccountInfo } from '~/services/index'
 import { getRecoveryStatus } from '~/store/buy-usdc/selectors'
 import { setUSDCBalance } from '~/store/wallet/slice'
 
@@ -63,6 +61,11 @@ export const useUSDCBalance = <TResult = UsdcWei | null>({
       if (!ethAddress) {
         return null
       }
+      const [{ getUserbankAccountInfo }, { TokenAccountNotFoundError }] =
+        await Promise.all([
+          import('~/services/audius-backend/solana'),
+          import('@solana/spl-token')
+        ])
 
       try {
         const account = await getUserbankAccountInfo(

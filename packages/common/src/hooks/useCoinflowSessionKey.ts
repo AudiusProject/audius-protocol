@@ -1,7 +1,6 @@
 import { useEffect, useReducer } from 'react'
 
 import { useQuery } from '@tanstack/react-query'
-import nacl from 'tweetnacl'
 
 import { useWalletAddresses } from '~/api'
 import { useQueryContext } from '~/api/tan-query/utils'
@@ -44,6 +43,7 @@ export const useCoinflowSessionKey = ({
       ) {
         throw new Error('Coinflow wallet is unavailable')
       }
+      const { default: nacl } = await import('tweetnacl')
       const timestamp = Date.now()
       const message = `Audius Coinflow session:${identityWallet.toLowerCase()}:${wallet}:${environment}:${timestamp}`
       const signature = Buffer.from(

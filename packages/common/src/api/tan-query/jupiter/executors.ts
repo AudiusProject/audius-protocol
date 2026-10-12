@@ -25,21 +25,23 @@ import { convertBigIntToAmountObject } from '~/utils'
 
 import { RetryPolicy, STANDARD_RETRY_POLICY } from './retryPolicy'
 import {
+  addTransferFromUserBankInstructions,
+  buildAndSendTransaction,
+  createTokenConfig,
+  getJupiterSwapInstructions,
+  prepareOutputUserBank,
+  validateAndCreateTokenConfigs
+} from './solanaUtils'
+import {
   SwapDependencies,
   SwapTokensParams,
   SwapStatus,
   SwapErrorType
 } from './types'
 import {
-  addTransferFromUserBankInstructions,
-  buildAndSendTransaction,
-  createTokenConfig,
   findTokenByAddress,
   getCoinPoolState,
-  getJupiterSwapInstructions,
-  invalidateSwapQueries,
-  prepareOutputUserBank,
-  validateAndCreateTokenConfigs
+  invalidateSwapQueries
 } from './utils'
 
 const AUDIO_MINT = TOKEN_LISTING_MAP.AUDIO.address

@@ -15,7 +15,7 @@ import { QUERY_KEYS } from '~/api/tan-query/queryKeys'
 import type { QueryContextType } from '~/api/tan-query/utils/QueryContext'
 import { FollowSource } from '~/models/Analytics'
 import type { User } from '~/models/User'
-import { JupiterQuoteResult } from '~/services/Jupiter'
+import type { JupiterQuoteResult } from '~/services/Jupiter'
 import { NON_FAN_CLUB_MINTS } from '~/store/ui/shared/tokenConstants'
 
 import { getFanClubQueryFn } from '../coins/useFanClub'
@@ -23,7 +23,6 @@ import { useTradeableCoins } from '../coins/useTradeableCoins'
 import { useFollowUser } from '../users/useFollowUser'
 import { entityCacheOptions } from '../utils/entityCacheOptions'
 
-import { SwapOrchestrator } from './orchestrator'
 import {
   SwapDependencies,
   SwapErrorType,
@@ -313,6 +312,7 @@ export const useSwapCoins = () => {
         const dependencies = dependenciesResult
 
         errorStage = 'SWAP_EXECUTION'
+        const { SwapOrchestrator } = await import('./orchestrator')
         const orchestrator = new SwapOrchestrator()
         const result = await orchestrator.executeSwap(
           params,

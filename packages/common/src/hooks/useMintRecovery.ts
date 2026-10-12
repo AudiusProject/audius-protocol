@@ -1,5 +1,3 @@
-import { getAssociatedTokenAddressSync, getAccount } from '@solana/spl-token'
-import { PublicKey } from '@solana/web3.js'
 import { useQuery } from '@tanstack/react-query'
 
 import { QUERY_KEYS } from '~/api/tan-query/queryKeys'
@@ -29,6 +27,11 @@ export const useMintRecovery = (
       }
 
       try {
+        const [{ getAssociatedTokenAddressSync, getAccount }, { PublicKey }] =
+          await Promise.all([
+            import('@solana/spl-token'),
+            import('@solana/web3.js')
+          ])
         // Get the ATA for the root wallet + mint
         const ata = getAssociatedTokenAddressSync(
           new PublicKey(mint),

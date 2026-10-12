@@ -2,7 +2,8 @@ import { useCallback, useState } from 'react'
 
 import { useCurrentAccountUser } from '@audius/common/api'
 import { SolanaWalletAddress } from '@audius/common/models'
-import { MEMO_PROGRAM_ID, registerNiceModalId } from '@audius/common/services'
+import { registerNiceModalId } from '@audius/common/services'
+import { MEMO_PROGRAM_ID } from '@audius/common/src/services/audius-backend/solana'
 import { isValidSolAddress, profilePageActions } from '@audius/common/store'
 import {
   Button,

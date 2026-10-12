@@ -1,4 +1,3 @@
-import { PublicKey } from '@solana/web3.js'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { useQueryContext } from '~/api/tan-query/utils'
@@ -62,7 +61,10 @@ export const useSendCoins = ({ mint }: { mint: string }) => {
           throw new Error('Failed to retrieve current user wallet address')
         }
 
-        const sdk = await audiusSdk()
+        const [sdk, { PublicKey }] = await Promise.all([
+          audiusSdk(),
+          import('@solana/web3.js')
+        ])
 
         if (!coinBalance?.balance || coinBalance.balance.value < amount) {
           throw new Error('Insufficient balance to send tokens')

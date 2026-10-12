@@ -3,7 +3,6 @@ import { useEffect } from 'react'
 import { useWalletAddresses } from '~/api'
 import { useQueryContext } from '~/api/tan-query/utils'
 import { AnalyticsEvent } from '~/models/Analytics'
-import { createUserBankIfNeeded } from '~/services/audius-backend'
 
 export const useCreateUserbankIfNeeded = ({
   recordAnalytics,
@@ -20,6 +19,9 @@ export const useCreateUserbankIfNeeded = ({
     const initUserBank = async () => {
       const sdk = await audiusSdk()
       if (!currentUser) return
+      const { createUserBankIfNeeded } = await import(
+        '~/services/audius-backend/solana'
+      )
       createUserBankIfNeeded(sdk, {
         recordAnalytics,
         mint,
