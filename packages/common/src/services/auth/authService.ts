@@ -1,6 +1,3 @@
-import { EthWallet } from '@audius/hedgehog'
-import type { ChangeCredentialsArgs } from '@audius/hedgehog/dist/types'
-
 import type { LocalStorage } from '../local-storage'
 
 import {
@@ -8,6 +5,7 @@ import {
   HedgehogConfig,
   createHedgehog
 } from './hedgehog'
+import type { ChangeCredentialsArgs, EthWallet } from './hedgehogLib'
 
 export type AuthServiceConfig = {
   identityServiceEndpoint: string
