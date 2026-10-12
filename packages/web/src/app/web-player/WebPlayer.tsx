@@ -65,7 +65,6 @@ import Notice from 'components/notice/Notice'
 import { NotificationPage } from 'components/notification'
 import PlayBarProvider from 'components/play-bar/PlayBarProvider'
 import { RewardClaimedToast } from 'components/reward-claimed-toast/RewardClaimedToast'
-import { USDCBalanceFetcher } from 'components/usdc-balance-fetcher/USDCBalanceFetcher'
 import { useActivityPing } from 'hooks/useActivityPing'
 import { useEnvironment } from 'hooks/useEnvironment'
 import { usePlaybackPositionPersistence } from 'hooks/usePlaybackPositionPersistence'
@@ -789,7 +788,6 @@ const WebPlayer = (props: WebPlayerProps) => {
         ) : null}
       </AppBannerWrapper>
       <ChatListener />
-      <USDCBalanceFetcher />
       <div
         id='webPlayer'
         className={cn(styles.app, { [styles.mobileApp]: isMobile })}

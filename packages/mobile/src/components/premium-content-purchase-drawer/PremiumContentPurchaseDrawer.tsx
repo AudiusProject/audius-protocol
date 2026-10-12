@@ -26,6 +26,7 @@ import type { ID, USDCPurchaseConditions } from '@audius/common/models'
 import { Name, PurchaseMethod, PurchaseVendor } from '@audius/common/models'
 import { IntKeys, FeatureFlags } from '@audius/common/services'
 import {
+  buyUSDCActions,
   usePremiumContentPurchaseModal,
   purchaseContentActions,
   purchaseContentSelectors,
@@ -246,9 +247,11 @@ const RenderForm = ({
     resetForm()
   }, [contentId, resetForm])
 
-  // Pre-create user bank if needed so it's ready by purchase time
+  // Pre-create user bank if needed so it's ready by purchase time, and check
+  // for USDC stuck in the root wallet from an interrupted onramp
   useEffect(() => {
     dispatch(eagerCreateUserBank())
+    dispatch(buyUSDCActions.startRecoveryIfNecessary())
   }, [dispatch])
 
   const {
