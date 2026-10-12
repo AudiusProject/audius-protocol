@@ -66,39 +66,6 @@ export class Uid {
   }
 }
 
-export function makeUids(
-  kinds: string[],
-  ids: (number | string)[],
-  source?: string
-) {
-  if (Array.isArray(kinds)) {
-    // Multiple kinds in the ids array.
-    const totals: Record<string, number> = {}
-    const counts: Record<string, number> = {}
-    ids.forEach((id, i) => {
-      const key = `${kinds[i]}${id}`
-      if (key in totals) totals[key] += 1
-      else totals[key] = 0
-      counts[i] = totals[key]
-    })
-    const uids = ids.map((id, i) => Uid.build(kinds[i], id, source, counts[i]))
-    return uids.map((uid) => uid.toString())
-  } else {
-    // Single kind.
-    const kind = kinds
-
-    const totals: Record<number, number> = {}
-    const counts: Record<number, number> = {}
-    ids.forEach((id, i) => {
-      if (id in totals) totals[id] += 1
-      else totals[id] = 0
-      counts[i] = totals[id]
-    })
-    const uids = ids.map((id, i) => Uid.build(kind, id, source, counts[i]))
-    return uids.map((uid) => uid.toString())
-  }
-}
-
 export function makeUid(kind: string, id: ID, source?: string) {
   const uid = Uid.build(kind, id, source)
   return uid.toString()
@@ -133,12 +100,6 @@ export const makeKindId = (kind: string, id: ID | string | undefined) =>
 export const getIdFromKindId = (kindId: string) => kindId.split('-')[1]
 
 /**
- * Gets the kind from a kind id
- * @param kindId
- */
-export const getKindFromKindId = (kindId: string) => kindId.split('-')[0]
-
-/**
  * Gets the numeric id from a uid
  * @param uid
  */
@@ -147,19 +108,13 @@ export const getNumericIdFromUid = (uid: string) =>
 
 export const uuid = () => {
   // https://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript/873856#873856
-  const s = []
+  const s: string[] = []
   const hexDigits = '0123456789abcdef'
-  // all the ts-ignores are needed so the mobile package types things correctly
-  // remove when upgrading to latest typescript
   for (let i = 0; i < 36; i++) {
-    // @ts-ignore
     s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1)
   }
-  // @ts-ignore
   s[14] = '4' // bits 12-15 of the time_hi_and_version field to 0010
-  // @ts-ignore
-  s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1) // bits 6-7 of the clock_seq_hi_and_reserved to 01
-  // @ts-ignore
+  s[19] = hexDigits.substr((parseInt(s[19], 16) & 0x3) | 0x8, 1) // bits 6-7 of the clock_seq_hi_and_reserved to 01
   s[8] = s[13] = s[18] = s[23] = '-'
 
   const uuid = s.join('')

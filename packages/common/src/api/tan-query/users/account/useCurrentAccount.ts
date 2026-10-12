@@ -134,7 +134,7 @@ export const useCurrentAccount = <TResult = AccountState | null | undefined>(
       getLocalAccount(localStorage, queryClient) ?? undefined,
     staleTime: Infinity,
     gcTime: Infinity,
-    enabled: options?.enabled !== false && !!currentUserWallet,
-    ...options
+    ...options,
+    enabled: options?.enabled !== false && !!currentUserWallet
   })
 }

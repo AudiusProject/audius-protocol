@@ -11,13 +11,6 @@ import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 import { JupiterTokenSymbol } from '~/store/ui/shared/tokenConstants'
 import { convertBigIntToAmountObject, removeNullable } from '~/utils'
 
-/**
- * The error that gets returned if the slippage is exceeded
- * @see https://github.com/jup-ag/jupiter-cpi/blob/5eb897736d294767200302efd070b16343d8c618/idl.json#L2910-L2913
- * @see https://station.jup.ag/docs/additional-topics/troubleshooting#swap-execution
- */
-export const SLIPPAGE_TOLERANCE_EXCEEDED_ERROR = 6001
-
 export const DEFAULT_MAX_ACCOUNTS = 20
 export const MAX_ALLOWED_ACCOUNTS = 64
 const JUP_BASE_PATH = 'https://jup.audius.co/swap/v1'

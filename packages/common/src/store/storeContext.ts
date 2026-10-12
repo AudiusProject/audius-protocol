@@ -7,11 +7,7 @@ import nacl from 'tweetnacl'
 import { AuthService, IdentityService } from '~/services'
 import { SolanaWalletService } from '~/services/solana'
 
-import {
-  AllTrackingEvents,
-  AnalyticsEvent,
-  IdentifyTraits
-} from '../models'
+import { AllTrackingEvents, AnalyticsEvent, IdentifyTraits } from '../models'
 import { AudioPlayer } from '../services/audio-player'
 import { AudiusBackend } from '../services/audius-backend'
 import { Env } from '../services/env'

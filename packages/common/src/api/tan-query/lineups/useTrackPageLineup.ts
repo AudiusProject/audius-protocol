@@ -241,8 +241,6 @@ export const useTrackPageLineup = (
  * live observer so the warmed data is shared with `TrackScreenLineup`'s own
  * query.
  */
-export const usePrefetchTrackPageLineup = (
-  trackId: ID | null | undefined
-) => {
+export const usePrefetchTrackPageLineup = (trackId: ID | null | undefined) => {
   useTrackPageLineup({ trackId })
 }

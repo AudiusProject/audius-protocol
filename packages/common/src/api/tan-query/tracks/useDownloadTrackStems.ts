@@ -169,8 +169,8 @@ export const useGetStemsArchiveJobStatus = (
     },
     staleTime: 0,
     gcTime: 0,
-    enabled: !!jobId,
-    ...options
+    ...options,
+    enabled: !!jobId && options?.enabled !== false
   })
 
   const jobState = query.data?.state
