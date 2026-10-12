@@ -4,7 +4,6 @@ import {
   signOutActions,
   getContext
 } from '@audius/common/store'
-import { disconnect } from '@wagmi/core'
 import { takeLatest, put, call } from 'redux-saga/effects'
 
 import { getLoadedAppKit } from 'app/appkit'
@@ -23,6 +22,8 @@ function* watchSignOut() {
       // If AppKit never loaded there is no wallet connection to disconnect.
       const wagmiConfig = getLoadedAppKit()?.wagmiAdapter.wagmiConfig
       if (wagmiConfig && wagmiConfig.state.status === 'connected') {
+        // Already loaded along with AppKit
+        const { disconnect } = yield call(() => import('@wagmi/core'))
         yield call(disconnect, wagmiConfig)
       }
       yield put(resetAccount())

@@ -6,7 +6,6 @@ import {
   createHedgehogWalletClient,
   type AudiusWalletClient
 } from '@audius/sdk'
-import { getWalletClient, reconnect } from '@wagmi/core'
 import { type WalletClient } from 'viem'
 
 import { hasPersistedWalletConnection, loadAppKit } from 'app/appkit'
@@ -47,6 +46,7 @@ export const getAudiusWalletClient = async (): Promise<AudiusWalletClient> => {
     return createHedgehogWalletClient(authService.hedgehogInstance)
   }
   const wagmiConfig = appkit.wagmiAdapter.wagmiConfig
+  const { getWalletClient, reconnect } = await import('@wagmi/core')
 
   // A freshly loaded config rehydrates as 'disconnected'. WagmiProvider only
   // starts the reconnect when it re-renders with this config, which may not

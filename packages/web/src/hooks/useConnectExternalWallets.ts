@@ -12,7 +12,7 @@ import {
 } from '@reown/appkit/react'
 import { useSwitchAccount, useAccount } from 'wagmi'
 
-import { appkitModal, audiusChain } from 'app/ReownAppKitModal'
+import { appkitModal, audiusChain, wagmiAdapter } from 'app/ReownAppKitModal'
 /**
  * Error when trying to associate a wallet that was already associated
  */
@@ -51,7 +51,10 @@ export const useConnectExternalWallets = (
     solana: string | undefined
     eth: string | undefined
   } | null>(null)
-  const { switchAccountAsync } = useSwitchAccount()
+  // Config is passed explicitly since there is no app-wide WagmiProvider
+  const { switchAccountAsync } = useSwitchAccount({
+    config: wagmiAdapter.wagmiConfig
+  })
   const { disconnect } = useDisconnect()
 
   // The state goes from modal open => connecting
@@ -60,7 +63,9 @@ export const useConnectExternalWallets = (
   const [isConnecting, setIsConnecting] = useState(false)
 
   // Keep track of any existing connected external wallets
-  const { isConnected, connector, chainId } = useAccount()
+  const { isConnected, connector, chainId } = useAccount({
+    config: wagmiAdapter.wagmiConfig
+  })
   const originalConnectorRef = useRef(connector)
   const originalChainIdRef = useRef(chainId)
   const usingExternalWalletAuthRef = useRef(
