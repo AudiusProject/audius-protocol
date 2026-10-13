@@ -4,7 +4,7 @@ import {
   useQueryContext,
   pollUntilAudioBalanceChanges
 } from '@audius/common/api'
-import { createUserBankIfNeeded } from '@audius/common/services'
+import { createUserBankIfNeeded } from '@audius/common/src/services/audius-backend/solana'
 import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react'
 import { VersionedTransaction } from '@solana/web3.js'
 import {

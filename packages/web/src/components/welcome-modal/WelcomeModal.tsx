@@ -4,7 +4,6 @@ import { useCurrentAccountUser } from '@audius/common/api'
 import { imageProfilePicEmpty } from '@audius/common/assets'
 import { welcomeModalMessages } from '@audius/common/messages'
 import { Name, SquareSizes } from '@audius/common/models'
-import { registerNiceModalId } from '@audius/common/services'
 import { fillString, route } from '@audius/common/utils'
 import {
   Modal,
@@ -137,6 +136,3 @@ export const WelcomeModal = NiceModal.create(() => {
     </Root>
   )
 })
-
-NiceModal.register('Welcome', WelcomeModal)
-registerNiceModalId('Welcome')

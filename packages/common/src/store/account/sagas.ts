@@ -2,9 +2,11 @@ import { HedgehogWalletNotFoundError, Id } from '@audius/sdk'
 import { SagaIterator } from 'redux-saga'
 import {
   call,
+  delay,
   fork,
   put,
   select,
+  spawn,
   takeEvery,
   takeLatest
 } from 'typed-redux-saga'
@@ -19,10 +21,11 @@ import {
   getWalletAccountSaga
 } from '~/api'
 import { getAccountStatusQueryKey } from '~/api/tan-query/users/account/useAccountStatus'
-import { AccountUserMetadata, Status, UserMetadata } from '~/models'
+import { AccountUserMetadata, ID, Status, UserMetadata } from '~/models'
 import { getContext } from '~/store/effects'
 import { chatActions } from '~/store/pages/chat'
 import { UPLOAD_TRACKS_SUCCEEDED } from '~/store/upload/actions'
+import dayjs from '~/utils/dayjs'
 
 import { fetchProfile } from '../pages/profile/actions'
 import { getSDK } from '../sdkUtils'
@@ -55,14 +58,27 @@ import { AccountState } from './types'
 
 const { fetchBlockees, fetchBlockers } = chatActions
 const IP_STORAGE_KEY = 'user-ip-timestamp'
+const BLOCK_LIST_FETCH_DELAY_MS = 5000
+const TIMEZONE_STORAGE_KEY = 'user-timezone-sync'
+// Re-send the timezone at least this often even when it hasn't changed
+const TIMEZONE_REFRESH_MS = 7 * 24 * 60 * 60 * 1000
 
 function* handleFetchTrackCount() {
   const currentUserId = yield* call(queryCurrentUserId)
   const accountUser = yield* call(queryAccountUser)
   const handle = accountUser?.handle
-  const sdk = yield* getSDK()
 
   if (!currentUserId || !handle) return
+
+  // The account endpoint fetches the user as themselves, so track_count
+  // already includes their unlisted tracks (it excludes deleted tracks and
+  // stems, same as the tracks endpoint).
+  if (typeof accountUser.track_count === 'number') {
+    yield* put(setHasTracks(accountUser.track_count > 0))
+    return
+  }
+
+  const sdk = yield* getSDK()
 
   try {
     const { data = [] } = yield* call(
@@ -91,7 +107,6 @@ function* initializeMetricsForUser({
   accountUser: UserMetadata
   web3WalletAddress: string
 }) {
-  const solanaWalletService = yield* getContext('solanaWalletService')
   const analytics = yield* getContext('analytics')
   const sdk = yield* getSDK()
   const queryClient = yield* getContext('queryClient')
@@ -106,7 +121,6 @@ function* initializeMetricsForUser({
 
     const { user: web3User } = accountData ?? {}
 
-    let solanaWallet
     let managerUserId
     let managerHandle
 
@@ -114,21 +128,6 @@ function* initializeMetricsForUser({
     if (web3User && web3User.user_id !== accountUser.user_id) {
       managerUserId = web3User.user_id
       managerHandle = web3User.handle
-    } else {
-      // If not a managed account, identify the Solana wallet associated with
-      // the hedgehog wallet
-      try {
-        const keypair = yield* call([
-          solanaWalletService,
-          solanaWalletService.getKeypair
-        ])
-        if (!keypair) {
-          throw new Error('No keypair found')
-        }
-        solanaWallet = keypair.publicKey.toBase58()
-      } catch (e) {
-        console.error('Failed to fetch Solana root wallet during identify()', e)
-      }
     }
 
     const traits = {
@@ -138,8 +137,7 @@ function* initializeMetricsForUser({
       name: accountUser.name,
       userId: accountUser.user_id,
       managerHandle,
-      managerUserId,
-      solanaWallet
+      managerUserId
     }
 
     yield* call([analytics, analytics.identify], traits)
@@ -151,7 +149,6 @@ export function* fetchAccountAsync({
 }: {
   shouldMarkAccountAsLoading: boolean
 }) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   const localStorage = yield* getContext('localStorage')
   const sdk = yield* getSDK()
@@ -232,11 +229,16 @@ export function* fetchAccountAsync({
 
   if (user.handle) {
     // guest account don't have handles
-    try {
-      yield* call(recordIPIfNotRecent, user.handle)
-    } catch (e) {
-      console.error('FetchAccountAsync', e)
-    }
+    const handle = user.handle
+    // Not needed for the account to be usable, so don't block on identity.
+    // spawn, not fork: callers of fetchAccountAsync shouldn't wait on it.
+    yield* spawn(function* () {
+      try {
+        yield* call(recordIPIfNotRecent, handle)
+      } catch (e) {
+        console.error('FetchAccountAsync', e)
+      }
+    })
   }
 
   // Cache the account and put the signedIn action. We're done.
@@ -251,9 +253,14 @@ export function* fetchAccountAsync({
   yield* put(fetchAccountSucceeded(formattedAccount))
   queryClient.setQueryData(getAccountStatusQueryKey(), Status.SUCCESS)
 
-  // Fetch user's chat blockee and blocker list after fetching their account
-  yield* put(fetchBlockees())
-  yield* put(fetchBlockers())
+  // Fetch user's chat blockee and blocker list after fetching their account.
+  // Only chat send checks read these (and failed sends refetch them), so let
+  // the first screen load first.
+  yield* spawn(function* () {
+    yield* delay(BLOCK_LIST_FETCH_DELAY_MS)
+    yield* put(fetchBlockees())
+    yield* put(fetchBlockers())
+  })
 
   yield* put(
     setWalletAddresses({ currentUser: wallet, web3User: web3WalletAddress })
@@ -275,7 +282,7 @@ export function* fetchAccountAsync({
 
   yield* put(showPushNotificationConfirmation())
 
-  yield* fork(audiusBackendInstance.updateUserLocationTimezone, { sdk })
+  yield* fork(syncUserTimezone, user.user_id)
 
   // Fetch the profile so we get everything we need to populate
   // the left nav / other site-wide metadata.
@@ -377,6 +384,47 @@ function* setLocalStorageAccountAndUser(
     [localStorage, localStorage.setAudiusAccountUser],
     cachedUser ?? accountUser
   )
+}
+
+/**
+ * Sends the device timezone to identity only when it changed for this user,
+ * or the last send is older than TIMEZONE_REFRESH_MS.
+ */
+function* syncUserTimezone(userId: ID) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const localStorage = yield* getContext('localStorage')
+  const sdk = yield* getSDK()
+  try {
+    const timezone = dayjs.tz.guess()
+    const storedStr = yield* call(
+      [localStorage, localStorage.getItem],
+      TIMEZONE_STORAGE_KEY
+    )
+    const stored: { userId: ID; timezone: string; timestamp: number } | null =
+      storedStr ? JSON.parse(storedStr) : null
+    if (
+      stored &&
+      stored.userId === userId &&
+      stored.timezone === timezone &&
+      Date.now() - stored.timestamp < TIMEZONE_REFRESH_MS
+    ) {
+      return
+    }
+
+    const result = yield* call(
+      audiusBackendInstance.updateUserLocationTimezone,
+      { sdk }
+    )
+    if (result && !result.error) {
+      yield* call(
+        [localStorage, localStorage.setItem],
+        TIMEZONE_STORAGE_KEY,
+        JSON.stringify({ userId, timezone, timestamp: Date.now() })
+      )
+    }
+  } catch (e) {
+    console.error('Failed to sync user timezone', e)
+  }
 }
 
 function* recordIPIfNotRecent(handle: string): SagaIterator {

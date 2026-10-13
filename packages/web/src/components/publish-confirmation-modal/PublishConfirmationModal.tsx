@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { registerNiceModalId } from '@audius/common/services'
 import { usePublishConfirmationModal } from '@audius/common/store'
 import {
   Button,
@@ -58,6 +57,3 @@ export const PublishConfirmationModal = NiceModal.create(() => {
     </Modal>
   )
 })
-
-NiceModal.register('PublishConfirmation', PublishConfirmationModal)
-registerNiceModalId('PublishConfirmation')

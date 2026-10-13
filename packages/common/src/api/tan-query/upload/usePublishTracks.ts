@@ -7,7 +7,6 @@ import {
   type USDCPurchaseConditions,
   Name
 } from '~/models'
-import { createUserBankIfNeeded } from '~/services/audius-backend'
 import { ProgressStatus, uploadActions } from '~/store'
 import type { TrackMetadataForUpload } from '~/store'
 
@@ -67,13 +66,17 @@ export const publishTracks = async (
         isContentUSDCPurchaseGated(p.metadata.download_conditions)
     )
   ) {
-    createUserBankIfNeeded(sdk, {
-      mint: 'USDC',
-      ethAddress,
-      recordAnalytics: track
-    }).catch((error) => {
-      console.error(error)
-    })
+    import('~/services/audius-backend/solana')
+      .then(({ createUserBankIfNeeded }) =>
+        createUserBankIfNeeded(sdk, {
+          mint: 'USDC',
+          ethAddress,
+          recordAnalytics: track
+        })
+      )
+      .catch((error) => {
+        console.error(error)
+      })
   }
 
   return await Promise.all(

@@ -1,6 +1,13 @@
 import { uuid } from '@audius/common/utils'
-import Jimp from 'jimp'
 import ReactNativeBlobUtil from 'react-native-blob-util'
+
+import {
+  compositeImage,
+  createImage,
+  encodeJpegBase64,
+  readImage,
+  resizeImage
+} from './image/rgbaImage'
 
 const {
   fs: { dirs, writeFile }
@@ -11,39 +18,40 @@ const canvasHeight = 1000
 const imageWidth = canvasWidth / 2
 const imageHeight = canvasHeight / 2
 
-const mimeType = Jimp.MIME_JPEG
+const mimeType = 'image/jpeg'
+// jimp's default JPEG quality
+const jpegQuality = 100
 
 export async function generatePlaylistArtwork(imageUrls: string[]) {
   const images = await Promise.all(
-    imageUrls.map((imageUrl) => Jimp.read(imageUrl))
+    imageUrls.map((imageUrl) => readImage(imageUrl))
   )
 
-  let newImage: Jimp
+  let newImage = images[0]
 
-  if (images.length === 1) {
-    newImage = images[0]
-  } else {
-    newImage = new Jimp(canvasWidth, canvasHeight)
+  if (images.length !== 1) {
+    newImage = createImage(canvasWidth, canvasHeight)
 
     for (let i = 0; i < 4; i++) {
       const image = images[i]
       if (image) {
-        image.resize(imageWidth, imageHeight)
-
         // Calculate the x and y position based on the quadrant
         const x = i % 2 === 0 ? 0 : imageWidth
         const y = i < 2 ? 0 : imageHeight
 
-        // Composite the image onto the canvas
-        newImage.composite(image, x, y)
+        compositeImage(
+          newImage,
+          resizeImage(image, imageWidth, imageHeight),
+          x,
+          y
+        )
       }
     }
   }
 
   const fileName = uuid()
   const url = `${dirs.CacheDir}/${fileName}.jpg`
-  const imageContents = await newImage.getBase64Async(mimeType)
-  const [, base64Contents] = imageContents.split(',')
+  const base64Contents = encodeJpegBase64(newImage, jpegQuality)
   await writeFile(url, base64Contents, 'base64')
 
   return {

@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect } from 'react'
 
 import {
   useFormattedUSDCBalance,
@@ -6,7 +6,12 @@ import {
 } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
 import { Name } from '@audius/common/models'
-import { useAddCashModal, useWithdrawUSDCModal } from '@audius/common/store'
+import {
+  buyUSDCActions,
+  useAddCashModal,
+  useWithdrawUSDCModal
+} from '@audius/common/store'
+import { useDispatch } from 'react-redux'
 
 import {
   Box,
@@ -25,6 +30,12 @@ export const CashWallet = () => {
   const { onOpen: openAddCashModal } = useAddCashModal()
   const { onOpen: openWithdrawUSDCModal } = useWithdrawUSDCModal()
   const { balanceFormatted, isLoading } = useFormattedUSDCBalance()
+  const dispatch = useDispatch()
+
+  // Check for USDC stuck in the root wallet from an interrupted onramp
+  useEffect(() => {
+    dispatch(buyUSDCActions.startRecoveryIfNecessary())
+  }, [dispatch])
 
   const handleAddCash = useCallback(() => {
     openAddCashModal()

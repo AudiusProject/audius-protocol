@@ -1,9 +1,6 @@
-import { getAssociatedTokenAddressSync } from '@solana/spl-token'
-import { PublicKey } from '@solana/web3.js'
 import { useQuery } from '@tanstack/react-query'
 
 import { SolanaWalletAddress } from '~/models/Wallet'
-import { getJupiterQuoteByMintWithRetry } from '~/services/Jupiter'
 import { SOL_MINT, TOKEN_LISTING_MAP } from '~/store/ui/shared/tokenConstants'
 import { isValidSolAddress } from '~/store/wallet/utils'
 
@@ -46,7 +43,17 @@ export const useDestinationUsdcAccountCheck = (
   return useQuery<DestinationUsdcAccountStatus>({
     queryKey: getDestinationUsdcAccountQueryKey(destinationAddress),
     queryFn: async () => {
-      const sdk = await audiusSdk()
+      const [
+        sdk,
+        { getAssociatedTokenAddressSync },
+        { PublicKey },
+        { getJupiterQuoteByMintWithRetry }
+      ] = await Promise.all([
+        audiusSdk(),
+        import('@solana/spl-token'),
+        import('@solana/web3.js'),
+        import('~/services/Jupiter')
+      ])
       const connection = sdk.services.solanaClient.connection
       const mint = new PublicKey(env.USDC_MINT_ADDRESS)
       const destinationWallet = new PublicKey(destinationAddress!)

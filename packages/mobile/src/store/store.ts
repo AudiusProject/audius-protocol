@@ -15,10 +15,10 @@ import type {
 } from 'common/store/pages/signon/types'
 import { Platform } from 'react-native'
 import RNRestart from 'react-native-restart'
-import type { Store } from 'redux'
+import type { Action, Store } from 'redux'
 import { createStore, combineReducers, applyMiddleware } from 'redux'
 import { persistStore } from 'redux-persist'
-import createSagaMiddleware from 'redux-saga'
+import createSagaMiddleware, { stdChannel } from 'redux-saga'
 import thunk from 'redux-thunk'
 
 import { queryClient } from 'app/services/query-client'
@@ -107,9 +107,14 @@ const rootReducer = combineReducers({
   purchaseVendor
 })
 
+// Shared with lazily loaded sagas so they can be handed actions that
+// arrived before they started (see lazySagas)
+const sagaChannel = stdChannel<Action>()
+storeContext.sagaChannel = sagaChannel
 const sagaMiddleware = createSagaMiddleware({
   context: storeContext,
-  onError: onSagaError
+  onError: onSagaError,
+  channel: sagaChannel
 })
 
 const middlewares = [

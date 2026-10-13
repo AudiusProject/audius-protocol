@@ -20,6 +20,80 @@ const fixedDecimalPath = path.resolve(__dirname, '../../packages/fixed-decimal')
 const resolveModule = (module) =>
   path.resolve(__dirname, '../../node_modules', module)
 
+// Only the English BIP-39 wordlist is used. viem/accounts re-exports all ten
+// @scure/bip39 lists and the legacy bip39 package requires all of its JSON
+// lists, which together add ~550 KB to the bundle.
+const strippedBip39Wordlist = path.resolve(
+  __dirname,
+  'src/shims/stripped-bip39-wordlist.js'
+)
+const resolveStrippedBip39Wordlist = (moduleName, originModulePath) => {
+  // viem reads these lazily through getters, so an empty module is enough.
+  const scure = moduleName.match(/^@scure\/bip39\/wordlists\/([\w-]+?)(\.js)?$/)
+  if (scure && scure[1] !== 'english') return { type: 'empty' }
+  // bip39 requires each list inside a try/catch and skips the ones that throw.
+  const legacy = moduleName.match(/^\.\/wordlists\/(\w+)\.json$/)
+  if (
+    legacy &&
+    legacy[1] !== 'english' &&
+    /[/\\]bip39[/\\]src[/\\]/.test(originModulePath ?? '')
+  ) {
+    return { filePath: strippedBip39Wordlist, type: 'sourceFile' }
+  }
+  return null
+}
+
+// Packages installed more than once (nested copies with the same major
+// version) are bundled once each. Point every same-major copy at the newest
+// one. Copies with a different major version, or a missing canonical copy,
+// resolve normally. @noble/hashes is excluded: 1.7 renamed `_assert.bytes`
+// to `abytes`, and older consumers like @scure/bip32 (viem's HD derivation)
+// still call `bytes`.
+const rootModules = path.resolve(__dirname, '../../node_modules')
+const canonicalPackages = {
+  '@noble/curves': `${rootModules}/@solana/wallet-standard-util/node_modules/@noble/curves`,
+  '@babel/runtime': path.resolve(
+    __dirname,
+    '../web/node_modules/@babel/runtime'
+  ),
+  buffer: path.resolve(__dirname, 'node_modules/buffer'),
+  color: path.resolve(__dirname, 'node_modules/color'),
+  'react-use': `${rootModules}/react-use`,
+  semver: `${rootModules}/@bravemobile/react-native-code-push/node_modules/semver`,
+  uuid: `${rootModules}/jayson/node_modules/uuid`
+}
+const majorVersions = new Map()
+const getMajorVersion = (packageDir) => {
+  if (!majorVersions.has(packageDir)) {
+    let major = null
+    try {
+      const { version } = JSON.parse(
+        fs.readFileSync(path.join(packageDir, 'package.json'), 'utf8')
+      )
+      major = version.split('.')[0]
+    } catch {}
+    majorVersions.set(packageDir, major)
+  }
+  return majorVersions.get(packageDir)
+}
+const dedupedPackagePattern = new RegExp(
+  `^(.*[/\\\\]node_modules[/\\\\](${Object.keys(canonicalPackages)
+    .map((name) => name.replace('/', '[/\\\\]'))
+    .join('|')}))([/\\\\].*)$`
+)
+const dedupeResolution = (resolution) => {
+  if (resolution?.type !== 'sourceFile') return resolution
+  const match = resolution.filePath.match(dedupedPackagePattern)
+  if (!match) return resolution
+  const [, packageDir, name, rest] = match
+  const canonicalDir = canonicalPackages[name.replace('\\', '/')]
+  if (packageDir === canonicalDir) return resolution
+  const major = getMajorVersion(canonicalDir)
+  if (!major || getMajorVersion(packageDir) !== major) return resolution
+  const filePath = canonicalDir + rest
+  return fs.existsSync(filePath) ? { ...resolution, filePath } : resolution
+}
+
 const getClientAliases = () => {
   const clientAbsolutePaths = [
     'assets',
@@ -156,96 +230,113 @@ const config = {
       ),
 
       // Various polyfills to enable @audius/sdk to run in react-native
+      crypto: path.resolve(__dirname, 'src/shims/crypto.js'),
       child_process: emptyPolyfill,
       fs: resolveModule('@dr.pogodin/react-native-fs'),
       net: emptyPolyfill,
       tls: resolveModule('tls-browserify')
     },
-    resolveRequest: (context, moduleName, platform) => {
-      // TS packages often use NodeNext-style `./file.js` in source; Metro looks for
-      // that path literally. If only `./file.ts` exists, resolve to it.
-      if (
-        moduleName.startsWith('.') &&
-        moduleName.endsWith('.js') &&
-        context.originModulePath
-      ) {
-        const fromDir = path.dirname(context.originModulePath)
-        const candidateJs = path.resolve(fromDir, moduleName)
-        if (!fs.existsSync(candidateJs)) {
-          const base = candidateJs.replace(/\.js$/, '')
-          const candidateTs = `${base}.ts`
-          const candidateTsx = `${base}.tsx`
-          if (fs.existsSync(candidateTs)) {
-            return { filePath: candidateTs, type: 'sourceFile' }
-          }
-          if (fs.existsSync(candidateTsx)) {
-            return { filePath: candidateTsx, type: 'sourceFile' }
-          }
-        }
-      }
-
-      if (moduleName === 'react') {
-        return {
-          filePath: `${resolveModule('react')}/index.js`,
-          type: 'sourceFile'
-        }
-      }
-
-      if (moduleName === 'react-redux') {
-        return {
-          filePath: `${resolveModule('react-redux')}/lib/index.js`,
-          type: 'sourceFile'
-        }
-      }
-
-      if (moduleName === '@metaplex-foundation/umi/serializers') {
-        return {
-          filePath: `${resolveModule(
-            '@metaplex-foundation/umi'
-          )}/dist/cjs/serializers.cjs`,
-          type: 'sourceFile'
-        }
-      }
-
-      if (moduleName === 'react-merge-refs') {
-        return {
-          filePath: `${resolveModule('react-merge-refs')}/dist/index.mjs`,
-          type: 'sourceFile'
-        }
-      }
-
-      if (moduleName === '@audius/sdk') {
-        return {
-          filePath: path.resolve(__dirname, '../sdk/src/index.ts'),
-          type: 'sourceFile'
-        }
-      }
-
-      if (moduleName === '@audius/fixed-decimal') {
-        return {
-          filePath: path.resolve(__dirname, '../fixed-decimal/src/index.ts'),
-          type: 'sourceFile'
-        }
-      }
-
-      if (moduleName === '@audius/spl') {
-        return {
-          filePath: path.resolve(__dirname, '../spl/src/index.ts'),
-          type: 'sourceFile'
-        }
-      }
-
-      if (moduleName === '@audius/eth') {
-        return {
-          filePath: path.resolve(__dirname, '../eth/src/index.ts'),
-          type: 'sourceFile'
-        }
-      }
-
-      return context.resolveRequest(context, moduleName, platform)
-    }
+    resolveRequest: (context, moduleName, platform) =>
+      dedupeResolution(resolveRequest(context, moduleName, platform))
   },
   maxWorkers: 2
+}
+
+function resolveRequest(context, moduleName, platform) {
+  // TS packages often use NodeNext-style `./file.js` in source; Metro looks for
+  // that path literally. If only `./file.ts` exists, resolve to it.
+  if (
+    moduleName.startsWith('.') &&
+    moduleName.endsWith('.js') &&
+    context.originModulePath
+  ) {
+    const fromDir = path.dirname(context.originModulePath)
+    const candidateJs = path.resolve(fromDir, moduleName)
+    if (!fs.existsSync(candidateJs)) {
+      const base = candidateJs.replace(/\.js$/, '')
+      const candidateTs = `${base}.ts`
+      const candidateTsx = `${base}.tsx`
+      if (fs.existsSync(candidateTs)) {
+        return { filePath: candidateTs, type: 'sourceFile' }
+      }
+      if (fs.existsSync(candidateTsx)) {
+        return { filePath: candidateTsx, type: 'sourceFile' }
+      }
+    }
+  }
+
+  const strippedWordlist = resolveStrippedBip39Wordlist(
+    moduleName,
+    context.originModulePath
+  )
+  if (strippedWordlist) return strippedWordlist
+
+  if (moduleName === 'react-router') {
+    return {
+      filePath: path.resolve(__dirname, 'src/shims/react-router.ts'),
+      type: 'sourceFile'
+    }
+  }
+
+  if (moduleName === 'react') {
+    return {
+      filePath: `${resolveModule('react')}/index.js`,
+      type: 'sourceFile'
+    }
+  }
+
+  if (moduleName === 'react-redux') {
+    return {
+      filePath: `${resolveModule('react-redux')}/lib/index.js`,
+      type: 'sourceFile'
+    }
+  }
+
+  if (moduleName === '@metaplex-foundation/umi/serializers') {
+    return {
+      filePath: `${resolveModule(
+        '@metaplex-foundation/umi'
+      )}/dist/cjs/serializers.cjs`,
+      type: 'sourceFile'
+    }
+  }
+
+  if (moduleName === 'react-merge-refs') {
+    return {
+      filePath: `${resolveModule('react-merge-refs')}/dist/index.mjs`,
+      type: 'sourceFile'
+    }
+  }
+
+  if (moduleName === '@audius/sdk') {
+    return {
+      filePath: path.resolve(__dirname, '../sdk/src/index.ts'),
+      type: 'sourceFile'
+    }
+  }
+
+  if (moduleName === '@audius/fixed-decimal') {
+    return {
+      filePath: path.resolve(__dirname, '../fixed-decimal/src/index.ts'),
+      type: 'sourceFile'
+    }
+  }
+
+  if (moduleName === '@audius/spl') {
+    return {
+      filePath: path.resolve(__dirname, '../spl/src/index.ts'),
+      type: 'sourceFile'
+    }
+  }
+
+  if (moduleName === '@audius/eth') {
+    return {
+      filePath: path.resolve(__dirname, '../eth/src/index.ts'),
+      type: 'sourceFile'
+    }
+  }
+
+  return context.resolveRequest(context, moduleName, platform)
 }
 
 const mergedConfig = mergeConfig(defaultConfig, config)

@@ -6,11 +6,7 @@ import {
   useAccountStatus
 } from '@audius/common/api'
 import { MobileOS, Status } from '@audius/common/models'
-import {
-  buyUSDCActions,
-  chatActions,
-  playbackActions
-} from '@audius/common/store'
+import { chatActions, playbackActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { PortalHost } from '@gorhom/portal'
 import type { NavigatorScreenParams } from '@react-navigation/native'
@@ -23,7 +19,7 @@ import {
   getStartedSignUpProcess,
   getWelcomeModalShown
 } from 'common/store/pages/signon/selectors'
-import { Platform } from 'react-native'
+import { InteractionManager, Platform } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
@@ -49,10 +45,31 @@ import { useResetNotificationBadgeCount } from './useResetNotificationBadgeCount
 const { fetchMoreChats, fetchUnreadMessagesCount, connect, disconnect } =
   chatActions
 const { reset } = playbackActions
-const { startRecoveryIfNecessary } = buyUSDCActions
 const { FEED_PAGE } = route
 
 const Stack = createNativeStackNavigator()
+
+// Upper bound in case an interaction handle never clears
+const STARTUP_DEFER_MAX_MS = 3000
+
+/** Runs `fn` once startup interactions settle. Returns a cancel function. */
+const runAfterStartup = (fn: () => void) => {
+  let done = false
+  const run = () => {
+    if (done) return
+    done = true
+    clearTimeout(timeout)
+    task.cancel()
+    fn()
+  }
+  const timeout = setTimeout(run, STARTUP_DEFER_MAX_MS)
+  const task = InteractionManager.runAfterInteractions(run)
+  return () => {
+    done = true
+    clearTimeout(timeout)
+    task.cancel()
+  }
+}
 
 export type RootScreenParamList = {
   UpdateStack: undefined
@@ -110,13 +127,18 @@ export const RootScreen = () => {
 
   // Connect to chats once the server confirms the account.
   useEffect(() => {
+    let cancelConnect: (() => void) | undefined
     if (accountStatus === Status.SUCCESS) {
-      dispatch(connect())
-      dispatch(fetchMoreChats())
+      // The socket and chat list aren't needed for the first screen; the
+      // unread badge comes from fetchUnreadMessagesCount right away.
+      cancelConnect = runAfterStartup(() => {
+        dispatch(connect())
+        dispatch(fetchMoreChats())
+      })
       dispatch(fetchUnreadMessagesCount())
-      dispatch(startRecoveryIfNecessary())
     }
     return () => {
+      cancelConnect?.()
       dispatch(disconnect())
     }
   }, [dispatch, accountStatus])
@@ -159,7 +181,10 @@ export const RootScreen = () => {
         screenOptions={{ gestureEnabled: false, headerShown: false }}
       >
         {updateRequired ? (
-          <Stack.Screen name='UpdateStack' component={UpdateRequiredScreen} />
+          <Stack.Screen
+            name='UpdateStack'
+            getComponent={() => UpdateRequiredScreen}
+          />
         ) : null}
 
         {showHomeStack ? (
@@ -178,12 +203,12 @@ export const RootScreen = () => {
         )}
         <Stack.Screen
           name='ResetPassword'
-          component={ResetPasswordModalScreen}
+          getComponent={() => ResetPasswordModalScreen}
           options={{ presentation: 'modal' }}
         />
         <Stack.Screen
           name='OAuthScreen'
-          component={OAuthScreen}
+          getComponent={() => OAuthScreen}
           options={{ presentation: 'modal' }}
         />
         <Stack.Screen name='TokenPicker' options={{ presentation: 'modal' }}>

@@ -15,8 +15,8 @@ import type {
   SolanaRelayService,
   SolanaWalletAdapter
 } from './services/Solana'
-import { ClaimableTokensClient } from './services/Solana/programs/ClaimableTokensClient'
-import { RewardManagerClient } from './services/Solana/programs/RewardManagerClient'
+import type { ClaimableTokensClient } from './services/Solana/programs/ClaimableTokensClient'
+import type { RewardManagerClient } from './services/Solana/programs/RewardManagerClient'
 import type { SolanaClient } from './services/Solana/programs/SolanaClient'
 import type { StorageService } from './services/Storage'
 import type { StorageNodeSelectorService } from './services/StorageNodeSelector'

@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { registerNiceModalId } from '@audius/common/services'
 import { useFinalizeWinnersConfirmationModal } from '@audius/common/store'
 import {
   Modal,
@@ -68,9 +67,3 @@ export const FinalizeWinnersConfirmationModal = NiceModal.create(() => {
     </Modal>
   )
 })
-
-NiceModal.register(
-  'FinalizeWinnersConfirmation',
-  FinalizeWinnersConfirmationModal
-)
-registerNiceModalId('FinalizeWinnersConfirmation')

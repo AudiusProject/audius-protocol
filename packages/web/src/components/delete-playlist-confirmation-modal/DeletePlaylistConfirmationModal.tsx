@@ -1,7 +1,6 @@
 import { useCallback, useContext, useMemo } from 'react'
 
 import { useDeleteCollection } from '@audius/common/api'
-import { registerNiceModalId } from '@audius/common/services'
 import { deletePlaylistConfirmationModalUISelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import NiceModal, { useModal } from '@ebay/nice-modal-react'
@@ -66,11 +65,5 @@ const DeletePlaylistConfirmationModal = NiceModal.create(() => {
     />
   )
 })
-
-NiceModal.register(
-  'DeletePlaylistConfirmation',
-  DeletePlaylistConfirmationModal
-)
-registerNiceModalId('DeletePlaylistConfirmation')
 
 export default DeletePlaylistConfirmationModal

@@ -1,8 +1,5 @@
-import { getAssociatedTokenAddressSync } from '@solana/spl-token'
-import { PublicKey } from '@solana/web3.js'
 import { useQuery } from '@tanstack/react-query'
 
-import { getJupiterQuoteByMintWithRetry } from '~/services/Jupiter'
 import { SOL_MINT, TOKEN_LISTING_MAP } from '~/store/ui/shared/tokenConstants'
 
 import { QUERY_KEYS } from '../queryKeys'
@@ -34,7 +31,17 @@ export const useRootWalletUsdcAccountCheck = (
   return useQuery<DestinationUsdcAccountStatus>({
     queryKey: getRootWalletUsdcAccountQueryKey(),
     queryFn: async () => {
-      const sdk = await audiusSdk()
+      const [
+        sdk,
+        { getAssociatedTokenAddressSync },
+        { PublicKey },
+        { getJupiterQuoteByMintWithRetry }
+      ] = await Promise.all([
+        audiusSdk(),
+        import('@solana/spl-token'),
+        import('@solana/web3.js'),
+        import('~/services/Jupiter')
+      ])
       const connection = sdk.services.solanaClient.connection
 
       const keypair = await solanaWalletService.getKeypair()

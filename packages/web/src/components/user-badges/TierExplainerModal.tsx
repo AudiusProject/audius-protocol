@@ -1,7 +1,6 @@
 import { useCallback, ReactElement } from 'react'
 
 import { BadgeTier } from '@audius/common/models'
-import { registerNiceModalId } from '@audius/common/services'
 import { route, Nullable } from '@audius/common/utils'
 import {
   Button,
@@ -148,8 +147,5 @@ const TierExplainerModal = NiceModal.create(() => {
     </Modal>
   )
 })
-
-NiceModal.register('TiersExplainer', TierExplainerModal)
-registerNiceModalId('TiersExplainer')
 
 export default TierExplainerModal

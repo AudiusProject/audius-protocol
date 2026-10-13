@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect } from 'react'
+import React, { lazy, Suspense, useEffect, useState } from 'react'
 
 import { SyncLocalStorageUserProvider } from '@audius/common/api'
 import { route } from '@audius/common/utils'
@@ -57,6 +57,34 @@ const AppModal = lazy(() => import('pages/modals/AppModal'))
 const MERCHANT_ID = env.COINFLOW_MERCHANT_ID
 const IS_PRODUCTION = env.ENVIRONMENT === 'production'
 
+/**
+ * Coinflow's fraud protection only needs to be running before a checkout, so
+ * mount it once the browser is idle, in its own Suspense boundary, rather
+ * than having the page wait on its chunk.
+ */
+const DeferredCoinflowPurchaseProtection = () => {
+  const [ready, setReady] = useState(false)
+  useEffect(() => {
+    if ('requestIdleCallback' in window) {
+      const handle = window.requestIdleCallback(() => setReady(true), {
+        timeout: 5000
+      })
+      return () => window.cancelIdleCallback(handle)
+    }
+    const handle = setTimeout(() => setReady(true), 2000)
+    return () => clearTimeout(handle)
+  }, [])
+  if (!ready) return null
+  return (
+    <Suspense fallback={null}>
+      <CoinflowPurchaseProtection
+        merchantId={MERCHANT_ID || ''}
+        coinflowEnv={IS_PRODUCTION ? 'prod' : 'sandbox'}
+      />
+    </Suspense>
+  )
+}
+
 // Component to set up navigation ref for middleware (must be inside router context)
 const NavigationSetup = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate()
@@ -92,11 +120,8 @@ const RootLayout = () => {
                               Provider must mount inside them. */}
                           <NiceModal.Provider>
                             <SomethingWrong />
+                            <DeferredCoinflowPurchaseProtection />
                             <Suspense fallback={null}>
-                              <CoinflowPurchaseProtection
-                                merchantId={MERCHANT_ID || ''}
-                                coinflowEnv={IS_PRODUCTION ? 'prod' : 'sandbox'}
-                              />
                               <Outlet />
                             </Suspense>
                           </NiceModal.Provider>

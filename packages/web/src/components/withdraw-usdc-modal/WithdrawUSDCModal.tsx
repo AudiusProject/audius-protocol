@@ -4,11 +4,7 @@ import { useUSDCBalance } from '@audius/common/api'
 import { useFeatureFlag, useRemoteVar } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
 import { Name, Status } from '@audius/common/models'
-import {
-  IntKeys,
-  FeatureFlags,
-  registerNiceModalId
-} from '@audius/common/services'
+import { IntKeys, FeatureFlags } from '@audius/common/services'
 import {
   withdrawUSDCActions,
   withdrawUSDCSelectors,
@@ -217,6 +213,3 @@ export const WithdrawUSDCModal = NiceModal.create(() => {
     </Modal>
   )
 })
-
-NiceModal.register('WithdrawUSDCModal', WithdrawUSDCModal)
-registerNiceModalId('WithdrawUSDCModal')

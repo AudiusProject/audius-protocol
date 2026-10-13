@@ -3,7 +3,6 @@ import { useCallback, useEffect, useState } from 'react'
 import { DEFAULT_PURCHASE_AMOUNT_CENTS } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
 import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
-import { registerNiceModalId } from '@audius/common/services'
 import {
   buyUSDCActions,
   buyUSDCSelectors,
@@ -95,6 +94,3 @@ export const AddCashModal = NiceModal.create(() => {
     </ResponsiveModal>
   )
 })
-
-NiceModal.register('AddCashModal', AddCashModal)
-registerNiceModalId('AddCashModal')

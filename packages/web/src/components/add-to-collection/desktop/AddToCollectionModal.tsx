@@ -12,7 +12,6 @@ import {
   SquareSizes,
   Collection
 } from '@audius/common/models'
-import { registerNiceModalId } from '@audius/common/services'
 import {
   cacheCollectionsActions,
   addToCollectionUISelectors,
@@ -247,8 +246,5 @@ const CollectionItem = ({
     </div>
   )
 }
-
-NiceModal.register('AddToCollection', AddToCollectionModal)
-registerNiceModalId('AddToCollection')
 
 export default AddToCollectionModal
