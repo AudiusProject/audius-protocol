@@ -1,5 +1,4 @@
 import { AUDIO, AudioWei, wAUDIO } from '@audius/fixed-decimal'
-import type { LocalStorage } from '@audius/hedgehog'
 import {
   type AudiusSdkWithServices,
   Id,
@@ -29,6 +28,7 @@ import {
   PushNotifications
 } from '../../store'
 import { getErrorMessage, Maybe, Nullable } from '../../utils'
+import type { LocalStorage } from '../auth/hedgehogLib'
 
 import type { SolanaBackend } from './solanaBackend'
 
