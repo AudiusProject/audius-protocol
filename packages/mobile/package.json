@@ -84,7 +84,6 @@
     "@shopify/flash-list": "^1.8.3",
     "@snapchat/snap-kit-react-native": "0.4.0",
     "@solana-mobile/mobile-wallet-adapter-protocol": "2.2.5",
-    "@solana-mobile/mobile-wallet-adapter-protocol-web3js": "2.2.5",
     "@solana/web3.js": "1.98.0",
     "@stripe/crypto": "0.0.4",
     "@tanstack/query-async-storage-persister": "^5.62.7",
