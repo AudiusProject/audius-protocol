@@ -20,6 +20,29 @@ const fixedDecimalPath = path.resolve(__dirname, '../../packages/fixed-decimal')
 const resolveModule = (module) =>
   path.resolve(__dirname, '../../node_modules', module)
 
+// Only the English BIP-39 wordlist is used. viem/accounts re-exports all ten
+// @scure/bip39 lists and the legacy bip39 package requires all of its JSON
+// lists, which together add ~550 KB to the bundle.
+const strippedBip39Wordlist = path.resolve(
+  __dirname,
+  'src/shims/stripped-bip39-wordlist.js'
+)
+const resolveStrippedBip39Wordlist = (moduleName, originModulePath) => {
+  // viem reads these lazily through getters, so an empty module is enough.
+  const scure = moduleName.match(/^@scure\/bip39\/wordlists\/([\w-]+?)(\.js)?$/)
+  if (scure && scure[1] !== 'english') return { type: 'empty' }
+  // bip39 requires each list inside a try/catch and skips the ones that throw.
+  const legacy = moduleName.match(/^\.\/wordlists\/(\w+)\.json$/)
+  if (
+    legacy &&
+    legacy[1] !== 'english' &&
+    /[/\\]bip39[/\\]src[/\\]/.test(originModulePath ?? '')
+  ) {
+    return { filePath: strippedBip39Wordlist, type: 'sourceFile' }
+  }
+  return null
+}
+
 const getClientAliases = () => {
   const clientAbsolutePaths = [
     'assets',
@@ -183,6 +206,12 @@ const config = {
           }
         }
       }
+
+      const strippedWordlist = resolveStrippedBip39Wordlist(
+        moduleName,
+        context.originModulePath
+      )
+      if (strippedWordlist) return strippedWordlist
 
       if (moduleName === 'react') {
         return {
