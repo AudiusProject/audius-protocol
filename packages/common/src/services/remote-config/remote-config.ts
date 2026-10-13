@@ -7,24 +7,13 @@ import { Nullable } from '~/utils'
 
 import { Environment } from '../env'
 
-import {
-  remoteConfigIntDefaults,
-  remoteConfigStringDefaults,
-  remoteConfigDoubleDefaults,
-  remoteConfigBooleanDefaults
-} from './defaults'
+import { remoteConfigIntDefaults, remoteConfigStringDefaults } from './defaults'
 import {
   environmentFlagDefaults,
   FeatureFlags,
   flagDefaults
 } from './feature-flags'
-import {
-  IntKeys,
-  StringKeys,
-  DoubleKeys,
-  BooleanKeys,
-  AllRemoteConfigKeys
-} from './types'
+import { IntKeys, StringKeys, AllRemoteConfigKeys } from './types'
 
 // Constants
 // All optimizely feature keys are lowercase_snake
@@ -62,8 +51,6 @@ export type RemoteConfigOptions<Client> = {
 export const remoteConfig = <
   Client extends Pick<
     optimizely.Client,
-    | 'getFeatureVariableBoolean'
-    | 'getFeatureVariableDouble'
     | 'getFeatureVariableInteger'
     | 'getFeatureVariableString'
     | 'isFeatureEnabled'
@@ -178,15 +165,9 @@ export const remoteConfig = <
    * Access a remotely configured value.
    */
   function getRemoteVar(key: StringKeys): string | null
-  function getRemoteVar(key: BooleanKeys): boolean | null
   function getRemoteVar(key: IntKeys): number | null
-  function getRemoteVar(key: DoubleKeys): number | null
-  function getRemoteVar(
-    key: AllRemoteConfigKeys
-  ): number | string | boolean | null
-  function getRemoteVar(
-    key: AllRemoteConfigKeys
-  ): number | string | boolean | null {
+  function getRemoteVar(key: AllRemoteConfigKeys): number | string | null
+  function getRemoteVar(key: AllRemoteConfigKeys): number | string | null {
     // If the client is not ready yet, return early with `null`
     if (!client || !state.id) return null
 
@@ -201,29 +182,11 @@ export const remoteConfig = <
       )
     }
 
-    if (isStringKey(key)) {
-      return getValue(
-        remoteConfigStringDefaults,
-        key,
-        id,
-        client.getFeatureVariableString.bind(client)
-      )
-    }
-
-    if (isDoubleKey(key)) {
-      return getValue(
-        remoteConfigDoubleDefaults,
-        key,
-        id,
-        client.getFeatureVariableDouble.bind(client)
-      )
-    }
-
     return getValue(
-      remoteConfigBooleanDefaults,
+      remoteConfigStringDefaults,
       key,
       id,
-      client.getFeatureVariableBoolean.bind(client)
+      client.getFeatureVariableString.bind(client)
     )
   }
 
@@ -288,12 +251,6 @@ export const remoteConfig = <
   // Type predicates
   function isIntKey(key: AllRemoteConfigKeys): key is IntKeys {
     return !!Object.values(IntKeys).find((x) => x === key)
-  }
-  function isStringKey(key: AllRemoteConfigKeys): key is StringKeys {
-    return !!Object.values(StringKeys).find((x) => x === key)
-  }
-  function isDoubleKey(key: AllRemoteConfigKeys): key is DoubleKeys {
-    return !!Object.values(DoubleKeys).find((x) => x === key)
   }
 
   // Removes some boilerplate around getting values, falling back to defaults,
