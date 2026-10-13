@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { registerNiceModalId } from '@audius/common/services'
 import { useReplaceTrackConfirmationModal } from '@audius/common/store'
 import {
   Modal,
@@ -73,6 +72,3 @@ export const ReplaceTrackConfirmationModal = NiceModal.create(() => {
     </Modal>
   )
 })
-
-NiceModal.register('ReplaceTrackConfirmation', ReplaceTrackConfirmationModal)
-registerNiceModalId('ReplaceTrackConfirmation')

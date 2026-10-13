@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useRef, useState } from 'react'
 
 import { Name } from '@audius/common/models'
 import { playbackSelectors } from '@audius/common/store'
@@ -6,9 +6,16 @@ import { Flex, IconButton, IconIndent, Tooltip } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import { QueuePopover } from 'components/queue-popover'
 
 const { getPlaybackQueue } = playbackSelectors
+
+const loadQueuePopover = () => import('components/queue-popover')
+const QueuePopover = lazy(() =>
+  loadQueuePopover().then((m) => ({ default: m.QueuePopover }))
+)
+const prefetchQueuePopover = () => {
+  loadQueuePopover().catch(() => {})
+}
 
 const messages = {
   queue: 'Queue'
@@ -17,6 +24,9 @@ const messages = {
 export const QueueButton = () => {
   const anchorRef = useRef<HTMLDivElement | null>(null)
   const [isOpen, setIsOpen] = useState(false)
+  // Only mount (and load) the popover once it has been opened
+  const [hasOpened, setHasOpened] = useState(false)
+  if (isOpen && !hasOpened) setHasOpened(true)
   const queue = useSelector(getPlaybackQueue)
   const record = useRecord()
 
@@ -48,7 +58,12 @@ export const QueueButton = () => {
 
   return (
     <>
-      <Flex ref={anchorRef as any} alignItems='center' justifyContent='center'>
+      <Flex
+        ref={anchorRef as any}
+        alignItems='center'
+        justifyContent='center'
+        onMouseEnter={prefetchQueuePopover}
+      >
         <Tooltip text={messages.queue} placement='top' mount='body'>
           <Flex>
             <IconButton
@@ -62,11 +77,15 @@ export const QueueButton = () => {
           </Flex>
         </Tooltip>
       </Flex>
-      <QueuePopover
-        isVisible={isOpen}
-        anchorRef={anchorRef}
-        onClose={handleClose}
-      />
+      {hasOpened ? (
+        <Suspense fallback={null}>
+          <QueuePopover
+            isVisible={isOpen}
+            anchorRef={anchorRef}
+            onClose={handleClose}
+          />
+        </Suspense>
+      ) : null}
     </>
   )
 }

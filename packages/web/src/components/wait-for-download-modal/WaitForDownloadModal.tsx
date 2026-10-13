@@ -2,7 +2,6 @@ import { useCallback, useEffect } from 'react'
 
 import { useTrack, useUser } from '@audius/common/api'
 import { DownloadQuality } from '@audius/common/models'
-import { registerNiceModalId } from '@audius/common/services'
 import {
   useWaitForDownloadModal,
   tracksSocialActions,
@@ -123,6 +122,3 @@ export const WaitForDownloadModal = NiceModal.create(() => {
     </ModalDrawer>
   )
 })
-
-NiceModal.register('WaitForDownloadModal', WaitForDownloadModal)
-registerNiceModalId('WaitForDownloadModal')

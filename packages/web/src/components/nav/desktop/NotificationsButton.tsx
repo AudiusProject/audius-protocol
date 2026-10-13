@@ -1,4 +1,13 @@
-import { MouseEvent, useCallback, useEffect, useMemo, useRef } from 'react'
+import {
+  lazy,
+  MouseEvent,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 
 import {
   selectIsAccountComplete,
@@ -12,12 +21,17 @@ import { Flex, IconNotificationOn, NotificationCount } from '@audius/harmony'
 import { useSearchParam } from 'react-use'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import { NotificationPanel } from 'components/notification'
 import { AnnouncementModal } from 'components/notification/AnnouncementModal'
 import { useRequiresAccountFn } from 'hooks/useRequiresAccount'
 
 import { canAccess } from './NavHeader'
 import { NavHeaderButton } from './NavHeaderButton'
+
+const loadNotificationPanel = () =>
+  import('components/notification/NotificationPanel')
+const NotificationPanel = lazy(() =>
+  loadNotificationPanel().then((m) => ({ default: m.NotificationPanel }))
+)
 
 const messages = {
   label: (count: number) => `${count} unread notifications`
@@ -35,6 +49,11 @@ export const NotificationsButton = ({ size }: NotificationsButtonProps) => {
   })
   const buttonRef = useRef<HTMLButtonElement>(null)
   const { isOpen, onOpen, onClose } = useNotificationModal()
+  // Mount the panel on first hover or open. Mounting starts the
+  // notifications fetch, so hovering warms both the code and the data.
+  const [shouldMountPanel, setShouldMountPanel] = useState(false)
+  if (isOpen && !shouldMountPanel) setShouldMountPanel(true)
+  const handleMouseEnter = useCallback(() => setShouldMountPanel(true), [])
 
   const record = useRecord()
   const { requiresAccount } = useRequiresAccountFn(undefined, 'account')
@@ -85,31 +104,47 @@ export const NotificationsButton = ({ size }: NotificationsButtonProps) => {
     )
     if (shouldShowCount) {
       return (
-        <Flex css={{ cursor: 'pointer' }} onClick={() => onOpen()}>
+        <Flex
+          css={{ cursor: 'pointer' }}
+          onClick={() => onOpen()}
+          onMouseEnter={handleMouseEnter}
+        >
           <NotificationCount size='m' count={notificationCount}>
             {button}
           </NotificationCount>
         </Flex>
       )
     }
-    return <Flex onClick={handleToggleNotificationPanel}>{button}</Flex>
+    return (
+      <Flex
+        onClick={handleToggleNotificationPanel}
+        onMouseEnter={handleMouseEnter}
+      >
+        {button}
+      </Flex>
+    )
   }, [
     notificationCount,
     handleToggleNotificationPanel,
     isOpen,
     shouldShowCount,
     onOpen,
+    handleMouseEnter,
     size
   ])
 
   return (
     <>
       {notificationButton}
-      <NotificationPanel
-        anchorRef={buttonRef}
-        isOpen={isOpen}
-        onClose={onClose}
-      />
+      {shouldMountPanel ? (
+        <Suspense fallback={null}>
+          <NotificationPanel
+            anchorRef={buttonRef}
+            isOpen={isOpen}
+            onClose={onClose}
+          />
+        </Suspense>
+      ) : null}
       <AnnouncementModal />
     </>
   )
