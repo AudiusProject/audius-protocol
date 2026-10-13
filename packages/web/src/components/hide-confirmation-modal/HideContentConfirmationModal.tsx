@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { registerNiceModalId } from '@audius/common/services'
 import { useHideContentConfirmationModal } from '@audius/common/store'
 import {
   Modal,
@@ -67,6 +66,3 @@ export const HideContentConfirmationModal = NiceModal.create(() => {
     </Modal>
   )
 })
-
-NiceModal.register('HideContentConfirmation', HideContentConfirmationModal)
-registerNiceModalId('HideContentConfirmation')

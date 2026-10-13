@@ -11,7 +11,6 @@ import {
   usePurchasersAudience,
   useRemixersAudience
 } from '@audius/common/hooks'
-import { registerNiceModalId } from '@audius/common/services'
 import { chatActions, useCreateChatModal } from '@audius/common/src/store'
 import { formatNumberCommas } from '@audius/common/utils'
 import {
@@ -162,9 +161,6 @@ export const ChatBlastModal = NiceModal.create(() => {
     </Modal>
   )
 })
-
-NiceModal.register('ChatBlastModal', ChatBlastModal)
-registerNiceModalId('ChatBlastModal')
 
 const ChatBlastsFields = () => {
   const [field] = useField(TARGET_AUDIENCE_FIELD)

@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { registerNiceModalId } from '@audius/common/services'
 import { useLeavingAudiusModal } from '@audius/common/store'
 import {
   Modal,
@@ -73,6 +72,3 @@ export const LeavingAudiusModal = NiceModal.create(() => {
     </Modal>
   )
 })
-
-NiceModal.register('LeavingAudiusModal', LeavingAudiusModal)
-registerNiceModalId('LeavingAudiusModal')
