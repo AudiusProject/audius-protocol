@@ -11,9 +11,7 @@ import {
   getTrendingQueryKey,
   getTrendingUndergroundQueryKey,
   TRENDING_INITIAL_PAGE_SIZE,
-  TRENDING_LOAD_MORE_PAGE_SIZE,
-  useTrending,
-  useTrendingUnderground
+  TRENDING_LOAD_MORE_PAGE_SIZE
 } from '@audius/common/api'
 import { TimeRange } from '@audius/common/models'
 import {
@@ -47,6 +45,7 @@ import NavContext, {
 } from 'components/nav/mobile/NavContext'
 import { WinnersView } from 'pages/trending-page/components/desktop/WinnersView'
 import { TRENDING_MESSAGES } from 'pages/trending-page/constants'
+import { useTrendingQueries } from 'pages/trending-page/useTrendingQueries'
 import {
   updateWinnersWeekParam,
   isValidWinnersWeek,
@@ -113,18 +112,18 @@ const TrendingPageMobileContent = ({
     }),
     [trendingGenre]
   )
-  const weekQuery = useTrending({ timeRange: TimeRange.WEEK, ...trendingArgs })
-  const monthQuery = useTrending({
-    timeRange: TimeRange.MONTH,
-    ...trendingArgs
-  })
-  const allTimeQuery = useTrending({
-    timeRange: TimeRange.ALL_TIME,
-    ...trendingArgs
-  })
-
-  const undergroundQuery = useTrendingUnderground({
-    pageSize: UNDERGROUND_PAGE_SIZE
+  const {
+    weekQuery,
+    monthQuery,
+    allTimeQuery,
+    undergroundQuery,
+    prefetchTimeRanges,
+    prefetchUnderground
+  } = useTrendingQueries({
+    trendingArgs,
+    timeRange: trendingTimeRange,
+    isUndergroundVisible: category === 'underground',
+    undergroundPageSize: UNDERGROUND_PAGE_SIZE
   })
   const undergroundQuerySource = useMemo(
     () => ({
@@ -293,7 +292,12 @@ const TrendingPageMobileContent = ({
   useEffect(() => {
     setHeader(
       <Header title={messages.trending} className={styles.header}>
-        <Flex gap='s' alignItems='center' justifyContent='flex-end'>
+        <Flex
+          gap='s'
+          alignItems='center'
+          justifyContent='flex-end'
+          onPointerDown={prefetchUnderground}
+        >
           <FilterButton
             label={messages.tracks}
             value={category}
@@ -305,7 +309,13 @@ const TrendingPageMobileContent = ({
         </Flex>
       </Header>
     )
-  }, [setHeader, category, handleCategoryChange, categoryOptions])
+  }, [
+    setHeader,
+    category,
+    handleCategoryChange,
+    categoryOptions,
+    prefetchUnderground
+  ])
 
   const content =
     category === 'tracks' ? (
@@ -350,14 +360,16 @@ const TrendingPageMobileContent = ({
     <>
       {category === 'tracks' ? (
         <div className={styles.filterRow}>
-          <FilterButton
-            label={messages.thisWeek}
-            value={trendingTimeRange}
-            variant='replaceLabel'
-            onChange={(value) => handleTimeRangeChange(value as TimeRange)}
-            options={timeRangeOptions}
-            size='small'
-          />
+          <Flex onPointerDown={prefetchTimeRanges}>
+            <FilterButton
+              label={messages.thisWeek}
+              value={trendingTimeRange}
+              variant='replaceLabel'
+              onChange={(value) => handleTimeRangeChange(value as TimeRange)}
+              options={timeRangeOptions}
+              size='small'
+            />
+          </Flex>
           <SelectablePill
             type='button'
             size='large'
