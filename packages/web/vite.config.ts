@@ -87,7 +87,26 @@ export default defineConfig(async ({ mode }) => {
       rollupOptions: {
         output: {
           sourcemapBaseUrl:
-            env.VITE_ENV === 'production' ? SOURCEMAP_URL : undefined
+            env.VITE_ENV === 'production' ? SOURCEMAP_URL : undefined,
+          // Stable framework deps get their own chunk so repeat visitors keep
+          // it cached across deploys. Object form pulls each package's own
+          // dependencies in too, so the chunk never imports back into the
+          // entry. The SSR build keeps its default chunking.
+          manualChunks: ssr
+            ? undefined
+            : {
+                vendor: [
+                  'react',
+                  'react/jsx-runtime',
+                  'react-dom',
+                  'react-dom/client',
+                  'react-router',
+                  'redux',
+                  'react-redux',
+                  'redux-saga',
+                  '@tanstack/query-core'
+                ]
+              }
         }
       }
     },
