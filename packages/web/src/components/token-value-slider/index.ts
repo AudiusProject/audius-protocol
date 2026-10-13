@@ -1,1 +1,0 @@
-export { TokenValueSlider } from './TokenValueSlider'
