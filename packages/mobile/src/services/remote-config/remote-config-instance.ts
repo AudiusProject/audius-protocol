@@ -1,7 +1,7 @@
 import type { Environment } from '@audius/common/services'
 import { remoteConfig } from '@audius/common/services'
 import CodePush from '@bravemobile/react-native-code-push'
-import * as optimizely from '@optimizely/optimizely-sdk'
+import { createInstance, setLogLevel } from '@optimizely/optimizely-sdk'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Platform } from 'react-native'
 import Config from 'react-native-config'
@@ -50,8 +50,12 @@ export const remoteConfigInstance = remoteConfig({
   appVersion,
   platform: 'mobile',
   getMobileClientInfo,
+  // Named imports referenced only inside these callbacks let inline requires
+  // load the SDK when the client is created (after the async session id and
+  // CodePush reads) instead of while the app's modules first evaluate.
   createOptimizelyClient: async () => {
-    return optimizely.createInstance({
+    setLogLevel('warn')
+    return createInstance({
       sdkKey: OPTIMIZELY_KEY,
       datafileOptions: {
         urlTemplate: DATA_FILE_URL
@@ -71,7 +75,7 @@ export const remoteConfigInstance = remoteConfig({
   },
   setFeatureFlagSessionId: async (id) =>
     AsyncStorage.setItem(FEATURE_FLAG_ASYNC_STORAGE_SESSION_KEY, id.toString()),
-  setLogLevel: () => optimizely.setLogLevel('warn'),
+  setLogLevel: () => {},
   environment: Config.ENVIRONMENT as Environment
 })
 

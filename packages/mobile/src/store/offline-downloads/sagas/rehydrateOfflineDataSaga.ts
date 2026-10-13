@@ -37,6 +37,28 @@ type CachedCollection = CollectionMetadata
 type CachedUser = { id: ID; uid: UID; metadata: UserMetadata }
 type CachedTrack = TrackMetadata
 
+// Each read is a few native fs calls; run several at once instead of one
+// round trip per downloaded item.
+const READ_CONCURRENCY = 8
+
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  fn: (item: T) => Promise<R>
+): Promise<R[]> {
+  const results = new Array<R>(items.length)
+  let next = 0
+  const worker = async () => {
+    while (next < items.length) {
+      const i = next++
+      results[i] = await fn(items[i])
+    }
+  }
+  await Promise.all(
+    Array.from({ length: Math.min(READ_CONCURRENCY, items.length) }, worker)
+  )
+  return results
+}
+
 // Load offline data into redux on app start
 export function* rehydrateOfflineDataSaga() {
   // Can remove this after all clients are likely updated
@@ -51,12 +73,16 @@ export function* rehydrateOfflineDataSaga() {
   const offlineCollectionStatus = yield* select(getOfflineCollectionsStatus)
   const downloadedCollectionIds = Object.keys(offlineCollectionStatus).filter(
     (collectionId) =>
-      offlineCollectionStatus[collectionId] === OfflineDownloadStatus.SUCCESS
+      offlineCollectionStatus[collectionId] === OfflineDownloadStatus.SUCCESS &&
+      collectionId !== DOWNLOAD_REASON_FAVORITES
+  )
+  const userCollections = yield* call(() =>
+    mapWithConcurrency(downloadedCollectionIds, getCollectionJson)
   )
 
-  for (const collectionId of downloadedCollectionIds) {
-    if (collectionId === DOWNLOAD_REASON_FAVORITES) continue
-    const userCollection = yield* call(getCollectionJson, collectionId)
+  for (let i = 0; i < downloadedCollectionIds.length; i++) {
+    const collectionId = downloadedCollectionIds[i]
+    const userCollection = userCollections[i]
     if (userCollection === null) {
       collectionsToRedownload.push({
         type: 'collection',
@@ -84,8 +110,13 @@ export function* rehydrateOfflineDataSaga() {
     (id) => offlineTrackStatus[id] === OfflineDownloadStatus.SUCCESS
   )
 
-  for (const trackId of downloadedTrackIds) {
-    const userTrack = yield* call(getTrackJson, trackId)
+  const userTracks = yield* call(() =>
+    mapWithConcurrency(downloadedTrackIds, getTrackJson)
+  )
+
+  for (let i = 0; i < downloadedTrackIds.length; i++) {
+    const trackId = downloadedTrackIds[i]
+    const userTrack = userTracks[i]
     if (userTrack === null) {
       tracksToRedownload.push({
         type: 'track',

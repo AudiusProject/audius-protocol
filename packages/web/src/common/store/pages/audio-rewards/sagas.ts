@@ -27,11 +27,11 @@ import {
   musicConfettiActions,
   getSDK
 } from '@audius/common/store'
-import { waitForValue, isPlayCountChallenge } from '@audius/common/utils'
+import { waitForValue, isPlayCountChallenge, route } from '@audius/common/utils'
 import { Id, AudiusSdk, ChallengeId } from '@audius/sdk'
+import { eventChannel } from 'redux-saga'
 import {
   call,
-  fork,
   put,
   race,
   select,
@@ -42,11 +42,11 @@ import {
   all
 } from 'typed-redux-saga'
 
-import { waitForRead } from 'utils/sagaHelpers'
 import {
-  foregroundPollingDaemon,
-  visibilityPollingDaemon
-} from 'utils/sagaPollingDaemons'
+  ENTER_BACKGROUND,
+  ENTER_FOREGROUND
+} from 'common/store/lifecycle/actions'
+import { waitForRead } from 'utils/sagaHelpers'
 
 const { show: showMusicConfetti } = musicConfettiActions
 const { setVisibility } = modalsActions
@@ -75,7 +75,8 @@ const {
   resetUserChallengeCurrentStepCount,
   updateOptimisticListenStreak,
   updateOptimisticPlayCount,
-  setUndisbursedChallenges
+  setUndisbursedChallenges,
+  setChallengeRewardsModalType
 } = audioRewardsPageActions
 const fetchAccountSucceeded = accountActions.fetchAccountSucceeded
 
@@ -637,29 +638,99 @@ function* pollUserChallenges(frequency: number) {
   }
 }
 
+// Poll interval when nothing challenge-related is happening
+const CHALLENGE_IDLE_REFRESH_INTERVAL_MS = 5 * 60 * 1000
+// How long to keep polling at the fast interval after challenge activity
+const CHALLENGE_ACTIVE_WINDOW_MS = 2 * 60 * 1000
+
+// Actions that mean challenge state may change soon or is on screen: a
+// listen, a claim, or the rewards UI opening (it fetches on mount/focus).
+const challengeActivityActions = [
+  fetchUserChallenges.type,
+  setChallengeRewardsModalType.type,
+  updateOptimisticListenStreak.type,
+  updateOptimisticPlayCount.type,
+  claimChallengeReward.type,
+  claimAllChallengeRewards.type
+]
+
+function createDocumentVisibilityChannel() {
+  return eventChannel<boolean>((emit) => {
+    const handleVisibilityChange = () => emit(!document.hidden)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  })
+}
+
+/**
+ * Refreshes user challenges so completions, new disbursements (confetti) and
+ * the claimable badge stay current.
+ * - Fast interval (CHALLENGE_REFRESH_INTERVAL_MS) on the web rewards page and
+ *   for CHALLENGE_ACTIVE_WINDOW_MS after any challenge activity.
+ * - CHALLENGE_IDLE_REFRESH_INTERVAL_MS otherwise (or the remote interval if
+ *   that is longer).
+ * - Paused while the tab is hidden or the native app is backgrounded; a poll
+ *   that came due meanwhile runs on return.
+ */
 function* userChallengePollingDaemon() {
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
 
   const isNativeMobile = yield* getContext('isNativeMobile')
 
   yield* call(remoteConfigInstance.waitForRemoteConfig)
-  const defaultChallengePollingTimeout = remoteConfigInstance.getRemoteVar(
+  const activeInterval = remoteConfigInstance.getRemoteVar(
     IntKeys.CHALLENGE_REFRESH_INTERVAL_MS
   )!
+  // Never poll faster when idle than when active, if remote config raises
+  // the active interval past the idle default.
+  const idleInterval = Math.max(
+    activeInterval,
+    CHALLENGE_IDLE_REFRESH_INTERVAL_MS
+  )
 
   yield* take(fetchAccountSucceeded.type)
-  if (!isNativeMobile) {
-    yield* fork(function* () {
-      yield* call(visibilityPollingDaemon, fetchUserChallenges())
-    })
-  }
 
-  yield* call(
-    foregroundPollingDaemon,
-    fetchUserChallenges(),
-    defaultChallengePollingTimeout,
-    {}
-  )
+  const visibilityChannel = isNativeMobile
+    ? null
+    : createDocumentVisibilityChannel()
+  let isInBackground = isNativeMobile ? false : document.hidden
+  let activeUntil = 0
+  let nextFetchAt = Date.now()
+
+  const isActive = () =>
+    Date.now() < activeUntil ||
+    (!isNativeMobile && window.location.pathname.startsWith(route.REWARDS_PAGE))
+
+  while (true) {
+    if (!isInBackground && Date.now() >= nextFetchAt) {
+      yield* put(fetchUserChallenges())
+      nextFetchAt = Date.now() + (isActive() ? activeInterval : idleInterval)
+    }
+
+    const effects: Record<string, any> = {
+      activity: take(challengeActivityActions),
+      background: take(ENTER_BACKGROUND),
+      foreground: take(ENTER_FOREGROUND)
+    }
+    if (visibilityChannel) effects.visibility = take(visibilityChannel)
+    if (!isInBackground) {
+      effects.timeout = delay(Math.max(0, nextFetchAt - Date.now()))
+    }
+    const result = yield* race(effects)
+
+    if (result.activity) {
+      activeUntil = Date.now() + CHALLENGE_ACTIVE_WINDOW_MS
+      nextFetchAt = Math.min(nextFetchAt, Date.now() + activeInterval)
+    } else if (result.background) {
+      isInBackground = true
+    } else if (result.foreground) {
+      isInBackground = false
+    } else if (result.visibility !== undefined) {
+      isInBackground = !result.visibility
+    }
+  }
 }
 
 const sagas = () => {
