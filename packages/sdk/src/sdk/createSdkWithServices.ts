@@ -37,10 +37,6 @@ import {
 } from './middleware'
 import { OAuth } from './oauth'
 import { TokenStoreLocalStorage } from './oauth/TokenStoreLocalStorage'
-import {
-  PaymentRouterClient,
-  getDefaultPaymentRouterClientConfig
-} from './services'
 import { AntiAbuseOracle } from './services/AntiAbuseOracle/AntiAbuseOracle'
 import { getDefaultAntiAbuseOracleSelectorConfig } from './services/AntiAbuseOracleSelector'
 import { AntiAbuseOracleSelector } from './services/AntiAbuseOracleSelector/AntiAbuseOracleSelector'
@@ -50,21 +46,17 @@ import {
   EntityManagerClient,
   getDefaultEntityManagerConfig
 } from './services/EntityManager'
-import {
-  EthereumService,
-  getDefaultEthereumServiceConfig
-} from './services/Ethereum'
+import { LazyEthereumService } from './services/Ethereum/LazyEthereumService'
+import { getDefaultEthereumServiceConfig } from './services/Ethereum/getDefaultConfig'
 import { Logger } from './services/Logger'
 import { SolanaRelay } from './services/Solana/SolanaRelay'
 import { SolanaRelayWalletAdapter } from './services/Solana/SolanaRelayWalletAdapter'
-import {
-  getDefaultClaimableTokensConfig,
-  ClaimableTokensClient
-} from './services/Solana/programs/ClaimableTokensClient'
-import {
-  RewardManagerClient,
-  getDefaultRewardManagerClentConfig
-} from './services/Solana/programs/RewardManagerClient'
+import { LazyClaimableTokensClient } from './services/Solana/programs/ClaimableTokensClient/LazyClaimableTokensClient'
+import { getDefaultClaimableTokensConfig } from './services/Solana/programs/ClaimableTokensClient/getDefaultConfig'
+import { LazyPaymentRouterClient } from './services/Solana/programs/PaymentRouterClient/LazyPaymentRouterClient'
+import { getDefaultPaymentRouterClientConfig } from './services/Solana/programs/PaymentRouterClient/getDefaultConfig'
+import { LazyRewardManagerClient } from './services/Solana/programs/RewardManagerClient/LazyRewardManagerClient'
+import { getDefaultRewardManagerClentConfig } from './services/Solana/programs/RewardManagerClient/getDefaultConfig'
 import { SolanaClient } from './services/Solana/programs/SolanaClient'
 import { getDefaultSolanaClientConfig } from './services/Solana/programs/getDefaultConfig'
 import { Storage, getDefaultStorageServiceConfig } from './services/Storage'
@@ -274,29 +266,32 @@ const initializeServices = ({
       logger
     })
 
+  // The on-chain program clients and Ethereum contracts are lazy facades that
+  // load their implementations (anchor, @audius/spl, @audius/eth ABIs) on
+  // first use, so creating the SDK doesn't pull them in.
   const claimableTokensClient =
     config.services?.claimableTokensClient ??
-    new ClaimableTokensClient({
+    (new LazyClaimableTokensClient({
       ...getDefaultClaimableTokensConfig(servicesConfig),
       solanaClient,
       audiusWalletClient,
       logger
-    })
+    }) as unknown as ServicesContainer['claimableTokensClient'])
 
   const rewardManagerClient =
     config.services?.rewardManagerClient ??
-    new RewardManagerClient({
+    (new LazyRewardManagerClient({
       ...getDefaultRewardManagerClentConfig(servicesConfig),
       solanaClient,
       logger
-    })
+    }) as unknown as ServicesContainer['rewardManagerClient'])
 
   const paymentRouterClient =
     config.services?.paymentRouterClient ??
-    new PaymentRouterClient({
+    (new LazyPaymentRouterClient({
       ...getDefaultPaymentRouterClientConfig(servicesConfig),
       solanaClient
-    })
+    }) as unknown as ServicesContainer['paymentRouterClient'])
 
   const ethPublicClient =
     config.services?.ethPublicClient ??
@@ -314,12 +309,12 @@ const initializeServices = ({
 
   const ethereum =
     config.services?.ethereum ??
-    new EthereumService({
+    (new LazyEthereumService({
       ...getDefaultEthereumServiceConfig(servicesConfig),
       publicClient: ethPublicClient,
       walletClient: ethWalletClient,
       audiusWalletClient
-    })
+    }) as unknown as ServicesContainer['ethereum'])
 
   const services: ServicesContainer = {
     storageNodeSelector,

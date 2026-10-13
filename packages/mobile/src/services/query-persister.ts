@@ -3,6 +3,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister'
 import type { PersistQueryClientOptions } from '@tanstack/react-query-persist-client'
 
+import { queryClient } from 'app/services/query-client'
+
 // Bump when the persisted shape changes incompatibly so existing snapshots
 // are dropped on next launch.
 const QUERY_CACHE_BUSTER = 'v2'
@@ -30,6 +32,56 @@ const PERSIST_QUERY_KEY_ALLOWLIST: ReadonlySet<string> = new Set([
   QUERY_KEYS.trendingIds
 ])
 
+type ReferencedEntityIds = { trackIds: Set<number>; userIds: Set<number> }
+
+let referencedEntityIds: ReferencedEntityIds | null = null
+
+/**
+ * Track and user ids the persisted lineups and account point at. Only these
+ * entities are persisted, so the snapshot (and the restore the splash waits
+ * on) stays the size of the trending lineup instead of everything browsed in
+ * the last few minutes. Computed once per dehydrate pass.
+ */
+const getReferencedEntityIds = (): ReferencedEntityIds => {
+  if (referencedEntityIds) return referencedEntityIds
+
+  const trackIds = new Set<number>()
+  const userIds = new Set<number>()
+  const queryCache = queryClient.getQueryCache()
+
+  for (const query of queryCache.findAll({ queryKey: [QUERY_KEYS.trending] })) {
+    const data = query.state.data as { pages?: unknown[] } | undefined
+    for (const page of data?.pages ?? []) {
+      if (!Array.isArray(page)) continue
+      for (const entry of page) {
+        if (typeof entry?.id === 'number') trackIds.add(entry.id)
+      }
+    }
+  }
+
+  for (const trackId of trackIds) {
+    const track = queryClient.getQueryData<{ user_id?: number }>([
+      QUERY_KEYS.track,
+      trackId
+    ])
+    if (track?.user_id) userIds.add(track.user_id)
+  }
+
+  const account = queryClient.getQueryData<{ userId?: number | null }>([
+    QUERY_KEYS.account,
+    QUERY_KEYS.accountUser
+  ])
+  if (account?.userId) userIds.add(account.userId)
+
+  referencedEntityIds = { trackIds, userIds }
+  // dehydrate() calls shouldDehydrateQuery synchronously for every query, so
+  // drop the memo once this pass is done.
+  Promise.resolve().then(() => {
+    referencedEntityIds = null
+  })
+  return referencedEntityIds
+}
+
 const queryClientPersister = createAsyncStoragePersister({
   storage: AsyncStorage,
   key: QUERY_CACHE_STORAGE_KEY,
@@ -52,7 +104,15 @@ export const queryClientPersistOptions: Omit<
       if (typeof topKey !== 'string') return false
       if (!PERSIST_QUERY_KEY_ALLOWLIST.has(topKey)) return false
       // Skip errored / pending queries — let them refetch from scratch.
-      return query.state.status === 'success'
+      if (query.state.status !== 'success') return false
+
+      if (topKey === QUERY_KEYS.track || topKey === QUERY_KEYS.user) {
+        const id = query.queryKey[1]
+        if (typeof id !== 'number') return false
+        const { trackIds, userIds } = getReferencedEntityIds()
+        return (topKey === QUERY_KEYS.track ? trackIds : userIds).has(id)
+      }
+      return true
     }
   }
 }

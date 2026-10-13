@@ -1,4 +1,4 @@
-import * as tus from 'tus-js-client'
+import type { Upload } from 'tus-js-client'
 
 import { productionConfig } from '../../config/production'
 import fetch from '../../utils/fetch'
@@ -17,6 +17,12 @@ import type {
   UploadResponse,
   UploadFileParams
 } from './types'
+
+// tus-js-client is only needed once an upload starts
+const loadTus = async () => {
+  const tus: any = await import('tus-js-client')
+  return ('Upload' in tus ? tus : tus.default) as typeof import('tus-js-client')
+}
 
 const MAX_TRACK_TRANSCODE_TIMEOUT = 3600000 // 1 hour
 const MAX_TRACK_TRANSCODE_NO_PROGRESS_TIMEOUT = 1200000 // 20 minutes
@@ -46,7 +52,7 @@ export class Storage implements StorageService {
    */
   uploadFile({ file, onProgress, metadata }: UploadFileParams) {
     const ac = new AbortController()
-    let upload: tus.Upload | undefined
+    let upload: Upload | undefined
     let uploadPromise: Promise<UploadResponse> | undefined
     let cachedTotal = 0
 
@@ -56,11 +62,14 @@ export class Storage implements StorageService {
           return uploadPromise
         }
         uploadPromise = new Promise<UploadResponse>((resolve, reject) => {
-          this.storageNodeSelector
-            .getSelectedNode()
-            .then((selectedNode) => {
+          Promise.all([this.storageNodeSelector.getSelectedNode(), loadTus()])
+            .then(([selectedNode, tus]) => {
               if (!selectedNode) {
                 reject(new Error('No node available'))
+                return
+              }
+              if (ac.signal.aborted) {
+                reject(new Error('Upload aborted'))
                 return
               }
               // In Node, tus-js-client accepts Buffer or fs.ReadStream as the

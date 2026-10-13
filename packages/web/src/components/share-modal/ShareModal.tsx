@@ -7,7 +7,6 @@ import {
   useShareContent
 } from '@audius/common/hooks'
 import { Name, PlayableType } from '@audius/common/models'
-import { registerNiceModalId } from '@audius/common/services'
 import {
   collectionsSocialActions,
   tracksSocialActions,
@@ -189,10 +188,3 @@ export const ShareModal = NiceModal.create(() => {
   if (isMobile) return <ShareDrawer {...shareProps} />
   return <ShareDialog {...shareProps} />
 })
-
-// Register the modal so saga code (and anything else outside React) can
-// open it via `showNiceModal('Share')`. The id is also added to the
-// nice-modal bridge allowlist so legacy `setVisibility('Share', true)`
-// dispatches translate to `showNiceModal('Share')`.
-NiceModal.register('Share', ShareModal)
-registerNiceModalId('Share')

@@ -1,4 +1,3 @@
-import * as fileType from 'file-type'
 import { z } from 'zod'
 
 /**
@@ -64,6 +63,17 @@ const getFileType = async (file: CrossPlatformFile) => {
     return { mime: file.type }
   }
 
+  if (isNodeFile(file)) {
+    if (file.type) {
+      return { mime: file.type }
+    }
+    // Loaded on demand so browser and native bundles don't evaluate it
+    const fileTypeNode: any = await import('file-type')
+    const { fromBuffer } =
+      'fromBuffer' in fileTypeNode ? fileTypeNode : fileTypeNode.default
+    return await fromBuffer(file.buffer)
+  }
+
   let fileTypeBrowser: any
   if (typeof window !== 'undefined' && window) {
     fileTypeBrowser = await import('file-type/browser')
@@ -72,13 +82,7 @@ const getFileType = async (file: CrossPlatformFile) => {
     }
   }
 
-  if (isNodeFile(file)) {
-    return file.type
-      ? { mime: file.type }
-      : await fileType.fromBuffer(file.buffer)
-  } else {
-    return await fileTypeBrowser.fromBlob(file)
-  }
+  return await fileTypeBrowser.fromBlob(file)
 }
 
 export const ImageFile = CrossPlatformFileSchema.refine(

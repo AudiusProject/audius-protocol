@@ -2,7 +2,6 @@ import {
   remoteConfigReducer as remoteConfig,
   reducers as clientStoreReducers
 } from '@audius/common/store'
-import localForage from 'localforage'
 import { combineReducers } from 'redux'
 
 import backend from 'common/store/backend/reducer'
@@ -18,9 +17,10 @@ import scrollLock from 'store/application/ui/scrollLock/reducer'
 import userListModal from 'store/application/ui/userListModal/slice'
 import dragndrop from 'store/dragndrop/slice'
 import error from 'store/errors/reducers'
+import { persistStorage } from 'store/persistStorage'
 
 const createRootReducer = () => {
-  const commonStoreReducers = clientStoreReducers(localForage)
+  const commonStoreReducers = clientStoreReducers(persistStorage)
 
   return combineReducers({
     // Common store

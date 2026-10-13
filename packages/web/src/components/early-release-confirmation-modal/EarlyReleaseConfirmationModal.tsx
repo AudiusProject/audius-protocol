@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { registerNiceModalId } from '@audius/common/services'
 import { useEarlyReleaseConfirmationModal } from '@audius/common/store'
 import {
   Modal,
@@ -70,6 +69,3 @@ export const EarlyReleaseConfirmationModal = NiceModal.create(() => {
     </Modal>
   )
 })
-
-NiceModal.register('EarlyReleaseConfirmation', EarlyReleaseConfirmationModal)
-registerNiceModalId('EarlyReleaseConfirmation')

@@ -2,7 +2,6 @@ import { ReactNode, useCallback } from 'react'
 
 import { useCurrentUserId, useUser } from '@audius/common/api'
 import { FollowSource, User } from '@audius/common/models'
-import { registerNiceModalId } from '@audius/common/services'
 import {
   chatActions,
   chatSelectors,
@@ -182,6 +181,3 @@ export const InboxUnavailableModal = NiceModal.create(() => {
     </Modal>
   )
 })
-
-NiceModal.register('InboxUnavailableModal', InboxUnavailableModal)
-registerNiceModalId('InboxUnavailableModal')

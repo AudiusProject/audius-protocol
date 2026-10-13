@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { registerNiceModalId } from '@audius/common/services'
 import {
   keepHiddenTracksPrivate,
   publishHiddenTracksConfirmed,
@@ -78,9 +77,3 @@ export const PublishHiddenTracksConfirmationModal = NiceModal.create(() => {
     </Modal>
   )
 })
-
-NiceModal.register(
-  'PublishHiddenTracksConfirmation',
-  PublishHiddenTracksConfirmationModal
-)
-registerNiceModalId('PublishHiddenTracksConfirmation')

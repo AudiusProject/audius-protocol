@@ -9,7 +9,6 @@ import {
   useUpdateEvent
 } from '@audius/common/api'
 import { remixMessages } from '@audius/common/messages'
-import { registerNiceModalId } from '@audius/common/services'
 import { useHostRemixContestModal } from '@audius/common/store'
 import { dayjs } from '@audius/common/utils'
 import {
@@ -314,6 +313,3 @@ export const HostRemixContestModal = NiceModal.create(() => {
     </Modal>
   )
 })
-
-NiceModal.register('HostRemixContest', HostRemixContestModal)
-registerNiceModalId('HostRemixContest')
