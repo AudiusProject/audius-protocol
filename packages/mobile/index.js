@@ -24,7 +24,6 @@ import {
   getMessaging,
   setBackgroundMessageHandler
 } from '@react-native-firebase/messaging'
-import { Crypto } from '@peculiar/webcrypto'
 
 import { name as appName } from './app.json'
 
@@ -36,8 +35,8 @@ require('node-libs-react-native/globals')
 require('react-native-get-random-values')
 require('react-native-url-polyfill/auto')
 
-// Needed to support micro-aes-gcm which looks for WebCrypto's SubtleCrypto
-global.crypto = new Crypto()
+// micro-aes-gcm, @noble/secp256k1 and others look for WebCrypto's SubtleCrypto
+require('./src/utils/webCrypto/subtleCrypto').installSubtleCrypto()
 
 const App = require('./src/app/ota-root').default
 

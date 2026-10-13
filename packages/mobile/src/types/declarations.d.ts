@@ -2,7 +2,6 @@
 
 /* eslint-disable import/order, import/no-duplicates */
 
-declare module 'fxa-common-password-list'
 declare module 'react-native-static-server'
 
 declare module '*.svg' {
@@ -70,4 +69,8 @@ declare module '*.json' {
 
 interface Window {
   MSStream: any
+}
+
+declare module 'pako' {
+  export function inflate(data: Uint8Array): Uint8Array
 }
