@@ -11,7 +11,6 @@ import { useQueryContext } from '~/api/tan-query/utils'
 import { Track, UserTrackMetadata } from '~/models'
 import { ID } from '~/models/Identifiers'
 import { isContentUSDCPurchaseGated } from '~/models/Track'
-import { createUserBankIfNeeded } from '~/services/audius-backend'
 import { CommonState } from '~/store/commonStore'
 import { stemsUploadSelectors } from '~/store/stems-upload'
 import { replaceTrackProgressModalActions } from '~/store/ui/modals/replace-track-progress-modal'
@@ -120,13 +119,17 @@ export const useUpdateTrack = () => {
         (isContentUSDCPurchaseGated(metadataWithSplits.stream_conditions) ||
           isContentUSDCPurchaseGated(metadataWithSplits.download_conditions))
       ) {
-        createUserBankIfNeeded(sdk, {
-          mint: 'USDC',
-          ethAddress,
-          recordAnalytics: analytics.track
-        }).catch((error) => {
-          console.error(error)
-        })
+        import('~/services/audius-backend/solana')
+          .then(({ createUserBankIfNeeded }) =>
+            createUserBankIfNeeded(sdk, {
+              mint: 'USDC',
+              ethAddress,
+              recordAnalytics: analytics.track
+            })
+          )
+          .catch((error) => {
+            console.error(error)
+          })
       }
 
       // A changed preview start needs a freshly sliced preview clip. The SDK

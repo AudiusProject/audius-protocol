@@ -1,17 +1,13 @@
 import { AUDIO, wAUDIO, AudioWei } from '@audius/fixed-decimal'
 import { type AudiusSdkWithServices, Id } from '@audius/sdk'
-import { getAccount } from '@solana/spl-token'
-import { PublicKey } from '@solana/web3.js'
+import type { PublicKey } from '@solana/web3.js'
 
 import { userWalletsFromSDK } from '~/adapters'
 import { ID } from '~/models/Identifiers'
 import { SolanaWalletAddress } from '~/models/Wallet'
 import { isNullOrUndefined } from '~/utils/typeUtils'
 
-import {
-  AudiusBackend,
-  pollForTokenBalanceChange
-} from '../audius-backend'
+import type { AudiusBackend } from '../audius-backend'
 import { Env } from '../env'
 
 export const MIN_TRANSFERRABLE_WEI = AUDIO('0.001').value
@@ -31,20 +27,6 @@ export class WalletClient {
     this.audiusBackendInstance = config.audiusBackendInstance
     this.audiusSdk = config.audiusSdk
     this.env = config.env
-  }
-
-  getMintAddress(mint: 'wAUDIO' | 'USDC'): PublicKey {
-    // Simple mapping for the fixed set of mint names
-    const mintAddresses: Record<'wAUDIO' | 'USDC', string> = {
-      wAUDIO: this.env.WAUDIO_MINT_ADDRESS,
-      USDC: this.env.USDC_MINT_ADDRESS
-    }
-
-    const address = mintAddresses[mint]
-    if (!address) {
-      throw new Error(`Token address not found for mint: ${mint}`)
-    }
-    return new PublicKey(address)
   }
 
   async getAssociatedTokenAccountInfo({ address }: { address: string }) {
@@ -67,6 +49,10 @@ export class WalletClient {
   }: {
     ethAddress: string
   }): Promise<string> {
+    const [{ getAccount }, { pollForTokenBalanceChange }] = await Promise.all([
+      import('@solana/spl-token'),
+      import('../audius-backend/solana')
+    ])
     const sdk = await this.audiusSdk()
     const { userBank } =
       await sdk.services.claimableTokensClient.getOrCreateUserBank({

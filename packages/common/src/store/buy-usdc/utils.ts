@@ -1,5 +1,4 @@
-import { getAccount } from '@solana/spl-token'
-import { PublicKey } from '@solana/web3.js'
+import type { PublicKey } from '@solana/web3.js'
 import { call, delay } from 'typed-redux-saga'
 
 import { queryAccountUser } from '~/api'
@@ -58,6 +57,7 @@ export function* pollForTokenAccountInfo({
   maxRetryCount?: number
 }) {
   const sdk = yield* getSDK()
+  const { getAccount } = yield* call(() => import('@solana/spl-token'))
 
   let retries = 0
   let result

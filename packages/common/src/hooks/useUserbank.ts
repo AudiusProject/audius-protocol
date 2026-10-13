@@ -4,7 +4,6 @@ import { useWalletAddresses } from '~/api'
 import { QUERY_KEYS } from '~/api/tan-query/queryKeys'
 import { QueryKey, SelectableQueryOptions } from '~/api/tan-query/types'
 import { useQueryContext } from '~/api/tan-query/utils'
-import { createUserBankIfNeeded } from '~/services/audius-backend'
 
 import { useAnalytics } from './useAnalytics'
 
@@ -28,7 +27,10 @@ export const useUserbank = (
     queryKey: getUserbankQueryKey(mint),
     queryFn: async () => {
       if (!wallet || !mint) return null
-      const sdk = await audiusSdk()
+      const [sdk, { createUserBankIfNeeded }] = await Promise.all([
+        audiusSdk(),
+        import('~/services/audius-backend/solana')
+      ])
       const accountInfo = await createUserBankIfNeeded(sdk, {
         ethAddress: wallet,
         mint: mint as any,

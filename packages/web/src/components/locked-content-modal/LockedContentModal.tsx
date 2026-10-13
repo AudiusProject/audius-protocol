@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import { useGatedContentAccess, useLockedContent } from '@audius/common/hooks'
-import { registerNiceModalId } from '@audius/common/services'
 import {
   PurchaseableContentType,
   gatedContentActions
@@ -84,6 +83,3 @@ export const LockedContentModal = NiceModal.create(() => {
     </ModalDrawer>
   )
 })
-
-NiceModal.register('LockedContent', LockedContentModal)
-registerNiceModalId('LockedContent')

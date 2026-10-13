@@ -1,5 +1,5 @@
 import { AUDIO, AudioWei } from '@audius/fixed-decimal'
-import { PublicKey } from '@solana/web3.js'
+import bs58 from 'bs58'
 
 import { useUser } from '~/api/tan-query/users/useUser'
 import { Maybe, Nullable } from '~/utils'
@@ -102,10 +102,10 @@ export const getTierForUserNonWei = (totalBalance: Nullable<StringWei>) => {
  * Checks whether the input address is a valid solana address.
  */
 export const isValidSolAddress = (address: SolanaWalletAddress) => {
+  // Same check as `new PublicKey(address)`: base58 that decodes to 32 bytes.
+  // Avoids loading @solana/web3.js just to validate an address.
   try {
-    // @ts-ignore - need an unused variable to check if the destinationWallet is valid
-    const ignored = new PublicKey(address)
-    return true
+    return bs58.decode(address).length === 32
   } catch (err) {
     console.debug(err)
     return false

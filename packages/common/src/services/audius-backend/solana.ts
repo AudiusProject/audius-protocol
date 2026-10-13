@@ -273,7 +273,7 @@ export const decorateCoinflowWithdrawalTransaction = async (
     mint: 'USDC'
   })
   const walletUSDCTokenAccount =
-    audiusBackendInstance.findAssociatedTokenAddress({
+    await audiusBackendInstance.findAssociatedTokenAddress({
       solanaWalletKey: wallet.publicKey,
       mint: 'USDC'
     })

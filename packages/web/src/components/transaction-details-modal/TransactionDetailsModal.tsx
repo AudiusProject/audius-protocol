@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import { Status } from '@audius/common/models'
-import { registerNiceModalId } from '@audius/common/services'
 import {
   transactionDetailsActions,
   transactionDetailsSelectors
@@ -77,6 +76,3 @@ export const TransactionDetailsModal = NiceModal.create(() => {
     </Modal>
   )
 })
-
-NiceModal.register('TransactionDetails', TransactionDetailsModal)
-registerNiceModalId('TransactionDetails')

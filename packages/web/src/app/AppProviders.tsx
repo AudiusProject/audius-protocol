@@ -13,7 +13,6 @@ import {
   RouterProvider
 } from 'react-router'
 import { PersistGate } from 'redux-persist/integration/react'
-import { createConfig, http, WagmiProvider } from 'wagmi'
 
 import { REACT_QUERY_DEVTOOLS_KEY, useDevToggle } from 'hooks/useDevToggle'
 import { useIsMobile } from 'hooks/useIsMobile'
@@ -29,11 +28,10 @@ import {
 } from 'utils/theme/theme'
 
 import {
+  getLoadedAppKit,
   hasPersistedWalletConnection,
-  loadAppKit,
-  useLoadedAppKit
+  loadAppKit
 } from './appkit'
-import { audiusChain } from './audiusChain'
 import './registerNiceModals'
 import { createRoutes } from './routes'
 
@@ -42,40 +40,17 @@ import { createRoutes } from './routes'
 setNiceModalAdapter({ show: NiceModal.show, hide: NiceModal.hide })
 
 /**
- * Placeholder wagmi config used until AppKit is lazily loaded. storage: null so
- * it never writes to `wagmi.store`, which the real config owns.
+ * Load AppKit at startup only to restore a persisted wallet connection. wagmi
+ * and AppKit otherwise load with the features that use them.
  */
-const bootstrapWagmiConfig = createConfig({
-  chains: [audiusChain],
-  transports: { [audiusChain.id]: http() },
-  storage: null,
-  connectors: [],
-  multiInjectedProviderDiscovery: false
-})
-
-/**
- * Keeps WagmiProvider mounted and swaps in AppKit's config once it loads
- * (changing `config` doesn't remount children).
- */
-const WagmiGate = ({ children }: { children: ReactNode }) => {
-  const appkit = useLoadedAppKit()
-
+const useRestoreWalletConnection = () => {
   useEffect(() => {
-    // Load AppKit at startup only to restore a persisted wallet connection.
-    if (!appkit && hasPersistedWalletConnection()) {
+    if (!getLoadedAppKit() && hasPersistedWalletConnection()) {
       loadAppKit().catch((e) => {
         console.warn('[appkit] Failed to load AppKit', e)
       })
     }
-  }, [appkit])
-
-  return (
-    <WagmiProvider
-      config={appkit?.wagmiAdapter.wagmiConfig ?? bootstrapWagmiConfig}
-    >
-      {children}
-    </WagmiProvider>
-  )
+  }, [])
 }
 
 type AppProvidersProps = {
@@ -84,6 +59,7 @@ type AppProvidersProps = {
 
 export const AppProviders = ({ children }: AppProvidersProps) => {
   const isMobile = useIsMobile()
+  useRestoreWalletConnection()
   const [reactQueryDevtoolsEnabled] = useDevToggle(
     REACT_QUERY_DEVTOOLS_KEY,
     false
@@ -130,20 +106,18 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
   }, [basename])
 
   return (
-    <WagmiGate>
-      <QueryClientProvider client={queryClient}>
-        <MediaProvider>
-          <ReduxProvider store={store}>
-            <PersistGate loading={null} persistor={persistor}>
-              {/* <NiceModal.Provider> is mounted inside routes.tsx, deeper
+    <QueryClientProvider client={queryClient}>
+      <MediaProvider>
+        <ReduxProvider store={store}>
+          <PersistGate loading={null} persistor={persistor}>
+            {/* <NiceModal.Provider> is mounted inside routes.tsx, deeper
                   in the tree, so NiceModal-managed modals can read app
                   contexts (AudiusQueryProvider, ToastContext, etc). */}
-              <RouterProvider router={router} />
-            </PersistGate>
-          </ReduxProvider>
-        </MediaProvider>
-        {reactQueryDevtoolsEnabled ? <ReactQueryDevtools /> : null}
-      </QueryClientProvider>
-    </WagmiGate>
+            <RouterProvider router={router} />
+          </PersistGate>
+        </ReduxProvider>
+      </MediaProvider>
+      {reactQueryDevtoolsEnabled ? <ReactQueryDevtools /> : null}
+    </QueryClientProvider>
   )
 }

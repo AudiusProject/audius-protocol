@@ -1,6 +1,5 @@
 import type { AudiusSdkWithServices } from '@audius/sdk'
-import { PublicKey } from '@solana/web3.js'
-import type { Keypair } from '@solana/web3.js'
+import type { Keypair, PublicKey } from '@solana/web3.js'
 import { useQueryClient } from '@tanstack/react-query'
 
 import type { User } from '~/models/User'

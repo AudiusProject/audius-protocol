@@ -1,5 +1,3 @@
-import { Keypair } from '@solana/web3.js'
-
 import { HedgehogInstance } from '../auth/hedgehog'
 
 import { SolanaWalletService } from './types'
@@ -13,6 +11,7 @@ export const createHedgehogSolanaWalletService = (
     if (!hedgehogWallet) {
       return null
     }
+    const { Keypair } = await import('@solana/web3.js')
     return Keypair.fromSeed(hedgehogWallet.getPrivateKey())
   }
   return { getKeypair }

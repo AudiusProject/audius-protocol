@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import { USDCContentPurchaseType } from '@audius/common/models'
-import { registerNiceModalId } from '@audius/common/services'
 import { useUSDCPurchaseDetailsModal } from '@audius/common/store'
 import { Modal } from '@audius/harmony'
 import NiceModal, { useModal } from '@ebay/nice-modal-react'
@@ -53,6 +52,3 @@ export const USDCPurchaseDetailsModal = NiceModal.create(() => {
     </Modal>
   )
 })
-
-NiceModal.register('USDCPurchaseDetailsModal', USDCPurchaseDetailsModal)
-registerNiceModalId('USDCPurchaseDetailsModal')

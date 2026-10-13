@@ -134,7 +134,14 @@ vi.mock('redux-saga', () => {
 
   return {
     default: createMockSagaMiddleware,
-    createSagaMiddleware: createMockSagaMiddleware
+    createSagaMiddleware: createMockSagaMiddleware,
+    stdChannel: vi.fn(() => ({
+      put: vi.fn(),
+      take: vi.fn(),
+      flush: vi.fn(),
+      close: vi.fn()
+    })),
+    buffers: { expanding: vi.fn() }
   }
 })
 

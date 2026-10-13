@@ -1,4 +1,3 @@
-import { PublicKey } from '@solana/web3.js'
 import { useQuery } from '@tanstack/react-query'
 
 import { userCoinListFromSDK, type UserCoin } from '~/adapters/coin'
@@ -47,6 +46,7 @@ export const useWalletCoins = <TResult = UserCoin[]>(
       let solBalance = 0
       let solBalanceUsd = 0
       try {
+        const { PublicKey } = await import('@solana/web3.js')
         const addressPubKey = new PublicKey(params.walletAddress)
         const connection = sdk.services.solanaClient.connection
         const balance = await connection.getBalance(addressPubKey)
