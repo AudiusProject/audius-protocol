@@ -54,7 +54,7 @@ export const useDestinationUsdcAccountCheck = (
         import('@solana/web3.js'),
         import('~/services/Jupiter')
       ])
-      const connection = sdk.services.solanaClient.connection
+      const connection = await sdk.services.solanaClient.getConnection()
       const mint = new PublicKey(env.USDC_MINT_ADDRESS)
       const destinationWallet = new PublicKey(destinationAddress!)
 

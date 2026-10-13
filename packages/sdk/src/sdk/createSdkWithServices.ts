@@ -52,12 +52,9 @@ import { Logger } from './services/Logger'
 import { SolanaRelay } from './services/Solana/SolanaRelay'
 import { SolanaRelayWalletAdapter } from './services/Solana/SolanaRelayWalletAdapter'
 import { LazyClaimableTokensClient } from './services/Solana/programs/ClaimableTokensClient/LazyClaimableTokensClient'
-import { getDefaultClaimableTokensConfig } from './services/Solana/programs/ClaimableTokensClient/getDefaultConfig'
+import { LazySolanaClient } from './services/Solana/programs/LazySolanaClient'
 import { LazyPaymentRouterClient } from './services/Solana/programs/PaymentRouterClient/LazyPaymentRouterClient'
-import { getDefaultPaymentRouterClientConfig } from './services/Solana/programs/PaymentRouterClient/getDefaultConfig'
 import { LazyRewardManagerClient } from './services/Solana/programs/RewardManagerClient/LazyRewardManagerClient'
-import { getDefaultRewardManagerClentConfig } from './services/Solana/programs/RewardManagerClient/getDefaultConfig'
-import { SolanaClient } from './services/Solana/programs/SolanaClient'
 import { getDefaultSolanaClientConfig } from './services/Solana/programs/getDefaultConfig'
 import { Storage, getDefaultStorageServiceConfig } from './services/Storage'
 import {
@@ -258,40 +255,38 @@ const initializeServices = ({
       solanaRelay
     })
 
+  // The Solana client, on-chain program clients and Ethereum contracts are
+  // lazy facades that load their implementations (@solana/web3.js, anchor,
+  // @audius/spl, @audius/eth ABIs) on first use, so creating the SDK doesn't
+  // pull them in.
   const solanaClient =
     config.services?.solanaClient ??
-    new SolanaClient({
+    (new LazySolanaClient({
       ...getDefaultSolanaClientConfig(servicesConfig),
       solanaWalletAdapter,
       logger
-    })
+    }) as unknown as ServicesContainer['solanaClient'])
 
-  // The on-chain program clients and Ethereum contracts are lazy facades that
-  // load their implementations (anchor, @audius/spl, @audius/eth ABIs) on
-  // first use, so creating the SDK doesn't pull them in.
   const claimableTokensClient =
     config.services?.claimableTokensClient ??
-    (new LazyClaimableTokensClient({
-      ...getDefaultClaimableTokensConfig(servicesConfig),
-      solanaClient,
-      audiusWalletClient,
-      logger
-    }) as unknown as ServicesContainer['claimableTokensClient'])
+    (new LazyClaimableTokensClient(
+      { solanaClient, audiusWalletClient, logger },
+      servicesConfig
+    ) as unknown as ServicesContainer['claimableTokensClient'])
 
   const rewardManagerClient =
     config.services?.rewardManagerClient ??
-    (new LazyRewardManagerClient({
-      ...getDefaultRewardManagerClentConfig(servicesConfig),
-      solanaClient,
-      logger
-    }) as unknown as ServicesContainer['rewardManagerClient'])
+    (new LazyRewardManagerClient(
+      { solanaClient, logger },
+      servicesConfig
+    ) as unknown as ServicesContainer['rewardManagerClient'])
 
   const paymentRouterClient =
     config.services?.paymentRouterClient ??
-    (new LazyPaymentRouterClient({
-      ...getDefaultPaymentRouterClientConfig(servicesConfig),
-      solanaClient
-    }) as unknown as ServicesContainer['paymentRouterClient'])
+    (new LazyPaymentRouterClient(
+      { solanaClient },
+      servicesConfig
+    ) as unknown as ServicesContainer['paymentRouterClient'])
 
   const ethPublicClient =
     config.services?.ethPublicClient ??

@@ -1,8 +1,4 @@
-import {
-  PublicKey,
-  SendTransactionError,
-  TransactionInstruction
-} from '@solana/web3.js'
+import type { PublicKey } from '@solana/web3.js'
 
 import { BaseAPI } from '../../api/generated/default'
 import * as runtime from '../../api/generated/default/runtime'
@@ -53,6 +49,7 @@ export class SolanaRelay extends BaseAPI {
     const headerParameters: runtime.HTTPHeaders = {
       'Content-Type': 'application/json'
     }
+    const { PublicKey } = await import('@solana/web3.js')
     const response = await this.request(
       {
         path: '/feePayer',
@@ -85,6 +82,9 @@ export class SolanaRelay extends BaseAPI {
     const headerParameters: runtime.HTTPHeaders = {
       'Content-Type': 'application/json'
     }
+    const { PublicKey, TransactionInstruction } = await import(
+      '@solana/web3.js'
+    )
     const response = await this.request(
       {
         path: '/instruction/location',
@@ -152,6 +152,7 @@ export class SolanaRelay extends BaseAPI {
           'transactionMessage' in body &&
           'signature' in body
         ) {
+          const { SendTransactionError } = await import('@solana/web3.js')
           throw new SendTransactionError({
             action: body.error.indexOf('Simulation') > -1 ? 'simulate' : 'send',
             signature: body.signature,

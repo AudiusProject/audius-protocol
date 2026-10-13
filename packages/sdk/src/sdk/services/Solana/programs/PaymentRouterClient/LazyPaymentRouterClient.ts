@@ -1,3 +1,4 @@
+import type { SdkServicesConfig } from '../../../../config/types'
 import { createLazyLoader, type PublicInterface } from '../../../../utils/lazy'
 
 import type { PaymentRouterClient } from './PaymentRouterClient'
@@ -12,10 +13,28 @@ type Client = PaymentRouterClient
 export class LazyPaymentRouterClient implements PublicInterface<Client> {
   private readonly loader
 
-  constructor(config: PaymentRouterClientConfig) {
+  /**
+   * @param servicesConfig if set, the environment defaults (program ID, mints)
+   * are applied under `config` when the client loads.
+   */
+  constructor(
+    config: PaymentRouterClientConfig,
+    servicesConfig?: SdkServicesConfig
+  ) {
     this.loader = createLazyLoader(async () => {
-      const { PaymentRouterClient } = await import('./PaymentRouterClient')
-      return new PaymentRouterClient(config)
+      const [{ PaymentRouterClient }, { getDefaultPaymentRouterClientConfig }] =
+        await Promise.all([
+          import('./PaymentRouterClient'),
+          import('./getDefaultConfig')
+        ])
+      return new PaymentRouterClient(
+        servicesConfig
+          ? {
+              ...getDefaultPaymentRouterClientConfig(servicesConfig),
+              ...config
+            }
+          : config
+      )
     })
   }
 

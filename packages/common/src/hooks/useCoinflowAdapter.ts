@@ -50,7 +50,7 @@ export const useCoinflowWithdrawalAdapter = () => {
     const initWallet = async () => {
       const wallet = await solanaWalletService.getKeypair()
       const sdk = await audiusSdk()
-      const connection = sdk.services.solanaClient.connection
+      const connection = await sdk.services.solanaClient.getConnection()
       const [
         { VersionedTransaction },
         { decorateCoinflowWithdrawalTransaction }
@@ -165,7 +165,7 @@ export const useCoinflowAdapter = ({
     const initWallet = async () => {
       const wallet = await solanaWalletService.getKeypair()
       const sdk = await audiusSdk()
-      const connection = sdk.services.solanaClient.connection
+      const connection = await sdk.services.solanaClient.getConnection()
       if (!wallet) {
         console.error(
           'useCoinflowWithdrawalAdapter: Missing solana root wallet'

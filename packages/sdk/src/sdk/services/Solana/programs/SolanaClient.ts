@@ -69,6 +69,15 @@ export class SolanaClient {
   }
 
   /**
+   * The Solana RPC client. Prefer this over `connection`: the SDK's default
+   * Solana client loads @solana/web3.js on first use, and `connection` is only
+   * readable after that.
+   */
+  public async getConnection() {
+    return this.connection
+  }
+
+  /**
    * Convenience helper to construct v0 transactions.
    *
    * Handles fetching a recent blockhash, getting lookup table accounts,

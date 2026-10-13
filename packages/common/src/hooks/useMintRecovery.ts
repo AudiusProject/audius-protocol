@@ -40,7 +40,7 @@ export const useMintRecovery = (
 
         // Get the token account info
         const accountInfo = await getAccount(
-          sdk.services.solanaClient.connection,
+          await sdk.services.solanaClient.getConnection(),
           ata
         )
 

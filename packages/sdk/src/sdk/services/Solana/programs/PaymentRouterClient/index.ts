@@ -1,3 +1,3 @@
-export * from './PaymentRouterClient'
+export { PaymentRouterClient } from './PaymentRouterClient'
 export * from './types'
-export * from './getDefaultConfig'
+export { getDefaultPaymentRouterClientConfig } from './getDefaultConfig'

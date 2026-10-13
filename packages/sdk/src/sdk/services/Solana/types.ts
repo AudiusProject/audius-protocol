@@ -1,5 +1,5 @@
 import type { WalletAdapterProps } from '@solana/wallet-adapter-base'
-import {
+import type {
   PublicKey,
   VersionedTransaction,
   SendOptions,
@@ -17,8 +17,15 @@ export type SolanaConfig = {}
 
 export type SolanaRelayService = SolanaRelay
 
+/**
+ * A PublicKey, or a string that is parsed into one.
+ *
+ * Loads @solana/web3.js when parsing, so it only supports async parsing
+ * (`parseAsync`/`safeParseAsync`).
+ */
 export const PublicKeySchema = z.union([
-  z.string().transform<PublicKey>((data, ctx) => {
+  z.string().transform<PublicKey>(async (data, ctx) => {
+    const { PublicKey } = await import('@solana/web3.js')
     try {
       return new PublicKey(data)
     } catch (e) {
@@ -29,7 +36,8 @@ export const PublicKeySchema = z.union([
     }
     return z.NEVER
   }),
-  z.custom<PublicKey>((data) => {
+  z.custom<PublicKey>().refine(async (data) => {
+    const { PublicKey } = await import('@solana/web3.js')
     return data instanceof PublicKey
   })
 ])

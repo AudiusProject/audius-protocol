@@ -38,7 +38,7 @@ export const useWalletOwner = (
           import('@solana/spl-token'),
           import('@solana/web3.js')
         ])
-        const connection = sdk.services.solanaClient.connection
+        const connection = await sdk.services.solanaClient.getConnection()
         const { owner } = await getAccount(
           connection,
           new PublicKey(walletAddress)

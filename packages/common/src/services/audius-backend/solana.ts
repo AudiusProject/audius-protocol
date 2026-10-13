@@ -127,7 +127,7 @@ export const getUserbankAccountInfo = async (
   })
 
   return await getAccount(
-    sdk.services.solanaClient.connection,
+    await sdk.services.solanaClient.getConnection(),
     tokenAccount,
     commitment
   )
@@ -195,7 +195,7 @@ export const pollForTokenBalanceChange = async (
   const debugTokenName = mint.toUpperCase()
   let retries = 0
   let tokenAccountInfo = await getAccount(
-    sdk.services.solanaClient.connection,
+    await sdk.services.solanaClient.getConnection(),
     tokenAccount,
     commitment
   )
@@ -218,7 +218,7 @@ export const pollForTokenBalanceChange = async (
     }
     await delay(retryDelayMs)
     tokenAccountInfo = await getAccount(
-      sdk.services.solanaClient.connection,
+      await sdk.services.solanaClient.getConnection(),
       tokenAccount,
       commitment
     )

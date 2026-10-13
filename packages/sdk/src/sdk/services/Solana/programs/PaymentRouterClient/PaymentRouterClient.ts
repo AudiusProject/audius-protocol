@@ -207,12 +207,10 @@ export class PaymentRouterClient {
       true
     )
 
+    const connection = await this.client.getConnection()
     let account: Account | null = null
     try {
-      account = await getAccount(
-        this.client.connection,
-        associatedTokenAdddress
-      )
+      account = await getAccount(connection, associatedTokenAdddress)
       this.existingTokenAccounts[mint.toBase58()] = account
     } catch (error: unknown) {
       if (error instanceof TokenAccountNotFoundError) {
@@ -225,7 +223,7 @@ export class PaymentRouterClient {
             mint
           )
           const { lastValidBlockHeight, blockhash } =
-            await this.client.connection.getLatestBlockhash()
+            await connection.getLatestBlockhash()
           const msg = new TransactionMessage({
             payerKey: await this.client.getFeePayer(),
             recentBlockhash: blockhash,
@@ -233,7 +231,7 @@ export class PaymentRouterClient {
           })
           const transaction = new VersionedTransaction(msg.compileToV0Message())
           const signature = await this.client.sendTransaction(transaction)
-          await this.client.connection.confirmTransaction(
+          await connection.confirmTransaction(
             { signature, blockhash, lastValidBlockHeight },
             'finalized'
           )
@@ -243,10 +241,7 @@ export class PaymentRouterClient {
         }
 
         // Now this should always succeed
-        account = await getAccount(
-          this.client.connection,
-          associatedTokenAdddress
-        )
+        account = await getAccount(connection, associatedTokenAdddress)
       } else {
         throw error
       }

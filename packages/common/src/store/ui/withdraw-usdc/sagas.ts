@@ -68,7 +68,10 @@ function* doWithdrawUSDCCoinflow({
     }
 
     const destinationAddress = rootSolanaAccount.publicKey.toString()
-    const connection = sdk.services.solanaClient.connection
+    const connection = yield* call([
+      sdk.services.solanaClient,
+      sdk.services.solanaClient.getConnection
+    ])
 
     const user = yield* call(queryAccountUser)
     if (!user?.wallet) {
@@ -209,7 +212,10 @@ function* doWithdrawUSDCManualTransfer({
   const queryClient = yield* getContext('queryClient')
   const sdk = yield* getSDK()
   const solanaWalletService = yield* getContext('solanaWalletService')
-  const connection = sdk.services.solanaClient.connection
+  const connection = yield* call([
+    sdk.services.solanaClient,
+    sdk.services.solanaClient.getConnection
+  ])
   const env = yield* getContext('env')
   const mint = new PublicKey(env.USDC_MINT_ADDRESS)
   const rootSolanaAccount = yield* call([solanaWalletService, 'getKeypair'])

@@ -536,7 +536,7 @@ export const useExternalWalletSwap = () => {
             audioMint: env.WAUDIO_MINT_ADDRESS,
             audioDecimals: TOKEN_LISTING_MAP.AUDIO.decimals,
             solanaRelay: sdk.services.solanaRelay,
-            solanaConnection: sdk.services.solanaClient.connection
+            solanaConnection: await sdk.services.solanaClient.getConnection()
           })
 
           hookProgress.receivedQuote = true

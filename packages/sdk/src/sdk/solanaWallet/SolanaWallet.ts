@@ -1,4 +1,4 @@
-import bs58 from 'bs58'
+import { base58 } from '@scure/base'
 
 export type SolanaWalletCredential = {
   publicKey: string
@@ -38,7 +38,7 @@ export class SolanaWallet {
     this.credential = {
       publicKey: publicKey.toString(),
       message,
-      signature: bs58.encode(sigBytes)
+      signature: base58.encode(sigBytes)
     }
     return { publicKey: this.credential.publicKey }
   }

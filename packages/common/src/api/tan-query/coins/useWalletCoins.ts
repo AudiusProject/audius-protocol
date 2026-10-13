@@ -48,7 +48,7 @@ export const useWalletCoins = <TResult = UserCoin[]>(
       try {
         const { PublicKey } = await import('@solana/web3.js')
         const addressPubKey = new PublicKey(params.walletAddress)
-        const connection = sdk.services.solanaClient.connection
+        const connection = await sdk.services.solanaClient.getConnection()
         const balance = await connection.getBalance(addressPubKey)
         solBalance = balance
         // TODO: Calculate USD value if needed

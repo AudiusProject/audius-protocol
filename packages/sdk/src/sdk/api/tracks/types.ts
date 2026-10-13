@@ -9,7 +9,7 @@ import type {
   SolanaClient,
   SolanaRelayService
 } from '../../services'
-import { PublicKeySchema } from '../../services/Solana'
+import { PublicKeySchema } from '../../services/Solana/types'
 import {
   ProgressEventSchema,
   type StorageService

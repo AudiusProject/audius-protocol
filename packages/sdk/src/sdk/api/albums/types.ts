@@ -10,7 +10,7 @@ import type {
   SolanaRelayService,
   StorageService
 } from '../../services'
-import { PublicKeySchema } from '../../services/Solana'
+import { PublicKeySchema } from '../../services/Solana/types'
 import { DDEXResourceContributor, DDEXCopyright } from '../../types/DDEX'
 import { AudioFile, ImageFile } from '../../types/File'
 import { HashId } from '../../types/HashId'

@@ -61,7 +61,7 @@ export async function addTransferFromUserBankInstructions({
   const ata = getAssociatedTokenAddressSync(mint, userPublicKey, true)
 
   try {
-    await getAccount(sdk.services.solanaClient.connection, ata)
+    await getAccount(await sdk.services.solanaClient.getConnection(), ata)
   } catch (e) {
     instructions.push(
       createAssociatedTokenAccountIdempotentInstruction(
@@ -295,10 +295,8 @@ export const buildAndSendTransaction = async (
   const signature = await sdk.services.solanaClient.sendTransaction(swapTx)
 
   if (commitment) {
-    await sdk.services.solanaClient.connection.confirmTransaction(
-      signature,
-      commitment
-    )
+    const connection = await sdk.services.solanaClient.getConnection()
+    await connection.confirmTransaction(signature, commitment)
   }
 
   return signature

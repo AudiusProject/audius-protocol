@@ -1,5 +1,5 @@
 import { USDC } from '@audius/fixed-decimal'
-import { TransactionInstruction } from '@solana/web3.js'
+import type { TransactionInstruction } from '@solana/web3.js'
 import snakecaseKeys from 'snakecase-keys'
 
 import { UninitializedEntityManagerError } from '../../errors'
@@ -1068,7 +1068,7 @@ export class TracksApi extends GeneratedTracksApi {
       }
       return await params.walletAdapter.sendTransaction(
         transaction,
-        this.solanaClient.connection
+        await this.solanaClient.getConnection()
       )
     }
     return this.solanaClient.sendTransaction(transaction, {
