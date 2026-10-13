@@ -223,12 +223,6 @@ const config = {
       // Aliases for '@audius/web' to allow for absolute paths
       ...getClientAliases(),
 
-      // react-native-gifted-charts requires this at module load
-      'react-native-linear-gradient': path.resolve(
-        __dirname,
-        'src/shims/react-native-linear-gradient.ts'
-      ),
-
       // Various polyfills to enable @audius/sdk to run in react-native
       crypto: path.resolve(__dirname, 'src/shims/crypto.js'),
       child_process: emptyPolyfill,
