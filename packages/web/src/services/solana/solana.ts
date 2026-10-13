@@ -4,24 +4,9 @@ import { PublicKey } from '@solana/web3.js'
 
 import { audiusSdk } from 'services/audius-sdk'
 
-const ROOT_ACCOUNT_SIZE = 0 // Root account takes 0 bytes, but still pays rent!
-export const TRANSACTION_FEE_FALLBACK = 10000
-
-export const getSolanaConnection = async () => {
+const getSolanaConnection = async () => {
   const sdk = await audiusSdk()
   return await sdk.services.solanaClient.getConnection()
-}
-
-/**
- * Calculates the minimum amount of rent needed for a solana account to be
- * rent-exempt.
- */
-export const getRootAccountRentExemptionMinimum = async () => {
-  const connection = await getSolanaConnection()
-  return await connection.getMinimumBalanceForRentExemption(
-    ROOT_ACCOUNT_SIZE,
-    'processed'
-  )
 }
 
 /**

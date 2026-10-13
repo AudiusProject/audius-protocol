@@ -4,9 +4,7 @@ import { useAppContext } from '~/context/appContext'
 
 import {
   AllRemoteConfigKeys,
-  BooleanKeys,
   IntKeys,
-  DoubleKeys,
   StringKeys,
   RemoteConfigInstance
 } from '../services'
@@ -23,12 +21,8 @@ export const createUseRemoteVarHook = ({
   useHasConfigLoaded: () => boolean
 }) => {
   function useRemoteVar(key: IntKeys): number
-  function useRemoteVar(key: DoubleKeys): number
   function useRemoteVar(key: StringKeys): string
-  function useRemoteVar(key: BooleanKeys): boolean
-  function useRemoteVar(
-    key: AllRemoteConfigKeys
-  ): boolean | string | number | null {
+  function useRemoteVar(key: AllRemoteConfigKeys): string | number | null {
     const configLoaded = useHasConfigLoaded()
     const shouldRecompute = useRecomputeToggle(configLoaded)
 
@@ -47,12 +41,8 @@ export type RemoteVarHook = ReturnType<typeof createUseRemoteVarHook>
 
 /** Fetches a remote config variable with default fallback */
 export function useRemoteVar(key: IntKeys): number
-export function useRemoteVar(key: DoubleKeys): number
 export function useRemoteVar(key: StringKeys): string
-export function useRemoteVar(key: BooleanKeys): boolean
-export function useRemoteVar(
-  key: AllRemoteConfigKeys
-): boolean | string | number | null {
+export function useRemoteVar(key: AllRemoteConfigKeys): string | number | null {
   const { remoteConfig } = useAppContext()
   const configLoaded = useHasConfigLoaded()
   const shouldRecompute = useRecomputeToggle(configLoaded)

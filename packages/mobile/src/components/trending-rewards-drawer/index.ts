@@ -1,1 +1,0 @@
-export { TrendingRewardsDrawer } from './TrendingRewardsDrawer'

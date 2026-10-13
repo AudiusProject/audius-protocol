@@ -76,8 +76,6 @@ export const AuthHeaders = Object.freeze({
   Signature: 'Encoded-Data-Signature'
 })
 
-export type TransactionReceipt = { blockHash: string; blockNumber: number }
-
 type AudiusBackendSolanaConfig = Partial<{
   claimableTokenPda: string
   claimableTokenProgramAddress: string

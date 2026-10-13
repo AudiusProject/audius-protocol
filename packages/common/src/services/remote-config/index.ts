@@ -1,4 +1,4 @@
-export { IntKeys, StringKeys, DoubleKeys, BooleanKeys } from './types'
+export { IntKeys, StringKeys } from './types'
 export type { AllRemoteConfigKeys } from './types'
 export { FeatureFlags } from './feature-flags'
 export { remoteConfig } from './remote-config'
