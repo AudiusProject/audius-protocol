@@ -4,6 +4,7 @@ module.exports = (api) => {
     'babel-plugin-react-compiler',
     ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }],
     '@babel/plugin-transform-export-namespace-from',
+    './babel-plugin-cherry-pick-imports',
     [
       'module-resolver',
       {
