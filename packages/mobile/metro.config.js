@@ -229,6 +229,7 @@ const config = {
       ),
 
       // Various polyfills to enable @audius/sdk to run in react-native
+      crypto: path.resolve(__dirname, 'src/shims/crypto.js'),
       child_process: emptyPolyfill,
       fs: resolveModule('@dr.pogodin/react-native-fs'),
       net: emptyPolyfill,
