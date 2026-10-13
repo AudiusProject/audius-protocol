@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
-import commonPasswordList from 'fxa-common-password-list'
+import { commonPasswordCheck } from '@audius/common/utils'
 import { View } from 'react-native'
 
 import { IconArrowRight, PasswordInput, Button } from '@audius/harmony-native'
@@ -13,7 +13,6 @@ type Requirements = {
   number: CheckState
   length: CheckState
   match: CheckState
-  common: CheckState
 }
 
 const MIN_PASSWORD_LEN = 8
@@ -39,10 +38,32 @@ const getMatchRequirement = (
   return 'valid'
 }
 
-const getCommonRequirement = (password: string) => {
-  if (password.length < MIN_PASSWORD_LEN) return 'default'
-  if (commonPasswordList.test(password)) return 'error'
-  return 'valid'
+const COMMON_CHECK_DEBOUNCE_MS = 300
+
+/** Checks the password against Have I Been Pwned after typing pauses. */
+const useCommonRequirement = (password: string): CheckState => {
+  const [result, setResult] = useState<{
+    password: string
+    isCommon: boolean
+  } | null>(null)
+
+  useEffect(() => {
+    if (password.length < MIN_PASSWORD_LEN) return
+    let cancelled = false
+    const timeout = setTimeout(async () => {
+      const isCommon = await commonPasswordCheck(password).catch(() => false)
+      if (!cancelled) setResult({ password, isCommon })
+    }, COMMON_CHECK_DEBOUNCE_MS)
+    return () => {
+      cancelled = true
+      clearTimeout(timeout)
+    }
+  }, [password])
+
+  if (password.length < MIN_PASSWORD_LEN || result?.password !== password) {
+    return 'default'
+  }
+  return result.isCommon ? 'error' : 'valid'
 }
 
 const messages = {
@@ -77,12 +98,13 @@ export const EnterPassword = (props: EnterPasswordProps) => {
   const styles = useStyles()
   const [password, setPassword] = useState('')
   const [passwordConfirmation, setPasswordConfirmation] = useState('')
-  const [requirements, setRequirements] = useState<Requirements>({
+  const [checkedRequirements, setRequirements] = useState<Requirements>({
     number: 'default',
     length: 'default',
-    match: 'default',
-    common: 'default'
+    match: 'default'
   })
+  const common = useCommonRequirement(password)
+  const requirements = { ...checkedRequirements, common }
 
   const handlePasswordChange = (password: string) => {
     const number =
@@ -97,18 +119,11 @@ export const EnterPassword = (props: EnterPasswordProps) => {
           ? 'valid'
           : 'default'
         : getLengthRequirement(password)
-    const common =
-      requirements.common === 'default'
-        ? getCommonRequirement(password) === 'valid'
-          ? 'valid'
-          : 'default'
-        : getCommonRequirement(password)
     setPassword(password)
     setRequirements({
-      ...requirements,
+      ...checkedRequirements,
       number,
       length,
-      common,
       match:
         passwordConfirmation === ''
           ? 'default'
@@ -119,7 +134,7 @@ export const EnterPassword = (props: EnterPasswordProps) => {
   const handlePasswordConfirmationChange = (passwordConfirmation: string) => {
     if (requirements.match !== 'default') {
       setRequirements({
-        ...requirements,
+        ...checkedRequirements,
         match:
           passwordConfirmation === ''
             ? 'default'
@@ -127,7 +142,7 @@ export const EnterPassword = (props: EnterPasswordProps) => {
       })
     } else if (password.length <= passwordConfirmation.length) {
       setRequirements({
-        ...requirements,
+        ...checkedRequirements,
         match: getMatchRequirement(password, passwordConfirmation)
       })
     }
@@ -138,10 +153,9 @@ export const EnterPassword = (props: EnterPasswordProps) => {
     // Check for password errors here
     if (password) {
       setRequirements({
-        ...requirements,
+        ...checkedRequirements,
         number: getNumberRequirement(password),
         length: getLengthRequirement(password),
-        common: getCommonRequirement(password),
         match:
           passwordConfirmation === ''
             ? 'default'
@@ -152,7 +166,7 @@ export const EnterPassword = (props: EnterPasswordProps) => {
   const handleConfirmationBlur = () => {
     if (passwordConfirmation) {
       setRequirements({
-        ...requirements,
+        ...checkedRequirements,
         match:
           password === ''
             ? 'default'

@@ -1,5 +1,6 @@
 import type { Color } from '@audius/common/models'
-import Jimp from 'jimp'
+
+import { readImage } from './image/rgbaImage'
 
 const DEFAULT_RGB = '#7e1bcc'
 const SAMPLE_RATE = 20
@@ -80,6 +81,15 @@ export const pickTwoMostDominantAndVibrant = (colors) => {
   return vibrantColors
 }
 
+/** Same as jimp's posterize(n) on the RGB channels. */
+const posterize = (pixels: Uint8Array, n: number) => {
+  for (let i = 0; i < pixels.length; i += 4) {
+    for (let c = i; c < i + 3; c++) {
+      pixels[c] = (Math.floor((pixels[c] / 255) * (n - 1)) / (n - 1)) * 255
+    }
+  }
+}
+
 const findDominantColors = (selectFrom: Color[]) => {
   const domColors = [selectFrom.shift() as Color]
 
@@ -100,10 +110,9 @@ const findDominantColors = (selectFrom: Color[]) => {
  */
 export const getDominantRgb = async (imageUrl: string) => {
   try {
-    const img = await Jimp.read(imageUrl)
-    img.posterize(15)
-    const imageData = img.bitmap
+    const imageData = await readImage(imageUrl)
     const pixels = imageData.data
+    posterize(pixels, 15)
     const pixelCount = imageData.width * imageData.height
 
     const counts = {}
