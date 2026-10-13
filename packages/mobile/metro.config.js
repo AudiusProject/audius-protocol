@@ -46,10 +46,11 @@ const resolveStrippedBip39Wordlist = (moduleName, originModulePath) => {
 // Packages installed more than once (nested copies with the same major
 // version) are bundled once each. Point every same-major copy at the newest
 // one. Copies with a different major version, or a missing canonical copy,
-// resolve normally.
+// resolve normally. @noble/hashes is excluded: 1.7 renamed `_assert.bytes`
+// to `abytes`, and older consumers like @scure/bip32 (viem's HD derivation)
+// still call `bytes`.
 const rootModules = path.resolve(__dirname, '../../node_modules')
 const canonicalPackages = {
-  '@noble/hashes': `${rootModules}/@solana/wallet-standard-util/node_modules/@noble/hashes`,
   '@noble/curves': `${rootModules}/@solana/wallet-standard-util/node_modules/@noble/curves`,
   '@babel/runtime': path.resolve(
     __dirname,
