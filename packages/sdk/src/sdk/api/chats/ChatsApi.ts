@@ -1,6 +1,6 @@
 import EventEmitter from 'events'
 
-import * as secp from '@noble/secp256k1'
+import { secp256k1 } from '@noble/curves/secp256k1'
 import { base64 } from '@scure/base'
 import WebSocket from 'isomorphic-ws'
 import type TypedEmitter from 'typed-emitter'
@@ -460,7 +460,7 @@ export class ChatsApi
     )(params)
 
     const chatId = [userId, ...invitedUserIds].sort().join(':')
-    const chatSecret = secp.utils.randomPrivateKey()
+    const chatSecret = secp256k1.utils.randomPrivateKey()
     const invites = await this.createInvites(userId, invitedUserIds, chatSecret)
 
     return (await this.sendRpc({

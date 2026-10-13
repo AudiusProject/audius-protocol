@@ -1,5 +1,6 @@
 /// <reference types="vitest" />
 
+import fs from 'fs'
 import path from 'path'
 
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill'
@@ -13,8 +14,82 @@ import {
   defaultServerConditions,
   loadEnv
 } from 'vite'
+import type { Plugin } from 'vite'
 import glslify from 'vite-plugin-glslify'
 import svgr from 'vite-plugin-svgr'
+
+// @noble/curves and @noble/ciphers are installed many times (nested under
+// viem, @solana/web3.js, common, sdk, ...). Point older copies with the same
+// major version at the copy the entry chunk already has (viem's curves,
+// common's ciphers) so they are bundled once. Newer copies are never
+// downgraded, and @noble/hashes is left alone: its `_assert` exports changed
+// within 1.x.
+const canonicalNoblePackages: Record<string, string> = {
+  '@noble/curves': path.resolve(
+    __dirname,
+    '../../node_modules/viem/node_modules/@noble/curves'
+  ),
+  '@noble/ciphers': path.resolve(
+    __dirname,
+    '../common/node_modules/@noble/ciphers'
+  )
+}
+
+const packageVersions = new Map<string, number[] | null>()
+const getVersion = (packageDir: string) => {
+  if (!packageVersions.has(packageDir)) {
+    let version: number[] | null = null
+    try {
+      version = JSON.parse(
+        fs.readFileSync(path.join(packageDir, 'package.json'), 'utf8')
+      )
+        .version.split('.')
+        .map(Number)
+    } catch {}
+    packageVersions.set(packageDir, version)
+  }
+  return packageVersions.get(packageDir)
+}
+
+/** Whether `a` has the same major version as `b` and is not newer. */
+const isSameMajorAndNotNewer = (a: number[], b: number[]) => {
+  if (a[0] !== b[0]) return false
+  for (let i = 1; i < 3; i++) {
+    if (a[i] !== b[i]) return a[i] < b[i]
+  }
+  return true
+}
+
+const nobleDedupe = (): Plugin => ({
+  name: 'noble-dedupe',
+  enforce: 'pre',
+  async resolveId(source, importer, options) {
+    const name = source.match(/^@noble\/[^/]+/)?.[0]
+    if (!name || !(name in canonicalNoblePackages)) return null
+    const resolved = await this.resolve(source, importer, {
+      ...options,
+      skipSelf: true
+    })
+    const match = resolved?.id.match(
+      /^(.*\/node_modules\/@noble\/[^/]+)(\/.*)$/
+    )
+    if (!resolved || !match) return resolved
+    const [, packageDir, rest] = match
+    const canonicalDir = canonicalNoblePackages[name]
+    if (packageDir === canonicalDir) return resolved
+    const version = getVersion(packageDir)
+    const canonicalVersion = getVersion(canonicalDir)
+    if (
+      !version ||
+      !canonicalVersion ||
+      !isSameMajorAndNotNewer(version, canonicalVersion)
+    ) {
+      return resolved
+    }
+    const id = canonicalDir + rest
+    return fs.existsSync(id) ? { ...resolved, id } : resolved
+  }
+})
 
 const SOURCEMAP_URL = 'https://s3.us-west-1.amazonaws.com/sourcemaps.audius.co/'
 
@@ -163,6 +238,7 @@ export default defineConfig(async ({ mode }) => {
           }
         }
       },
+      nobleDedupe(),
       // bip39 bundles every language's wordlist; keys only use English
       {
         name: 'bip39-english-only',
@@ -222,10 +298,7 @@ export default defineConfig(async ({ mode }) => {
         // workspace also resolves chart.js v2 (protocol-dashboard), and
         // chartjs-adapter-dayjs-4 hoists to root, so its `chart.js` import
         // would otherwise pick up v2 and silently break the date adapter.
-        'chart.js': path.resolve(
-          __dirname,
-          'node_modules/chart.js'
-        ),
+        'chart.js': path.resolve(__dirname, 'node_modules/chart.js'),
         // Ensure single React instance to prevent ReactCurrentDispatcher errors
         ...(!ssr
           ? {

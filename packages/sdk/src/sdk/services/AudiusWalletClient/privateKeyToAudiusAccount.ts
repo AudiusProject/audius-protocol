@@ -1,5 +1,5 @@
+import { secp256k1 } from '@noble/curves/secp256k1'
 import { keccak_256 } from '@noble/hashes/sha3'
-import * as secp256k1 from '@noble/secp256k1'
 import { type Hex, hexToBytes } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 
@@ -16,12 +16,12 @@ export function privateKeyToAudiusAccount(privateKey: Hex): AudiusAccount {
     getSharedSecret: async (publicKey: string | Uint8Array) => {
       return secp256k1.getSharedSecret(hexToBytes(privateKey), publicKey, true)
     },
-    signRaw: async (data: Hex) => {
-      return secp256k1.sign(
+    signRaw: async (data: Hex): Promise<[Uint8Array, number]> => {
+      const signature = secp256k1.sign(
         keccak_256(hexToBytes(data)),
-        hexToBytes(privateKey),
-        { recovered: true, der: false }
+        hexToBytes(privateKey)
       )
+      return [signature.toCompactRawBytes(), signature.recovery]
     }
   }
 }

@@ -52,6 +52,10 @@ const resolveStrippedBip39Wordlist = (moduleName, originModulePath) => {
 const rootModules = path.resolve(__dirname, '../../node_modules')
 const canonicalPackages = {
   '@noble/curves': `${rootModules}/@solana/wallet-standard-util/node_modules/@noble/curves`,
+  '@noble/ciphers': path.resolve(
+    __dirname,
+    '../common/node_modules/@noble/ciphers'
+  ),
   '@babel/runtime': path.resolve(
     __dirname,
     '../web/node_modules/@babel/runtime'
