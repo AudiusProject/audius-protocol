@@ -69,7 +69,6 @@
     "@atlaskit/pragmatic-drag-and-drop": "^1.5.0",
     "@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration": "^0.17.7",
     "@audius/common": "*",
-    "@audius/fetch-nft": "0.2.8",
     "@audius/fixed-decimal": "*",
     "@audius/harmony": "*",
     "@audius/sdk": "*",
