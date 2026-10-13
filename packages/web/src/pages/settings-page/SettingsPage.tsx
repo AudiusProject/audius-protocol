@@ -3,10 +3,8 @@ import { RefObject } from 'react'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import { SettingsPage as DesktopSettingsPage } from './components/desktop/SettingsPage'
-import {
-  SettingsPage as MobileSettingsPage,
-  SubPage
-} from './components/mobile/SettingsPage'
+import { SettingsPage as MobileSettingsPage } from './components/mobile/SettingsPage'
+import { SubPage } from './types'
 
 type SettingsPageProps = {
   containerRef: RefObject<HTMLDivElement>
