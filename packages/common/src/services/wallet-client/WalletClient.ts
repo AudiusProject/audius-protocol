@@ -60,7 +60,7 @@ export class WalletClient {
         mint: 'wAUDIO'
       })
     const account = await getAccount(
-      sdk.services.solanaClient.connection,
+      await sdk.services.solanaClient.getConnection(),
       userBank
     )
     if (!account) {

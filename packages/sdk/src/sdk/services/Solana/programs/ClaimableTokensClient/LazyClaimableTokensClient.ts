@@ -1,3 +1,4 @@
+import type { SdkServicesConfig } from '../../../../config/types'
 import { createLazyLoader, type PublicInterface } from '../../../../utils/lazy'
 
 import type { ClaimableTokensClient } from './ClaimableTokensClient'
@@ -12,10 +13,25 @@ type Client = ClaimableTokensClient
 export class LazyClaimableTokensClient implements PublicInterface<Client> {
   private readonly loader
 
-  constructor(config: ClaimableTokensConfig) {
+  /**
+   * @param servicesConfig if set, the environment defaults (program ID, mints)
+   * are applied under `config` when the client loads.
+   */
+  constructor(
+    config: ClaimableTokensConfig,
+    servicesConfig?: SdkServicesConfig
+  ) {
     this.loader = createLazyLoader(async () => {
-      const { ClaimableTokensClient } = await import('./ClaimableTokensClient')
-      return new ClaimableTokensClient(config)
+      const [{ ClaimableTokensClient }, { getDefaultClaimableTokensConfig }] =
+        await Promise.all([
+          import('./ClaimableTokensClient'),
+          import('./getDefaultConfig')
+        ])
+      return new ClaimableTokensClient(
+        servicesConfig
+          ? { ...getDefaultClaimableTokensConfig(servicesConfig), ...config }
+          : config
+      )
     })
   }
 

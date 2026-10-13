@@ -17,20 +17,23 @@ const audiusWalletClient = createAppWalletClient({
 const blockhash = Keypair.generate().publicKey.toBase58()
 const feePayer = Keypair.generate().publicKey
 
-const createClient = ({ exists }: { exists: boolean }) =>
-  new ClaimableTokensClient({
+const createClient = ({ exists }: { exists: boolean }) => {
+  const connection = {
+    getAccountInfo: vi.fn(async () => (exists ? {} : null)),
+    getLatestBlockhash: vi.fn(async () => ({
+      blockhash,
+      lastValidBlockHeight: 0
+    }))
+  }
+  return new ClaimableTokensClient({
     audiusWalletClient,
     solanaClient: {
-      connection: {
-        getAccountInfo: vi.fn(async () => (exists ? {} : null)),
-        getLatestBlockhash: vi.fn(async () => ({
-          blockhash,
-          lastValidBlockHeight: 0
-        }))
-      },
+      connection,
+      getConnection: vi.fn(async () => connection),
       getFeePayer: vi.fn(async () => feePayer)
     } as unknown as SolanaClient
   })
+}
 
 describe('ClaimableTokensClient', () => {
   describe('createUserBankIfNeededInstruction', () => {

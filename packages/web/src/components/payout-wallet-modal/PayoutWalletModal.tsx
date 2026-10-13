@@ -205,7 +205,7 @@ export const PayoutWalletModal = NiceModal.create(() => {
 
           const usdcMint = new PublicKey(env.USDC_MINT_ADDRESS)
           const addressPubkey = new PublicKey(address)
-          const connection = sdk.services.solanaClient.connection
+          const connection = await sdk.services.solanaClient.getConnection()
           const info = await connection.getAccountInfo(addressPubkey)
 
           let usdcAta: string | null = null

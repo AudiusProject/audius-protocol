@@ -1,10 +1,8 @@
 import { generatePrivateKey, privateKeyToAddress } from 'viem/accounts'
 
 import { UninitializedEntityManagerError } from '../../errors'
-import {
-  createAppWalletClient,
-  type EntityManagerService
-} from '../../services'
+import { createAppWalletClient } from '../../services/AudiusWalletClient'
+import type { EntityManagerService } from '../../services/EntityManager'
 import {
   Action,
   EntityType,

@@ -776,7 +776,7 @@ export const audiusBackend = ({
         ethWallet: ethAddress,
         mint: 'wAUDIO'
       })
-      const connection = sdk.services.solanaClient.connection
+      const connection = await sdk.services.solanaClient.getConnection()
       let balance = BigInt(0)
       try {
         const {

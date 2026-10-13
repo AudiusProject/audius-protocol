@@ -264,8 +264,8 @@ export class RewardManagerClient {
       programId: this.programId,
       authority: this.authority
     })
-    const accountInfo =
-      await this.client.connection.getAccountInfo(attestationsAccount)
+    const connection = await this.client.getConnection()
+    const accountInfo = await connection.getAccountInfo(attestationsAccount)
     if (!accountInfo) {
       return null
     }
@@ -284,7 +284,8 @@ export class RewardManagerClient {
 
   public async getRewardManagerState() {
     if (!this.rewardManagerState) {
-      const state = await this.client.connection.getAccountInfo(
+      const connection = await this.client.getConnection()
+      const state = await connection.getAccountInfo(
         this.rewardManagerStateAccount
       )
       if (state) {

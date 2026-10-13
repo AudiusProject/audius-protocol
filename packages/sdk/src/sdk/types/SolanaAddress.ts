@@ -1,5 +1,17 @@
-import { PublicKey } from '@solana/web3.js'
+import { base58 } from '@scure/base'
 import { z } from 'zod'
+
+/**
+ * Whether `value` is a base58-encoded 32-byte Solana public key. Matches what
+ * `new PublicKey(value)` accepts, without loading @solana/web3.js.
+ */
+export const isSolanaPublicKeyString = (value: string) => {
+  try {
+    return base58.decode(value).length === 32
+  } catch {
+    return false
+  }
+}
 
 export const SolanaAddressSchema = z
   .string()
@@ -9,13 +21,4 @@ export const SolanaAddressSchema = z
   )
   .min(32, 'Solana address must be at least 32 characters')
   .max(44, 'Solana address must not exceed 44 characters')
-  .refine((val) => {
-    try {
-      // @ts-ignore - need an unused variable to check if the destinationWallet is valid
-      const ignored = new PublicKey(val)
-      return true
-    } catch (err) {
-      console.debug(err)
-      return false
-    }
-  })
+  .refine(isSolanaPublicKeyString)

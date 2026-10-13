@@ -166,7 +166,7 @@ const createLookupTable = async ({
     }
   })
   const config = getConfig(environment)
-  const connection = sdk.services.solanaClient.connection
+  const connection = await sdk.services.solanaClient.getConnection()
 
   const rewardManagerState = new PublicKey(
     config.solana.rewardManagerStateAddress
@@ -284,9 +284,11 @@ const updateLookupTable = async ({
     }
   })
   const config = getConfig(environment)
-  const connection = sdk.services.solanaClient.connection
+  const connection = await sdk.services.solanaClient.getConnection()
 
-  const lookupTableAddress = sdk.services.rewardManagerClient.lookupTable
+  const lookupTableAddress = new PublicKey(
+    config.solana.rewardManagerLookupTableAddress
+  )
   const lookupTableAccount =
     await connection.getAddressLookupTable(lookupTableAddress)
   if (!lookupTableAccount.value) {

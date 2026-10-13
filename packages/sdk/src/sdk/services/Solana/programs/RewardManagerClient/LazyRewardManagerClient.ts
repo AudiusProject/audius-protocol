@@ -1,11 +1,9 @@
 import type { PublicKey } from '@solana/web3.js'
 
-import { productionConfig } from '../../../../config/production'
+import type { SdkServicesConfig } from '../../../../config/types'
 import { createLazyLoader, type PublicInterface } from '../../../../utils/lazy'
-import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
 
 import type { RewardManagerClient } from './RewardManagerClient'
-import { getDefaultRewardManagerClentConfig } from './getDefaultConfig'
 import type { RewardManagerClientConfig } from './types'
 
 type Client = RewardManagerClient
@@ -15,18 +13,46 @@ type Client = RewardManagerClient
  * anchor) is only loaded on the first method call.
  */
 export class LazyRewardManagerClient implements PublicInterface<Client> {
-  public readonly lookupTable: PublicKey
   private readonly loader
+  private readonly configuredLookupTable?: PublicKey
 
-  constructor(config: RewardManagerClientConfig) {
-    this.lookupTable = mergeConfigWithDefaults(
-      config,
-      getDefaultRewardManagerClentConfig(productionConfig)
-    ).rewardManagerLookupTable
+  /**
+   * @param servicesConfig if set, the environment defaults (program ID, state,
+   * lookup table) are applied under `config` when the client loads.
+   */
+  constructor(
+    config: RewardManagerClientConfig,
+    servicesConfig?: SdkServicesConfig
+  ) {
+    this.configuredLookupTable = config.rewardManagerLookupTable
     this.loader = createLazyLoader(async () => {
-      const { RewardManagerClient } = await import('./RewardManagerClient')
-      return new RewardManagerClient(config)
+      const [{ RewardManagerClient }, { getDefaultRewardManagerClentConfig }] =
+        await Promise.all([
+          import('./RewardManagerClient'),
+          import('./getDefaultConfig')
+        ])
+      return new RewardManagerClient(
+        servicesConfig
+          ? { ...getDefaultRewardManagerClentConfig(servicesConfig), ...config }
+          : config
+      )
     })
+  }
+
+  /**
+   * The rewards lookup table. Available synchronously when passed in the
+   * config, otherwise only once the client has loaded.
+   * @throws if neither is the case
+   */
+  get lookupTable(): PublicKey {
+    const lookupTable =
+      this.configuredLookupTable ?? this.loader.peek()?.lookupTable
+    if (!lookupTable) {
+      throw new Error(
+        'rewardManagerClient.lookupTable is not available until the client has loaded'
+      )
+    }
+    return lookupTable
   }
 
   async createSenderInstruction(

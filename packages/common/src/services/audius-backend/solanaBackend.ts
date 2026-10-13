@@ -54,7 +54,7 @@ export const createSolanaBackend = ({
   }): Promise<AudioWei> {
     try {
       const addressPubKey = new PublicKey(address)
-      const connection = sdk.services.solanaClient.connection
+      const connection = await sdk.services.solanaClient.getConnection()
       const solBalance = await connection.getBalance(addressPubKey)
       return BigInt(solBalance ?? 0) as AudioWei
     } catch (e) {
@@ -134,7 +134,7 @@ export const createSolanaBackend = ({
     sdk: AudiusSdkWithServices
     mint: PublicKey
   }) {
-    const connection = sdk.services.solanaClient.connection
+    const connection = await sdk.services.solanaClient.getConnection()
     const pubkey = new PublicKey(address)
     try {
       const account = await getAccount(connection, pubkey)
@@ -272,8 +272,8 @@ export const createSolanaBackend = ({
     // Fetch blockhash explicitly to provide better error handling
     let recentBlockhash: string
     try {
-      const { blockhash } =
-        await sdk.services.solanaClient.connection.getLatestBlockhash()
+      const connection = await sdk.services.solanaClient.getConnection()
+      const { blockhash } = await connection.getLatestBlockhash()
       recentBlockhash = blockhash
     } catch (error) {
       const errorMessage =
@@ -369,7 +369,7 @@ export const createSolanaBackend = ({
     sdk: AudiusSdkWithServices
     mint?: MintName | PublicKey
   }) {
-    const connection = sdk.services.solanaClient.connection
+    const connection = await sdk.services.solanaClient.getConnection()
     const pubkey = new PublicKey(address)
     try {
       return await getAccount(connection, pubkey)

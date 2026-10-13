@@ -76,11 +76,11 @@ function* purchaseStep({
     { solanaAddress: wallet.toString(), mint: 'USDC' }
   )
 
-  const initialAccountInfo = yield* call(
-    getAccount,
-    sdk.services.solanaClient.connection,
-    tokenAccount
-  )
+  const connection = yield* call([
+    sdk.services.solanaClient,
+    sdk.services.solanaClient.getConnection
+  ])
+  const initialAccountInfo = yield* call(getAccount, connection, tokenAccount)
   const initialBalance = initialAccountInfo?.amount ?? BigInt(0)
 
   yield* put(purchaseStarted())
@@ -376,13 +376,13 @@ function* recoverPurchaseIfNecessary() {
       }
     )
 
+    const connection = yield* call([
+      sdk.services.solanaClient,
+      sdk.services.solanaClient.getConnection
+    ])
     let amount: bigint
     try {
-      const accountInfo = yield* call(
-        getAccount,
-        sdk.services.solanaClient.connection,
-        usdcTokenAccount
-      )
+      const accountInfo = yield* call(getAccount, connection, usdcTokenAccount)
       amount = accountInfo.amount
     } catch (e) {
       if (e instanceof TokenAccountNotFoundError) {
@@ -429,7 +429,6 @@ function* recoverPurchaseIfNecessary() {
       amount
     })
 
-    const connection = sdk.services.solanaClient.connection
     // Wait for transaction to be finalized before polling balance
     yield* call(
       [connection, connection.confirmTransaction],

@@ -169,7 +169,7 @@ async function executeMeteoraSwap(
     )
 
     // Create a new transaction that combines our setup instructions with the swap instructions
-    const connection = sdk.services.solanaClient.connection
+    const connection = await sdk.services.solanaClient.getConnection()
 
     // Decompose the swap transaction to extract the DBC swap instruction
     const swapMessage = swapTx.message
@@ -318,7 +318,8 @@ export abstract class BaseSwapExecutor {
     tokenAccount: PublicKey,
     decimals: number
   ): Promise<{ amount: string; uiAmount: number }> {
-    const connection = this.dependencies.sdk.services.solanaClient.connection
+    const connection =
+      await this.dependencies.sdk.services.solanaClient.getConnection()
     const balance = await connection.getTokenAccountBalance(
       tokenAccount,
       'confirmed'

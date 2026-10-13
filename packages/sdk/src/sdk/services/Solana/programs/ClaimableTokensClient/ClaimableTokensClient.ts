@@ -147,12 +147,12 @@ export class ClaimableTokensClient {
 
     // Create a new lock on the fetch/creation process for this user bank
     this._pendingUserBankCreationPromises[userBank.toBase58()] = (async () => {
-      const userBankAccount =
-        await this.client.connection.getAccountInfo(userBank)
+      const connection = await this.client.getConnection()
+      const userBankAccount = await connection.getAccountInfo(userBank)
       if (!userBankAccount) {
         this.logger.debug(`User bank ${userBank} does not exist. Creating...`)
         const { blockhash, lastValidBlockHeight } =
-          await this.client.connection.getLatestBlockhash()
+          await connection.getLatestBlockhash()
         const instructions = await this.createUserBankInstructions({
           ethWallet,
           mint,
@@ -166,7 +166,7 @@ export class ClaimableTokensClient {
           recentBlockhash: blockhash
         })
         const signature = await this.sendTransaction(transaction)
-        await this.client.connection.confirmTransaction(
+        await connection.confirmTransaction(
           { blockhash, lastValidBlockHeight, signature },
           'finalized'
         )
@@ -214,13 +214,13 @@ export class ClaimableTokensClient {
     const feePayer = feePayerOverride ?? (await this.client.getFeePayer())
     const userBank = await this.deriveUserBank({ ethWallet, mint: args.mint })
 
-    const userBankAccount =
-      await this.client.connection.getAccountInfo(userBank)
+    const connection = await this.client.getConnection()
+    const userBankAccount = await connection.getAccountInfo(userBank)
     if (!userBankAccount) {
       this.logger.debug(
         `User bank ${userBank} does not exist. Returning create instructions.`
       )
-      const { blockhash } = await this.client.connection.getLatestBlockhash()
+      const { blockhash } = await connection.getLatestBlockhash()
       const instructions = await this.createUserBankInstructions({
         ethWallet,
         mint,
@@ -389,7 +389,8 @@ export class ClaimableTokensClient {
         authority: this.deriveAuthority(mint),
         programId: this.programId
       })
-      const nonceAccount = await this.client.connection.getAccountInfo(nonceKey)
+      const connection = await this.client.getConnection()
+      const nonceAccount = await connection.getAccountInfo(nonceKey)
       const encodedNonceData = nonceAccount?.data
       if (encodedNonceData) {
         const nonceData =
@@ -434,7 +435,8 @@ export class ClaimableTokensClient {
       authority: this.deriveAuthority(mint),
       programId: this.programId
     })
-    const nonceAccount = await this.client.connection.getAccountInfo(nonceKey)
+    const connection = await this.client.getConnection()
+    const nonceAccount = await connection.getAccountInfo(nonceKey)
     const encodedNonceData = nonceAccount?.data
     if (encodedNonceData) {
       const nonceData =

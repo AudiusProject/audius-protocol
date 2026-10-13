@@ -58,15 +58,15 @@ export function* pollForTokenAccountInfo({
 }) {
   const sdk = yield* getSDK()
   const { getAccount } = yield* call(() => import('@solana/spl-token'))
+  const connection = yield* call([
+    sdk.services.solanaClient,
+    sdk.services.solanaClient.getConnection
+  ])
 
   let retries = 0
   let result
   while (retries < maxRetryCount && !result) {
-    result = yield* call(
-      getAccount,
-      sdk.services.solanaClient.connection,
-      tokenAccount
-    )
+    result = yield* call(getAccount, connection, tokenAccount)
     retries += 1
     yield* delay(retryDelayMs)
   }

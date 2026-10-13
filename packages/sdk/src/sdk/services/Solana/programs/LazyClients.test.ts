@@ -1,9 +1,12 @@
 import { Keypair } from '@solana/web3.js'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
+import { developmentConfig } from '../../../config/development'
 import type { AudiusWalletClient } from '../../AudiusWalletClient'
+import type { SolanaWalletAdapter } from '../types'
 
 import { LazyClaimableTokensClient } from './ClaimableTokensClient/LazyClaimableTokensClient'
+import { LazySolanaClient } from './LazySolanaClient'
 import { LazyPaymentRouterClient } from './PaymentRouterClient/LazyPaymentRouterClient'
 import { LazyRewardManagerClient } from './RewardManagerClient/LazyRewardManagerClient'
 import type { SolanaClient } from './SolanaClient'
@@ -14,7 +17,22 @@ const mocks = vi.hoisted(() => ({
   rewardManagerCtor: vi.fn(),
   getRewardManagerState: vi.fn(),
   paymentRouterCtor: vi.fn(),
-  createRouteInstruction: vi.fn()
+  createRouteInstruction: vi.fn(),
+  solanaClientCtor: vi.fn(),
+  getFeePayer: vi.fn(),
+  connection: { rpcEndpoint: 'http://rpc' }
+}))
+
+vi.mock('./SolanaClient', () => ({
+  SolanaClient: class {
+    constructor(config: unknown) {
+      mocks.solanaClientCtor(config)
+    }
+
+    connection = mocks.connection
+    getConnection = async () => mocks.connection
+    getFeePayer = mocks.getFeePayer
+  }
 }))
 
 vi.mock('./ClaimableTokensClient/ClaimableTokensClient', () => ({
@@ -29,8 +47,10 @@ vi.mock('./ClaimableTokensClient/ClaimableTokensClient', () => ({
 
 vi.mock('./RewardManagerClient/RewardManagerClient', () => ({
   RewardManagerClient: class {
-    constructor(config: unknown) {
+    lookupTable: unknown
+    constructor(config: { rewardManagerLookupTable?: unknown }) {
       mocks.rewardManagerCtor(config)
+      this.lookupTable = config.rewardManagerLookupTable
     }
 
     getRewardManagerState = mocks.getRewardManagerState
@@ -106,16 +126,70 @@ describe('lazy Solana program clients', () => {
     expect(mocks.rewardManagerCtor).toHaveBeenCalledTimes(2)
   })
 
-  it('exposes lookupTable synchronously', () => {
+  it('exposes a configured lookupTable synchronously', () => {
     const rewardManagerLookupTable = Keypair.generate().publicKey
     const client = new LazyRewardManagerClient({
       solanaClient,
       rewardManagerLookupTable
     })
     expect(client.lookupTable).toBe(rewardManagerLookupTable)
-    expect(
-      new LazyRewardManagerClient({ solanaClient }).lookupTable
-    ).toBeDefined()
     expect(mocks.rewardManagerCtor).not.toHaveBeenCalled()
+  })
+
+  it('exposes the default lookupTable once loaded', async () => {
+    const client = new LazyRewardManagerClient(
+      { solanaClient },
+      developmentConfig
+    )
+    expect(() => client.lookupTable).toThrow('not available')
+    mocks.getRewardManagerState.mockResolvedValueOnce({ minVotes: 3 })
+    await client.getRewardManagerState()
+    expect(client.lookupTable.toBase58()).toBe(
+      developmentConfig.solana.rewardManagerLookupTableAddress
+    )
+  })
+
+  it('applies the environment defaults under the config when loading', async () => {
+    const client = new LazyClaimableTokensClient(
+      { solanaClient, audiusWalletClient },
+      developmentConfig
+    )
+    mocks.deriveUserBank.mockResolvedValueOnce('bank')
+    await client.deriveUserBank({ mint: 'USDC' })
+    const config = mocks.claimableTokensCtor.mock.calls[0]![0]
+    expect(config.solanaClient).toBe(solanaClient)
+    expect(config.audiusWalletClient).toBe(audiusWalletClient)
+    expect(config.programId.toBase58()).toBe(
+      developmentConfig.solana.claimableTokensProgramAddress
+    )
+    expect(config.mints.USDC.toBase58()).toBe(
+      developmentConfig.solana.usdcTokenMint
+    )
+  })
+})
+
+describe('LazySolanaClient', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('does not construct the client until used', async () => {
+    const client = new LazySolanaClient({
+      solanaWalletAdapter: {} as SolanaWalletAdapter
+    })
+    expect(mocks.solanaClientCtor).not.toHaveBeenCalled()
+    mocks.getFeePayer.mockResolvedValueOnce('payer')
+    await expect(client.getFeePayer()).resolves.toBe('payer')
+    expect(mocks.solanaClientCtor).toHaveBeenCalledTimes(1)
+  })
+
+  it('throws a clear error reading connection before load, then works', async () => {
+    const client = new LazySolanaClient({
+      solanaWalletAdapter: {} as SolanaWalletAdapter
+    })
+    expect(() => client.connection).toThrow('getConnection()')
+    await expect(client.getConnection()).resolves.toBe(mocks.connection)
+    expect(client.connection).toBe(mocks.connection)
+    expect(mocks.solanaClientCtor).toHaveBeenCalledTimes(1)
   })
 })
