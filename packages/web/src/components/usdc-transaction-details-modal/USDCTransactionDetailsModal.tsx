@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import { USDCTransactionType } from '@audius/common/models'
-import { registerNiceModalId } from '@audius/common/services'
 import { useUSDCTransactionDetailsModal } from '@audius/common/store'
 import { makeSolanaTransactionLink, dayjs } from '@audius/common/utils'
 import { USDC } from '@audius/fixed-decimal'
@@ -108,6 +107,3 @@ export const USDCTransactionDetailsModal = NiceModal.create(() => {
     </Modal>
   )
 })
-
-NiceModal.register('USDCTransactionDetailsModal', USDCTransactionDetailsModal)
-registerNiceModalId('USDCTransactionDetailsModal')

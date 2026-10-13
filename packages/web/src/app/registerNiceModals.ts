@@ -13,24 +13,9 @@ import { createElement, lazy, Suspense, type ComponentType } from 'react'
 import { registerNiceModalId } from '@audius/common/services'
 import NiceModal from '@ebay/nice-modal-react'
 
-import 'components/add-cash-modal/AddCashModal'
-import 'components/locked-content-modal/LockedContentModal'
-import 'components/payout-wallet-modal/PayoutWalletModal'
-import 'components/premium-content-purchase-modal/PremiumContentPurchaseModal'
-import 'components/receive-tokens-modal/ReceiveTokensModal'
-import 'components/rewards/modals/ClaimAllRewardsModal'
-import 'components/transaction-details-modal/TransactionDetailsModal'
-import 'components/usdc-purchase-details-modal/USDCPurchaseDetailsModal'
-import 'components/usdc-transaction-details-modal/USDCTransactionDetailsModal'
-import 'components/withdraw-usdc-modal/WithdrawUSDCModal'
-import 'pages/audio-page/components/modals/AudioBreakdownModal'
-import 'pages/audio-page/components/modals/TransferAudioMobileDrawer'
-import 'pages/fan-club-detail-page/components/ClaimVestedCoinsModal'
-import 'pages/rewards-page/components/modals/ChallengeRewardsModal/ChallengeRewardsModal'
-
 /**
- * Wallet and Coinflow modals are registered lazily to keep AppKit and Coinflow
- * out of the entry chunk. NiceModal only renders visible modals, so nothing
+ * Wallet, Coinflow, purchase and rewards modals are registered lazily to keep
+ * AppKit, Coinflow and Solana out of the entry chunk. NiceModal only renders visible modals, so nothing
  * loads until one opens. Registration stays here (not in the modal modules) so
  * the lazy import can't re-register and remount an open modal.
  */
@@ -70,6 +55,101 @@ registerLazyModal('CoinflowWithdraw', () =>
   import(
     'components/withdraw-usdc-modal/components/CoinflowWithdrawModal'
   ).then((m) => ({ default: m.CoinflowWithdrawModal }))
+)
+
+// Purchase, wallet and rewards modals
+registerLazyModal('AddCashModal', () =>
+  import('components/add-cash-modal/AddCashModal').then((m) => ({
+    default: m.AddCashModal
+  }))
+)
+
+registerLazyModal('PayoutWallet', () =>
+  import('components/payout-wallet-modal/PayoutWalletModal').then((m) => ({
+    default: m.PayoutWalletModal
+  }))
+)
+
+registerLazyModal('PremiumContentPurchaseModal', () =>
+  import(
+    'components/premium-content-purchase-modal/PremiumContentPurchaseModal'
+  ).then((m) => ({
+    default: m.PremiumContentPurchaseModal
+  }))
+)
+
+registerLazyModal('ReceiveTokensModal', () =>
+  import('components/receive-tokens-modal/ReceiveTokensModal').then((m) => ({
+    default: m.ReceiveTokensModal
+  }))
+)
+
+registerLazyModal('TransactionDetails', () =>
+  import('components/transaction-details-modal/TransactionDetailsModal').then(
+    (m) => ({
+      default: m.TransactionDetailsModal
+    })
+  )
+)
+
+registerLazyModal('USDCPurchaseDetailsModal', () =>
+  import(
+    'components/usdc-purchase-details-modal/USDCPurchaseDetailsModal'
+  ).then((m) => ({
+    default: m.USDCPurchaseDetailsModal
+  }))
+)
+
+registerLazyModal('USDCTransactionDetailsModal', () =>
+  import(
+    'components/usdc-transaction-details-modal/USDCTransactionDetailsModal'
+  ).then((m) => ({
+    default: m.USDCTransactionDetailsModal
+  }))
+)
+
+registerLazyModal('WithdrawUSDCModal', () =>
+  import('components/withdraw-usdc-modal/WithdrawUSDCModal').then((m) => ({
+    default: m.WithdrawUSDCModal
+  }))
+)
+
+registerLazyModal(
+  'AudioBreakdown',
+  () => import('pages/audio-page/components/modals/AudioBreakdownModal')
+)
+
+registerLazyModal(
+  'TransferAudioMobileWarning',
+  () => import('pages/audio-page/components/modals/TransferAudioMobileDrawer')
+)
+
+registerLazyModal('ClaimVestedCoinsModal', () =>
+  import('pages/fan-club-detail-page/components/ClaimVestedCoinsModal').then(
+    (m) => ({
+      default: m.ClaimVestedCoinsModal
+    })
+  )
+)
+
+registerLazyModal('ClaimAllRewards', () =>
+  import('components/rewards/modals/ClaimAllRewardsModal').then((m) => ({
+    default: m.ClaimAllRewardsModal
+  }))
+)
+
+registerLazyModal('ChallengeRewards', () =>
+  import(
+    'pages/rewards-page/components/modals/ChallengeRewardsModal/ChallengeRewardsModal'
+  ).then((m) => ({
+    default: m.ChallengeRewardsModal
+  }))
+)
+
+registerLazyModal('LockedContent', () =>
+  import('components/locked-content-modal/LockedContentModal').then((m) => ({
+    default: m.LockedContentModal
+  }))
 )
 
 // Remaining modals, also lazy so none of them load until opened

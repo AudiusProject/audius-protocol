@@ -1,9 +1,9 @@
 import { Name } from '@audius/common/models'
 import { chatMiddleware } from '@audius/common/store'
 import { composeWithDevToolsLogOnlyInProduction } from '@redux-devtools/extension'
-import { createStore, applyMiddleware, Store } from 'redux'
+import { createStore, applyMiddleware, Store, Action } from 'redux'
 import { persistStore } from 'redux-persist'
-import createSagaMiddleware from 'redux-saga'
+import createSagaMiddleware, { stdChannel } from 'redux-saga'
 import thunk from 'redux-thunk'
 import { PartialDeep } from 'type-fest'
 
@@ -76,9 +76,14 @@ export const configureStore = ({
   }
 
   const context = buildStoreContext({ isMobile, isTest })
+  // Shared with lazily loaded sagas so they can be handed actions that
+  // arrived before they started (see lazySagas)
+  const sagaChannel = stdChannel<Action>()
+  context.sagaChannel = sagaChannel
   const sagaMiddleware = createSagaMiddleware({
     onError: onSagaError,
-    context
+    context,
+    channel: sagaChannel
   })
 
   // For tests, only use basic middleware without sagas

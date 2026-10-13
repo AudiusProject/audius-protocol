@@ -2,6 +2,7 @@ import { mainnet, solana, type AppKitNetwork } from '@reown/appkit/networks'
 import { createAppKit } from '@reown/appkit/react'
 import { SolanaAdapter } from '@reown/appkit-adapter-solana/react'
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
+import { reconnect } from '@wagmi/core'
 
 import { env } from 'services/env'
 import zIndex from 'utils/zIndex'
@@ -40,3 +41,8 @@ export const appkitModal = createAppKit({
 })
 
 registerLoadedAppKit({ appkitModal, wagmiAdapter })
+
+// Restore a persisted wallet connection. There is no app-wide WagmiProvider
+// (whose Hydrate used to do this), and reconnect is a no-op if one is already
+// in progress.
+reconnect(wagmiAdapter.wagmiConfig)

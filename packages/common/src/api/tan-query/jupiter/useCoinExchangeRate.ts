@@ -2,14 +2,10 @@ import { useMemo } from 'react'
 
 import { FixedDecimal } from '@audius/fixed-decimal'
 import type { AudiusSdkWithServices } from '@audius/sdk'
-import { QuoteResponse, SwapMode } from '@jup-ag/api'
+import type { QuoteResponse, SwapMode } from '@jup-ag/api'
 import { QueryClient, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import {
-  getJupiterQuoteByMint,
-  JupiterQuoteResult,
-  MAX_ALLOWED_ACCOUNTS
-} from '~/services/Jupiter'
+import type { JupiterQuoteResult } from '~/services/Jupiter'
 import { TOKEN_LISTING_MAP } from '~/store/ui/shared/tokenConstants'
 import { convertBigIntToAmountObject } from '~/utils'
 
@@ -130,6 +126,9 @@ export const getDirectQuote = async (
   if (inputHasPool || outputHasPool) {
     quoteResult = await getQuoteViaMeteoraDBC(params, sdk)
   } else {
+    const { getJupiterQuoteByMint, MAX_ALLOWED_ACCOUNTS } = await import(
+      '~/services/Jupiter'
+    )
     quoteResult = await getJupiterQuoteByMint({
       inputMint: params.inputMint,
       outputMint: params.outputMint,
@@ -197,6 +196,9 @@ export const getIndirectQuoteViaAudio = async (
       sdk
     )
   } else {
+    const { getJupiterQuoteByMint, MAX_ALLOWED_ACCOUNTS } = await import(
+      '~/services/Jupiter'
+    )
     firstQuote = await getJupiterQuoteByMint({
       inputMint: params.inputMint,
       outputMint: AUDIO_MINT,
@@ -226,6 +228,9 @@ export const getIndirectQuoteViaAudio = async (
       sdk
     )
   } else {
+    const { getJupiterQuoteByMint, MAX_ALLOWED_ACCOUNTS } = await import(
+      '~/services/Jupiter'
+    )
     secondQuote = await getJupiterQuoteByMint({
       inputMint: AUDIO_MINT,
       outputMint: params.outputMint,

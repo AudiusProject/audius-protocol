@@ -1,17 +1,14 @@
 import type { AudiusSdkWithServices } from '@audius/sdk'
-import { VersionedTransaction } from '@solana/web3.js'
+import type { VersionedTransaction } from '@solana/web3.js'
 import { QueryClient } from '@tanstack/react-query'
-import { Dispatch } from 'redux'
-import nacl from 'tweetnacl'
+import type { Action, Dispatch } from 'redux'
+import type { MulticastChannel } from 'redux-saga'
+import type nacl from 'tweetnacl'
 
 import { AuthService, IdentityService } from '~/services'
 import { SolanaWalletService } from '~/services/solana'
 
-import {
-  AllTrackingEvents,
-  AnalyticsEvent,
-  IdentifyTraits
-} from '../models'
+import { AllTrackingEvents, AnalyticsEvent, IdentifyTraits } from '../models'
 import { AudioPlayer } from '../services/audio-player'
 import { AudiusBackend } from '../services/audius-backend'
 import { Env } from '../services/env'
@@ -70,6 +67,8 @@ export type CommonStoreContext = {
   }
   isMobile: boolean
   dispatch: Dispatch<any>
+  /** The saga middleware's channel, used to replay actions to lazily loaded sagas */
+  sagaChannel?: MulticastChannel<Action>
   queryClient: QueryClient
   mobileWalletActions?: {
     connect: (dappKeyPair: nacl.BoxKeyPair) => void

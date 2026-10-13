@@ -49,7 +49,7 @@ export {
 } from './stripe-modal/slice'
 export * from './stripe-modal/types'
 export * as stripeModalUISelectors from './stripe-modal/selectors'
-export { default as stripeModalUISagas } from './stripe-modal/sagas'
+export { default as stripeModalUISagas } from './stripe-modal/sagasLoader'
 
 export {
   default as coinflowModalUIReducer,
@@ -77,7 +77,7 @@ export {
 } from './withdraw-usdc/slice'
 export * as withdrawUSDCSelectors from './withdraw-usdc/selectors'
 export * from './withdraw-usdc/types'
-export { default as withdrawUSDCSagas } from './withdraw-usdc/sagas'
+export { default as withdrawUSDCSagas } from './withdraw-usdc/sagasLoader'
 export * from './withdraw-usdc/schema'
 
 export {
