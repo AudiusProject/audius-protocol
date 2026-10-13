@@ -18,6 +18,35 @@ import svgr from 'vite-plugin-svgr'
 
 const SOURCEMAP_URL = 'https://s3.us-west-1.amazonaws.com/sourcemaps.audius.co/'
 
+// Matches what mobile's react-native-svg-transformer runs on the same icons,
+// plus id handling that is safe when many SVGs are inlined into one page.
+const svgoConfig = {
+  multipass: true,
+  plugins: [
+    {
+      name: 'preset-default',
+      params: {
+        overrides: {
+          // viewBox is required to resize SVGs with CSS
+          removeViewBox: false,
+          // Keep colors exact so .svgrrc replaceAttrValues still matches
+          convertColors: false,
+          removeUnknownsAndDefaults: false,
+          // Minified ids collide between inline SVGs on the same page
+          cleanupIds: { minify: false, remove: false },
+          removeUselessDefs: false,
+          removeTitle: false,
+          inlineStyles: { onlyMatchedOnce: false },
+          // Avoid lossy curve and transform rewrites (visible on logos with
+          // tiny-scale image transforms)
+          convertPathData: { convertToQ: false, makeArcs: false },
+          convertTransform: false
+        }
+      }
+    }
+  ]
+}
+
 export default defineConfig(async ({ mode }) => {
   // Despite loading env here, the result is the same as a filtered process.env
   // rather than dynamically loading the correct env file by mode.
@@ -91,6 +120,10 @@ export default defineConfig(async ({ mode }) => {
     plugins: [
       glslify(),
       svgr({
+        svgrOptions: {
+          plugins: ['@svgr/plugin-svgo', '@svgr/plugin-jsx'],
+          svgoConfig
+        },
         include: '**/*.svg',
         exclude: [
           'src/assets/img/wallet-link.svg',
