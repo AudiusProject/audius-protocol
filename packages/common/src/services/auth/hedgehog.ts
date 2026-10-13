@@ -1,18 +1,21 @@
-import {
-  EthWallet,
-  Hedgehog,
-  WalletManager,
-  getPlatformCreateKey
-} from '@audius/hedgehog'
-import type { SetAuthFn, SetUserFn, GetFn, CreateKey } from '@audius/hedgehog'
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
-import sigUtil from 'eth-sig-util'
+import { signMessage } from 'viem/accounts'
 
 import { uuid } from '~/utils/uid'
 
 import type { LocalStorage } from '../local-storage'
 
+import { Hedgehog, WalletManager, getPlatformCreateKey } from './hedgehogLib'
+import type {
+  CreateKey,
+  EthWallet,
+  GetFn,
+  SetAuthFn,
+  SetUserFn
+} from './hedgehogLib'
 import { AuthHeaders } from './types'
+
+export type { EthWallet } from './hedgehogLib'
 
 export type HedgehogConfig = {
   identityServiceEndpoint: string
@@ -43,8 +46,10 @@ export const createHedgehog = ({
   const getAuthHeaders = async (wallet: EthWallet) => {
     const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
     const message = `Click sign to authenticate with identity service: ${unixTs}`
-    const signature = sigUtil.personalSign(wallet.getPrivateKey(), {
-      data: message
+    // EIP-191 personal_sign, same bytes as eth-sig-util personalSign
+    const signature = await signMessage({
+      message,
+      privateKey: wallet.getPrivateKeyString() as `0x${string}`
     })
     return {
       [AuthHeaders.Message]: message,

@@ -1,4 +1,3 @@
-import type { Hedgehog } from '@audius/hedgehog'
 import {
   createClient,
   custom,
@@ -19,6 +18,18 @@ import { localTransport } from './localTransport'
 import { privateKeyToAudiusAccount } from './privateKeyToAudiusAccount'
 import type { AudiusAccount, AudiusWalletClient } from './types'
 
+/**
+ * The parts of a Hedgehog instance this client needs. Satisfied by both the
+ * @audius/common Hedgehog and the @audius/hedgehog package.
+ */
+export type HedgehogLike = {
+  waitUntilReady: () => Promise<void>
+  getWallet: () => {
+    getAddressString: () => string
+    getPrivateKeyString: () => string
+  } | null
+}
+
 export class HedgehogWalletNotFoundError extends Error {
   constructor() {
     super('Hedgehog wallet not found. Is the user logged in?')
@@ -29,7 +40,7 @@ export class HedgehogWalletNotFoundError extends Error {
  * Creates a Viem client that uses a local Hedgehog instance to do all the wallet methods.
  */
 export function createHedgehogWalletClient(
-  hedgehog: Hedgehog
+  hedgehog: HedgehogLike
 ): AudiusWalletClient {
   // Gets the local privateKeyAccount for the Hedgehog wallet.
   // Unfortunately, Hedgehog loads the wallet asynchronously from storage,
