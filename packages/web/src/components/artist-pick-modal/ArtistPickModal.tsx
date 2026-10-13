@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import { useCurrentAccountUser } from '@audius/common/api'
-import { registerNiceModalId } from '@audius/common/services'
 import { tracksSocialActions, useArtistPickModal } from '@audius/common/store'
 import {
   Button,
@@ -87,6 +86,3 @@ export const ArtistPickModal = NiceModal.create(() => {
     </Modal>
   )
 })
-
-NiceModal.register('ArtistPick', ArtistPickModal)
-registerNiceModalId('ArtistPick')

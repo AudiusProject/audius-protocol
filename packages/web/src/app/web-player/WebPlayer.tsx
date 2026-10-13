@@ -62,7 +62,6 @@ import { HeaderContextConsumer } from 'components/header/mobile/HeaderContextPro
 import Navigator from 'components/nav/Navigator'
 import TopLevelPage from 'components/nav/mobile/TopLevelPage'
 import Notice from 'components/notice/Notice'
-import { NotificationPage } from 'components/notification'
 import PlayBarProvider from 'components/play-bar/PlayBarProvider'
 import { RewardClaimedToast } from 'components/reward-claimed-toast/RewardClaimedToast'
 import { useActivityPing } from 'hooks/useActivityPing'
@@ -72,7 +71,7 @@ import { usePlaybackPositionPolling } from 'hooks/usePlaybackPositionPolling'
 import { usePlaybackRatePersistence } from 'hooks/usePlaybackRatePersistence'
 import { MAIN_CONTENT_ID, MainContentContext } from 'pages/MainContentContext'
 import { TableType } from 'pages/pay-and-earn-page/types'
-import { SubPage } from 'pages/settings-page/components/mobile/SettingsPage'
+import { SubPage } from 'pages/settings-page/types'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { SsrContext } from 'ssr/SsrContext'
 import { showCookieBanner } from 'store/application/ui/cookieBanner/actions'
@@ -174,6 +173,11 @@ const LibraryPage = lazy(() => import('pages/library-page/LibraryPage'))
 const NotFoundPage = lazy(() =>
   import('pages/not-found-page/NotFoundPage').then((m) => ({
     default: m.NotFoundPage
+  }))
+)
+const NotificationPage = lazy(() =>
+  import('components/notification/NotificationPage').then((m) => ({
+    default: m.NotificationPage
   }))
 )
 const NotificationUsersPage = lazy(() =>

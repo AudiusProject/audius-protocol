@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { registerNiceModalId } from '@audius/common/services'
 import {
   useAlbumTrackRemoveConfirmationModal,
   cacheCollectionsActions
@@ -71,9 +70,3 @@ export const AlbumTrackRemoveConfirmationModal = NiceModal.create(() => {
     </Modal>
   )
 })
-
-NiceModal.register(
-  'AlbumTrackRemoveConfirmation',
-  AlbumTrackRemoveConfirmationModal
-)
-registerNiceModalId('AlbumTrackRemoveConfirmation')

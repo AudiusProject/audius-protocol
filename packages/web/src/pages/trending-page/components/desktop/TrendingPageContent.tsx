@@ -4,8 +4,6 @@ import {
   getTrendingQueryKey,
   getTrendingUndergroundQueryKey,
   TRENDING_INITIAL_PAGE_SIZE,
-  useTrending,
-  useTrendingUnderground,
   usePopularGenres
 } from '@audius/common/api'
 import { TimeRange } from '@audius/common/models'
@@ -32,6 +30,7 @@ import Page from 'components/page/Page'
 import { useIsContainerNarrow } from 'hooks/useIsContainerNarrow'
 import { WinnersView } from 'pages/trending-page/components/desktop/WinnersView'
 import { TRENDING_MESSAGES } from 'pages/trending-page/constants'
+import { useTrendingQueries } from 'pages/trending-page/useTrendingQueries'
 import {
   updateWinnersWeekParam,
   isValidWinnersWeek,
@@ -119,7 +118,7 @@ const TrendingPageContent = ({ containerRef }: TrendingPageContentProps) => {
   // user scrolling deep into the lineup.
   const desktopLoadMorePageSize = 10
 
-  // ----- Three tanquery streams, one per time range -----
+  // ----- One tanquery stream per time range; only the visible one fetches
   const trendingArgs = useMemo(
     () => ({
       initialPageSize: TRENDING_INITIAL_PAGE_SIZE,
@@ -128,18 +127,18 @@ const TrendingPageContent = ({ containerRef }: TrendingPageContentProps) => {
     }),
     [trendingGenre]
   )
-  const weekQuery = useTrending({ timeRange: TimeRange.WEEK, ...trendingArgs })
-  const monthQuery = useTrending({
-    timeRange: TimeRange.MONTH,
-    ...trendingArgs
-  })
-  const allTimeQuery = useTrending({
-    timeRange: TimeRange.ALL_TIME,
-    ...trendingArgs
-  })
-
-  const undergroundQuery = useTrendingUnderground({
-    pageSize: UNDERGROUND_PAGE_SIZE
+  const {
+    weekQuery,
+    monthQuery,
+    allTimeQuery,
+    undergroundQuery,
+    prefetchTimeRanges,
+    prefetchUnderground
+  } = useTrendingQueries({
+    trendingArgs,
+    timeRange: trendingTimeRange,
+    isUndergroundVisible: category === 'underground',
+    undergroundPageSize: UNDERGROUND_PAGE_SIZE
   })
   const undergroundQuerySource = useMemo(
     () => ({
@@ -303,22 +302,26 @@ const TrendingPageContent = ({ containerRef }: TrendingPageContentProps) => {
     <div ref={bottomBarRef} style={{ width: '100%' }}>
       {isCondensedBar ? (
         <Flex w='100%' alignItems='center' gap='s' pb='l'>
-          <FilterButton
-            label={messages.tracks}
-            value={category}
-            variant='replaceLabel'
-            onChange={(value) => setCategory(value as TrendingCategory)}
-            options={categoryOptions}
-          />
+          <Flex onMouseEnter={prefetchUnderground}>
+            <FilterButton
+              label={messages.tracks}
+              value={category}
+              variant='replaceLabel'
+              onChange={(value) => setCategory(value as TrendingCategory)}
+              options={categoryOptions}
+            />
+          </Flex>
           {category === 'tracks' ? (
             <>
-              <FilterButton
-                label={messages.thisWeek}
-                value={trendingTimeRange}
-                variant='replaceLabel'
-                onChange={handleTimeRangeChange}
-                options={timeRangeOptions}
-              />
+              <Flex onMouseEnter={prefetchTimeRanges}>
+                <FilterButton
+                  label={messages.thisWeek}
+                  value={trendingTimeRange}
+                  variant='replaceLabel'
+                  onChange={handleTimeRangeChange}
+                  options={timeRangeOptions}
+                />
+              </Flex>
               <FilterButton
                 label={messages.allGenres}
                 value={trendingGenre ?? 'all'}
@@ -358,6 +361,7 @@ const TrendingPageContent = ({ containerRef }: TrendingPageContentProps) => {
               size='large'
               isSelected={category === 'underground'}
               onClick={() => setCategory('underground')}
+              onMouseEnter={prefetchUnderground}
             />
             <SelectablePill
               type='button'
@@ -369,13 +373,15 @@ const TrendingPageContent = ({ containerRef }: TrendingPageContentProps) => {
           </Flex>
           {category === 'tracks' ? (
             <Flex gap='s' alignItems='center'>
-              <FilterButton
-                label={messages.thisWeek}
-                value={trendingTimeRange}
-                variant='replaceLabel'
-                onChange={handleTimeRangeChange}
-                options={timeRangeOptions}
-              />
+              <Flex onMouseEnter={prefetchTimeRanges}>
+                <FilterButton
+                  label={messages.thisWeek}
+                  value={trendingTimeRange}
+                  variant='replaceLabel'
+                  onChange={handleTimeRangeChange}
+                  options={timeRangeOptions}
+                />
+              </Flex>
               <FilterButton
                 label={messages.allGenres}
                 value={trendingGenre ?? 'all'}

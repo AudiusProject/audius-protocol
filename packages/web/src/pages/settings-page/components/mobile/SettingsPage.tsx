@@ -42,6 +42,7 @@ import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
 import Page from 'components/page/Page'
 import { useProfilePicture } from 'hooks/useProfilePicture'
 import useScrollToTop from 'hooks/useScrollToTop'
+import { SubPage } from 'pages/settings-page/types'
 import {
   isDarkMode,
   THEME_KEY,
@@ -70,14 +71,6 @@ const {
   NOTIFICATION_SETTINGS_PAGE,
   PAYMENTS_PAGE
 } = route
-
-export enum SubPage {
-  ACCOUNT = 'account',
-  NOTIFICATIONS = 'notifications',
-  ABOUT = 'about',
-  CHANGE_PASSWORD = 'change password',
-  CHANGE_EMAIL = 'change email'
-}
 
 const messages = {
   pageTitle: 'Settings',

@@ -6,7 +6,6 @@ import {
   useGetStemsArchiveJobStatus
 } from '@audius/common/api'
 import { ID } from '@audius/common/models'
-import { registerNiceModalId } from '@audius/common/services'
 import { useDownloadTrackArchiveModal } from '@audius/common/store'
 import {
   Modal,
@@ -173,6 +172,3 @@ export const DownloadTrackArchiveModal = NiceModal.create(() => {
     />
   )
 })
-
-NiceModal.register('DownloadTrackArchive', DownloadTrackArchiveModal)
-registerNiceModalId('DownloadTrackArchive')

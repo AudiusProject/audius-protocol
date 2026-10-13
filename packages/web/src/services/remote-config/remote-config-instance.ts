@@ -1,5 +1,5 @@
 import { remoteConfig } from '@audius/common/services'
-import optimizely, { Config } from '@optimizely/optimizely-sdk'
+import type { Config } from '@optimizely/optimizely-sdk'
 import { isEmpty } from 'lodash'
 
 import { env } from 'services/env'
@@ -36,6 +36,9 @@ export const remoteConfigInstance = remoteConfig({
       console.error(new Error('Optimizely failed to load'))
     }
 
+    // Loaded lazily so the SDK stays out of the entry chunk
+    const { default: optimizely } = await import('@optimizely/optimizely-sdk')
+    optimizely.setLogLevel('warn')
     return optimizely.createInstance({
       datafile,
       errorHandler: {
@@ -56,6 +59,7 @@ export const remoteConfigInstance = remoteConfig({
       FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY,
       id.toString()
     ),
-  setLogLevel: () => optimizely.setLogLevel('warn'),
+  // Log level is set in createOptimizelyClient once the SDK has loaded
+  setLogLevel: () => {},
   environment: env.ENVIRONMENT
 })

@@ -1,7 +1,6 @@
 import { useCallback, useContext } from 'react'
 
 import { useCurrentAccountUser, useCollection } from '@audius/common/api'
-import { registerNiceModalId } from '@audius/common/services'
 import {
   cacheCollectionsActions,
   duplicateAddConfirmationModalUISelectors
@@ -118,6 +117,3 @@ export const DuplicateAddConfirmationModal = NiceModal.create(() => {
     </Modal>
   )
 })
-
-NiceModal.register('DuplicateAddConfirmation', DuplicateAddConfirmationModal)
-registerNiceModalId('DuplicateAddConfirmation')

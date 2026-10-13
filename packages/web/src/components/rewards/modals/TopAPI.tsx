@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { registerNiceModalId } from '@audius/common/services'
 import { route } from '@audius/common/utils'
 import { Button, IconArrowRight as IconArrow } from '@audius/harmony'
 import NiceModal, { useModal } from '@ebay/nice-modal-react'
@@ -59,8 +58,5 @@ const TopAPIModal = NiceModal.create(() => {
     </ModalDrawer>
   )
 })
-
-NiceModal.register('APIRewardsExplainer', TopAPIModal)
-registerNiceModalId('APIRewardsExplainer')
 
 export default TopAPIModal

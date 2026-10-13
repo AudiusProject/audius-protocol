@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import { useDeleteTrack } from '@audius/common/api'
-import { registerNiceModalId } from '@audius/common/services'
 import { useDeleteTrackConfirmationModal } from '@audius/common/store'
 import NiceModal, { useModal } from '@ebay/nice-modal-react'
 
@@ -38,6 +37,3 @@ export const DeleteTrackConfirmationModal = NiceModal.create(() => {
     />
   )
 })
-
-NiceModal.register('DeleteTrackConfirmation', DeleteTrackConfirmationModal)
-registerNiceModalId('DeleteTrackConfirmation')

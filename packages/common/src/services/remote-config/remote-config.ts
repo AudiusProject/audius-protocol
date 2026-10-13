@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 
-import optimizely from '@optimizely/optimizely-sdk'
+import type optimizely from '@optimizely/optimizely-sdk'
 
 import { ID } from '~/models'
 import { Nullable } from '~/utils'

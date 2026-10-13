@@ -20,6 +20,7 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
   private orderedNodes?: string[] // endpoints (lowercase)
   private selectedNode?: string | null
   private selectionState: 'healthy_only' | 'failed_all'
+  private nodesPromise?: Promise<void>
 
   constructor(config: StorageNodeSelectorConfig) {
     this.config = mergeConfigWithDefaults(
@@ -32,8 +33,28 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
     )
     this.nodes = this.config.bootstrapNodes ?? []
     this.selectionState = 'healthy_only'
+  }
 
-    this.updateAvailableStorageNodes(this.config.endpoint)
+  /**
+   * Fetches the node list once, on first use rather than at construction,
+   * so clients that never upload don't pay for the request. Concurrent
+   * callers share the same request; a failed request is retried next time.
+   */
+  private ensureAvailableStorageNodes() {
+    if (!this.nodesPromise) {
+      this.nodesPromise = this.updateAvailableStorageNodes(
+        this.config.endpoint
+      ).then(
+        (ok) => {
+          if (!ok) this.nodesPromise = undefined
+        },
+        (e) => {
+          this.logger.warn('Failed to update available storage nodes', e)
+          this.nodesPromise = undefined
+        }
+      )
+    }
+    return this.nodesPromise
   }
 
   private async updateAvailableStorageNodes(endpoint: string) {
@@ -42,7 +63,7 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
     const healthCheckResponse = await fetch(healthCheckEndpoint)
     if (!healthCheckResponse.ok) {
       this.logger.warn('API health check did not respond successfully')
-      return
+      return false
     }
 
     const responseData: { data: HealthCheckResponseData } =
@@ -53,11 +74,12 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
       this.logger.warn(
         'API health check did not contain any available content nodes'
       )
-      return
+      return false
     }
 
     this.nodes = contentNodes
     this.selectionState = 'healthy_only'
+    return true
   }
 
   public async getSelectedNode(forceReselect = false) {
@@ -65,6 +87,7 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
       return this.selectedNode
     }
 
+    await this.ensureAvailableStorageNodes()
     return await this.select()
   }
 
@@ -73,6 +96,8 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
   }
 
   public getNodes(cid: string) {
+    // Synchronous, so this uses the current list and refreshes it for later
+    this.ensureAvailableStorageNodes()
     return this.orderNodes(cid)
   }
 

@@ -1,4 +1,3 @@
-import { registerNiceModalId } from '@audius/common/services'
 import { useReplaceTrackProgressModal } from '@audius/common/store'
 import {
   Modal,
@@ -84,6 +83,3 @@ export const ReplaceTrackProgressModal = NiceModal.create(() => {
     </Modal>
   )
 })
-
-NiceModal.register('ReplaceTrackProgress', ReplaceTrackProgressModal)
-registerNiceModalId('ReplaceTrackProgress')
