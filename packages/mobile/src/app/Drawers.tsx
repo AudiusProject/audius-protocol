@@ -53,13 +53,11 @@ import { ReplaceTrackProgressDrawer } from 'app/screens/edit-track-screen/compon
 import { EarlyReleaseConfirmationDrawer } from 'app/screens/edit-track-screen/components/EarlyReleaseConfirmationDrawer'
 import { PublishConfirmationDrawer } from 'app/screens/edit-track-screen/components/PublishConfirmationDrawer'
 import { ConnectNewWalletDrawer } from 'app/screens/external-wallets/components/ConnectNewWalletDrawer'
-import { FeedFilterDrawer } from 'app/screens/feed-screen'
+import { FeedFilterDrawer } from 'app/screens/feed-screen/FeedFilterDrawer'
 import { WelcomeDrawer } from 'app/screens/sign-on-screen/components/WelcomeDrawer'
 import { PickWinnersDrawer } from 'app/screens/track-screen/PickWinnersDrawer'
-import {
-  TrendingCombinedFilterDrawer,
-  TrendingFilterDrawer
-} from 'app/screens/trending-screen'
+import { TrendingCombinedFilterDrawer } from 'app/screens/trending-screen/TrendingCombinedFilterDrawer'
+import { TrendingFilterDrawer } from 'app/screens/trending-screen/TrendingFilterDrawer'
 import { WalletRowOverflowMenu } from 'app/screens/wallet-screen/components/LinkedWallets'
 
 import { useDrawerState } from '../components/drawer'
@@ -75,7 +73,7 @@ import { ShareToStoryProgressDrawer } from '../components/share-drawer/useShareT
 import { useDrawer } from '../hooks/useDrawer'
 import type { Drawer } from '../store/drawers/slice'
 type CommonDrawerProps = {
-  modal: ComponentType
+  getModal: LazyComponent
   modalName: Modals
 }
 
@@ -83,16 +81,17 @@ type CommonDrawerProps = {
  * Conditionally renders the drawers hooked up to @audius/web/src/common/ui/modal slice
  */
 const CommonDrawer = (props: CommonDrawerProps) => {
-  const { modal: Modal, modalName } = props
+  const { getModal, modalName } = props
   const { modalState } = useDrawerState(modalName)
 
   if (!modalState) return null
 
+  const Modal = getModal()
   return <Modal />
 }
 
 type NativeDrawerProps = {
-  drawer: ComponentType
+  getDrawer: LazyComponent
   drawerName: Drawer
 }
 
@@ -100,108 +99,116 @@ type NativeDrawerProps = {
  * Conditionally renders the drawers hooked up to native store/drawers slice
  */
 export const NativeDrawer = (props: NativeDrawerProps) => {
-  const { drawer: Drawer, drawerName } = props
+  const { getDrawer, drawerName } = props
   const { visibleState } = useDrawer(drawerName)
 
   if (!visibleState) return null
 
+  const Drawer = getDrawer()
   return <Drawer />
 }
 
-const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
-  TiersExplainer: TiersExplainerDrawer,
-  ChallengeRewards: ChallengeRewardsDrawer,
-  ClaimAllRewards: ClaimAllRewardsDrawer,
-  APIRewardsExplainer: ApiRewardsDrawer,
-  TransferAudioMobileWarning: TransferAudioMobileDrawer,
-  DeactivateAccountConfirmation: DeactivateAccountConfirmationDrawer,
-  TrendingGenreSelection: TrendingFilterDrawer,
-  TrendingFilter: TrendingCombinedFilterDrawer,
-  FeedFilter: FeedFilterDrawer,
-  Overflow: OverflowMenuDrawer,
-  SignOutConfirmation: SignOutConfirmationDrawer,
-  AddToCollection: AddToCollectionDrawer,
-  AudioBreakdown: AudioBreakdownDrawer,
-  DeletePlaylistConfirmation: DeletePlaylistConfirmationDrawer,
-  DuplicateAddConfirmation: DuplicateAddConfirmationDrawer,
-  ProfileActions: ProfileActionsDrawer,
-  PlaybackRate: PlaybackRateDrawer,
+// Each value is a thunk so the drawer module is only required the first time
+// it opens. With Metro inline requires, referencing the import inside the
+// arrow defers the require; a plain value would load every drawer at startup.
+type LazyComponent = () => ComponentType
+
+const commonDrawersMap: { [Modal in Modals]?: LazyComponent } = {
+  TiersExplainer: () => TiersExplainerDrawer,
+  ChallengeRewards: () => ChallengeRewardsDrawer,
+  ClaimAllRewards: () => ClaimAllRewardsDrawer,
+  APIRewardsExplainer: () => ApiRewardsDrawer,
+  TransferAudioMobileWarning: () => TransferAudioMobileDrawer,
+  DeactivateAccountConfirmation: () => DeactivateAccountConfirmationDrawer,
+  TrendingGenreSelection: () => TrendingFilterDrawer,
+  TrendingFilter: () => TrendingCombinedFilterDrawer,
+  FeedFilter: () => FeedFilterDrawer,
+  Overflow: () => OverflowMenuDrawer,
+  SignOutConfirmation: () => SignOutConfirmationDrawer,
+  AddToCollection: () => AddToCollectionDrawer,
+  AudioBreakdown: () => AudioBreakdownDrawer,
+  DeletePlaylistConfirmation: () => DeletePlaylistConfirmationDrawer,
+  DuplicateAddConfirmation: () => DuplicateAddConfirmationDrawer,
+  ProfileActions: () => ProfileActionsDrawer,
+  PlaybackRate: () => PlaybackRateDrawer,
   // PremiumContent, AddCash, PurchaseVendor, and StripOnRamp *must* be in this order
   // to avoid zIndex issues.
-  PremiumContentPurchaseModal: PremiumContentPurchaseDrawer,
-  AddCashModal: AddCashDrawer,
-  PurchaseVendor: PurchaseVendorDrawer,
-  StripeOnRamp: StripeOnrampDrawer,
-  CoinflowOnramp: CoinflowOnrampDrawer,
-  CoinflowWithdraw: CoinflowWithdrawDrawer,
-  InboxUnavailableModal: InboxUnavailableDrawer,
-  LeavingAudiusModal: LeavingAudiusDrawer,
-  WaitForDownloadModal: WaitForDownloadDrawer,
-  PublishConfirmation: PublishConfirmationDrawer,
-  ReplaceTrackProgress: ReplaceTrackProgressDrawer,
-  EarlyReleaseConfirmation: EarlyReleaseConfirmationDrawer,
-  ArtistPick: ArtistPickConfirmationDrawer,
-  DownloadTrackArchive: DownloadTrackArchiveDrawer,
-  HostRemixContest: HostRemixContestDrawer,
-  WithdrawUSDCModal: WithdrawUSDCDrawer,
-  ReceiveTokensModal: ReceiveTokensDrawer,
-  SendTokensModal: SendTokensDrawer,
-  FanClubDetailsModal: FanClubDetailsDrawer,
-  VerificationSuccess: VerificationSuccessDrawer,
-  VerificationError: VerificationErrorDrawer
+  PremiumContentPurchaseModal: () => PremiumContentPurchaseDrawer,
+  AddCashModal: () => AddCashDrawer,
+  PurchaseVendor: () => PurchaseVendorDrawer,
+  StripeOnRamp: () => StripeOnrampDrawer,
+  CoinflowOnramp: () => CoinflowOnrampDrawer,
+  CoinflowWithdraw: () => CoinflowWithdrawDrawer,
+  InboxUnavailableModal: () => InboxUnavailableDrawer,
+  LeavingAudiusModal: () => LeavingAudiusDrawer,
+  WaitForDownloadModal: () => WaitForDownloadDrawer,
+  PublishConfirmation: () => PublishConfirmationDrawer,
+  ReplaceTrackProgress: () => ReplaceTrackProgressDrawer,
+  EarlyReleaseConfirmation: () => EarlyReleaseConfirmationDrawer,
+  ArtistPick: () => ArtistPickConfirmationDrawer,
+  DownloadTrackArchive: () => DownloadTrackArchiveDrawer,
+  HostRemixContest: () => HostRemixContestDrawer,
+  WithdrawUSDCModal: () => WithdrawUSDCDrawer,
+  ReceiveTokensModal: () => ReceiveTokensDrawer,
+  SendTokensModal: () => SendTokensDrawer,
+  FanClubDetailsModal: () => FanClubDetailsDrawer,
+  VerificationSuccess: () => VerificationSuccessDrawer,
+  VerificationError: () => VerificationErrorDrawer
 }
 
-const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
-  EnablePushNotifications: EnablePushNotificationsDrawer,
-  OfflineListening: OfflineListeningDrawer,
-  ForgotPassword: ForgotPasswordDrawer,
-  DeleteTrackConfirmation: DeleteTrackConfirmationDrawer,
-  ShareToStoryProgress: ShareToStoryProgressDrawer,
-  ManagerMode: ManagerModeDrawer,
-  RateCallToAction: RateCtaDrawer,
-  RemoveAllDownloads: RemoveAllDownloadsDrawer,
-  RemoveDownloadedCollection: RemoveDownloadedCollectionDrawer,
-  RemoveDownloadedFavorites: RemoveDownloadedFavoritesDrawer,
-  UnfavoriteDownloadedCollection: UnfavoriteDownloadedCollectionDrawer,
-  LockedContent: LockedContentDrawer,
-  LockedTextPost: LockedTextPostDrawer,
-  ChatActions: ChatActionsDrawer,
-  CreateChatActions: CreateChatActionsDrawer,
-  BlockMessages: BlockMessagesDrawer,
-  MuteComments: MuteCommentsConfirmationDrawer,
-  DeleteChat: DeleteChatDrawer,
-  Welcome: WelcomeDrawer,
-  ConnectNewWallet: ConnectNewWalletDrawer,
-  PickWinners: PickWinnersDrawer,
-  Queue: QueueDrawer,
-  Connect: ConnectDrawer,
-  CoinInsightsOverflowMenu,
-  WalletRowOverflowMenu
+const nativeDrawersMap: { [DrawerName in Drawer]?: LazyComponent } = {
+  EnablePushNotifications: () => EnablePushNotificationsDrawer,
+  OfflineListening: () => OfflineListeningDrawer,
+  ForgotPassword: () => ForgotPasswordDrawer,
+  DeleteTrackConfirmation: () => DeleteTrackConfirmationDrawer,
+  ShareToStoryProgress: () => ShareToStoryProgressDrawer,
+  ManagerMode: () => ManagerModeDrawer,
+  RateCallToAction: () => RateCtaDrawer,
+  RemoveAllDownloads: () => RemoveAllDownloadsDrawer,
+  RemoveDownloadedCollection: () => RemoveDownloadedCollectionDrawer,
+  RemoveDownloadedFavorites: () => RemoveDownloadedFavoritesDrawer,
+  UnfavoriteDownloadedCollection: () => UnfavoriteDownloadedCollectionDrawer,
+  LockedContent: () => LockedContentDrawer,
+  LockedTextPost: () => LockedTextPostDrawer,
+  ChatActions: () => ChatActionsDrawer,
+  CreateChatActions: () => CreateChatActionsDrawer,
+  BlockMessages: () => BlockMessagesDrawer,
+  MuteComments: () => MuteCommentsConfirmationDrawer,
+  DeleteChat: () => DeleteChatDrawer,
+  Welcome: () => WelcomeDrawer,
+  ConnectNewWallet: () => ConnectNewWalletDrawer,
+  PickWinners: () => PickWinnersDrawer,
+  Queue: () => QueueDrawer,
+  Connect: () => ConnectDrawer,
+  CoinInsightsOverflowMenu: () => CoinInsightsOverflowMenu,
+  WalletRowOverflowMenu: () => WalletRowOverflowMenu
 }
 
 const commonDrawers = Object.entries(commonDrawersMap) as [
   Modals,
-  ComponentType
+  LazyComponent
 ][]
 
 const nativeDrawers = Object.entries(nativeDrawersMap) as [
   Drawer,
-  ComponentType
+  LazyComponent
 ][]
 
 export const Drawers = () => {
   return (
     <>
-      {commonDrawers.map(([modalName, Modal]) => {
-        return (
-          <CommonDrawer key={modalName} modal={Modal} modalName={modalName} />
-        )
-      })}
-      {nativeDrawers.map(([drawerName, Drawer]) => (
+      {commonDrawers.map(([modalName, getModal]) => (
+        <CommonDrawer
+          key={modalName}
+          getModal={getModal}
+          modalName={modalName}
+        />
+      ))}
+      {nativeDrawers.map(([drawerName, getDrawer]) => (
         <NativeDrawer
           key={drawerName}
           drawerName={drawerName}
-          drawer={Drawer}
+          getDrawer={getDrawer}
         />
       ))}
     </>

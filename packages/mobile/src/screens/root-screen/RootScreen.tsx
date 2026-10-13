@@ -159,7 +159,10 @@ export const RootScreen = () => {
         screenOptions={{ gestureEnabled: false, headerShown: false }}
       >
         {updateRequired ? (
-          <Stack.Screen name='UpdateStack' component={UpdateRequiredScreen} />
+          <Stack.Screen
+            name='UpdateStack'
+            getComponent={() => UpdateRequiredScreen}
+          />
         ) : null}
 
         {showHomeStack ? (
@@ -178,12 +181,12 @@ export const RootScreen = () => {
         )}
         <Stack.Screen
           name='ResetPassword'
-          component={ResetPasswordModalScreen}
+          getComponent={() => ResetPasswordModalScreen}
           options={{ presentation: 'modal' }}
         />
         <Stack.Screen
           name='OAuthScreen'
-          component={OAuthScreen}
+          getComponent={() => OAuthScreen}
           options={{ presentation: 'modal' }}
         />
         <Stack.Screen name='TokenPicker' options={{ presentation: 'modal' }}>
