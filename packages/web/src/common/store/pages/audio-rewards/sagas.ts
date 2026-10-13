@@ -669,7 +669,8 @@ function createDocumentVisibilityChannel() {
  * the claimable badge stay current.
  * - Fast interval (CHALLENGE_REFRESH_INTERVAL_MS) on the web rewards page and
  *   for CHALLENGE_ACTIVE_WINDOW_MS after any challenge activity.
- * - CHALLENGE_IDLE_REFRESH_INTERVAL_MS otherwise.
+ * - CHALLENGE_IDLE_REFRESH_INTERVAL_MS otherwise (or the remote interval if
+ *   that is longer).
  * - Paused while the tab is hidden or the native app is backgrounded; a poll
  *   that came due meanwhile runs on return.
  */
@@ -682,6 +683,12 @@ function* userChallengePollingDaemon() {
   const activeInterval = remoteConfigInstance.getRemoteVar(
     IntKeys.CHALLENGE_REFRESH_INTERVAL_MS
   )!
+  // Never poll faster when idle than when active, if remote config raises
+  // the active interval past the idle default.
+  const idleInterval = Math.max(
+    activeInterval,
+    CHALLENGE_IDLE_REFRESH_INTERVAL_MS
+  )
 
   yield* take(fetchAccountSucceeded.type)
 
@@ -699,9 +706,7 @@ function* userChallengePollingDaemon() {
   while (true) {
     if (!isInBackground && Date.now() >= nextFetchAt) {
       yield* put(fetchUserChallenges())
-      nextFetchAt =
-        Date.now() +
-        (isActive() ? activeInterval : CHALLENGE_IDLE_REFRESH_INTERVAL_MS)
+      nextFetchAt = Date.now() + (isActive() ? activeInterval : idleInterval)
     }
 
     const effects: Record<string, any> = {
