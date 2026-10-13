@@ -39,36 +39,42 @@ export const AppScreen = () => {
     >
       <Stack.Screen name='AppTabs' component={AppTabsScreen} />
       <Stack.Group screenOptions={{ presentation: 'fullScreenModal' }}>
-        <Stack.Screen name='Upload' component={UploadModalScreen} />
-        <Stack.Screen name='BuySell' component={BuySellModalScreen} />
+        <Stack.Screen name='Upload' getComponent={() => UploadModalScreen} />
+        <Stack.Screen name='BuySell' getComponent={() => BuySellModalScreen} />
         <Stack.Screen
           name='EditTrack'
-          component={EditTrackModalScreen}
+          getComponent={() => EditTrackModalScreen}
           options={
             Platform.OS === MobileOS.ANDROID ? { animation: 'none' } : undefined
           }
         />
-        <Stack.Screen name='EditCollection' component={EditCollectionScreen} />
+        <Stack.Screen
+          name='EditCollection'
+          getComponent={() => EditCollectionScreen}
+        />
         <Stack.Screen
           name='CreateChatBlast'
-          component={CreateChatBlastNavigator}
+          getComponent={() => CreateChatBlastNavigator}
         />
         <Stack.Screen
           name='ExternalWallets'
-          component={ExternalWalletsModalScreen}
+          getComponent={() => ExternalWalletsModalScreen}
         />
         <Stack.Screen
           name='FeatureFlagOverride'
-          component={FeatureFlagOverrideScreen}
+          getComponent={() => FeatureFlagOverrideScreen}
         />
-        <Stack.Screen name='ChangeEmail' component={ChangeEmailModalScreen} />
+        <Stack.Screen
+          name='ChangeEmail'
+          getComponent={() => ChangeEmailModalScreen}
+        />
         <Stack.Screen
           name='ChangePassword'
-          component={ChangePasswordModalScreen}
+          getComponent={() => ChangePasswordModalScreen}
         />
         <Stack.Screen
           name='VerificationWebView'
-          component={VerificationWebViewModalScreen}
+          getComponent={() => VerificationWebViewModalScreen}
         />
       </Stack.Group>
     </Stack.Navigator>

@@ -269,12 +269,18 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
             screenListeners={screenListeners}
           >
             {baseScreen(Stack)}
-            <Stack.Screen name='Track' component={TrackScreen} />
-            <Stack.Screen name='TrackRemixes' component={TrackRemixesScreen} />
-            <Stack.Screen name='Collection' component={CollectionScreen} />
+            <Stack.Screen name='Track' getComponent={() => TrackScreen} />
+            <Stack.Screen
+              name='TrackRemixes'
+              getComponent={() => TrackRemixesScreen}
+            />
+            <Stack.Screen
+              name='Collection'
+              getComponent={() => CollectionScreen}
+            />
             <Stack.Screen
               name='Profile'
-              component={ProfileScreen}
+              getComponent={() => ProfileScreen}
               // Profile uses a collapsible tab view (horizontal pager + vertical
               // scroll). The global `fullScreenGestureEnabled: true` makes the
               // swipe-to-pop recognizer span the whole screen, so a slightly diagonal
@@ -284,113 +290,140 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
               options={{ headerShown: false, fullScreenGestureEnabled: false }}
             />
             <Stack.Group>
-              <Stack.Screen name='Followers' component={FollowersScreen} />
-              <Stack.Screen name='Following' component={FollowingScreen} />
-              <Stack.Screen name='Favorited' component={FavoritedScreen} />
-              <Stack.Screen name='Mutuals' component={MutualsScreen} />
+              <Stack.Screen
+                name='Followers'
+                getComponent={() => FollowersScreen}
+              />
+              <Stack.Screen
+                name='Following'
+                getComponent={() => FollowingScreen}
+              />
+              <Stack.Screen
+                name='Favorited'
+                getComponent={() => FavoritedScreen}
+              />
+              <Stack.Screen name='Mutuals' getComponent={() => MutualsScreen} />
               <Stack.Screen
                 name='RelatedArtists'
-                component={RelatedArtistsScreen}
+                getComponent={() => RelatedArtistsScreen}
               />
               <Stack.Screen
                 name='NotificationUsers'
-                component={NotificationUsersScreen}
+                getComponent={() => NotificationUsersScreen}
               />
             </Stack.Group>
-            <Stack.Screen name='Reposts' component={RepostsScreen} />
+            <Stack.Screen name='Reposts' getComponent={() => RepostsScreen} />
             <Stack.Screen
               name='CoinLeaderboard'
-              component={CoinLeaderboardScreen}
+              getComponent={() => CoinLeaderboardScreen}
             />
 
-            <Stack.Screen name='AudioScreen' component={AudioScreen} />
-            <Stack.Screen name='RewardsScreen' component={RewardsScreen} />
+            <Stack.Screen name='AudioScreen' getComponent={() => AudioScreen} />
+            <Stack.Screen
+              name='RewardsScreen'
+              getComponent={() => RewardsScreen}
+            />
             <Stack.Screen
               name='Contests'
-              component={ContestsScreen}
+              getComponent={() => ContestsScreen}
               // Contests is reached from the left nav drawer, which passes
               // `fromAppDrawer: true` and drops the screen animation to 'none'.
               // That leaves a jarring instant pop when navigating away. Force the
               // standard horizontal push so it transitions like the Track screen.
               options={{ animation: 'simple_push' }}
             />
-            <Stack.Screen name='Contest' component={ContestScreen} />
+            <Stack.Screen name='Contest' getComponent={() => ContestScreen} />
             <Stack.Screen
               name='ContestFollowers'
-              component={ContestFollowersScreen}
+              getComponent={() => ContestFollowersScreen}
             />
-            <Stack.Screen name='wallet' component={WalletScreen} />
-            <Stack.Screen name='CashScreen' component={CashScreen} />
+            <Stack.Screen name='wallet' getComponent={() => WalletScreen} />
+            <Stack.Screen name='CashScreen' getComponent={() => CashScreen} />
             <Stack.Screen
               name='CoinDetailsScreen'
-              component={CoinDetailsScreen}
+              getComponent={() => CoinDetailsScreen}
             />
             <Stack.Screen
               name='CoinRedeemScreen'
-              component={CoinRedeemScreen}
+              getComponent={() => CoinRedeemScreen}
             />
             <Stack.Screen
               name='EditCoinDetailsScreen'
-              component={EditCoinDetailsScreen}
+              getComponent={() => EditCoinDetailsScreen}
             />
             <Stack.Screen
               name='FanClubsExplore'
-              component={FanClubsExploreScreen}
+              getComponent={() => FanClubsExploreScreen}
             />
             <Stack.Screen
               name='WeeklyRotationScreen'
-              component={WeeklyRotationScreen}
+              getComponent={() => WeeklyRotationScreen}
             />
-            <Stack.Screen name='FanClubSort' component={FanClubSortScreen} />
+            <Stack.Screen
+              name='FanClubSort'
+              getComponent={() => FanClubSortScreen}
+            />
 
             <Stack.Group>
-              <Stack.Screen name='EditProfile' component={EditProfileScreen} />
-              <Stack.Screen name='SettingsScreen' component={SettingsScreen} />
-              <Stack.Screen name='AboutScreen' component={AboutScreen} />
+              <Stack.Screen
+                name='EditProfile'
+                getComponent={() => EditProfileScreen}
+              />
+              <Stack.Screen
+                name='SettingsScreen'
+                getComponent={() => SettingsScreen}
+              />
+              <Stack.Screen
+                name='AboutScreen'
+                getComponent={() => AboutScreen}
+              />
               <Stack.Screen
                 name='ListeningHistoryScreen'
-                component={ListeningHistoryScreen}
+                getComponent={() => ListeningHistoryScreen}
               />
               <Stack.Screen
                 name='AccountSettingsScreen'
-                component={AccountSettingsScreen}
+                getComponent={() => AccountSettingsScreen}
               />
               <Stack.Screen
                 name='InboxSettingsScreen'
-                component={InboxSettingsScreen}
+                getComponent={() => InboxSettingsScreen}
               />
               <Stack.Screen
                 name='CommentSettingsScreen'
-                component={CommentSettingsScreen}
+                getComponent={() => CommentSettingsScreen}
               />
               <Stack.Screen
                 name='DownloadSettingsScreen'
-                component={DownloadSettingsScreen}
+                getComponent={() => DownloadSettingsScreen}
               />
               <Stack.Screen
                 name='NotificationSettingsScreen'
-                component={NotificationSettingsScreen}
+                getComponent={() => NotificationSettingsScreen}
               />
             </Stack.Group>
 
             <Stack.Screen
               name='FilterButton'
-              component={FilterButtonScreen}
+              getComponent={() => FilterButtonScreen}
               options={{ ...screenOptions, presentation: 'fullScreenModal' }}
             />
             <Stack.Group>
-              <Stack.Screen name='ChatList' component={ChatListScreen} />
+              <Stack.Screen
+                name='ChatList'
+                getComponent={() => ChatListScreen}
+              />
               <Stack.Screen
                 name='ChatUserList'
-                component={ChatUserListScreen}
+                getComponent={() => ChatUserListScreen}
               />
               <Stack.Screen
                 name='SendTokensUserSelection'
-                component={SendTokensUserSelectionScreen}
+                getComponent={() => SendTokensUserSelectionScreen}
               />
               <Stack.Screen
                 name='Chat'
-                component={ChatScreen}
+                getComponent={() => ChatScreen}
                 getId={({ params }) =>
                   // @ts-ignore hard to correctly type navigation params (PAY-1141)
                   params?.chatId

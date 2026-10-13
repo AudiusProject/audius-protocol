@@ -1,4 +1,8 @@
-import { queryAccountUser, queryHasAccount } from '@audius/common/api'
+import {
+  queryAccountUser,
+  queryCurrentUserId,
+  queryHasAccount
+} from '@audius/common/api'
 import type { PushNotifications as TPushNotifications } from '@audius/common/store'
 import {
   settingsPageSelectors,
@@ -10,11 +14,13 @@ import {
 } from '@audius/common/store'
 import { getErrorMessage, waitForAccount } from '@audius/common/utils'
 import { waitForRead } from '@audius/web/src/utils/sagaHelpers'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import commonSettingsSagas from 'common/store/pages/settings/sagas'
 import { mapValues } from 'lodash'
 import { RESULTS, checkNotifications } from 'react-native-permissions'
 import { select, call, put, takeEvery, take } from 'typed-redux-saga'
 
+import { DEVICE_TOKEN_REGISTRATION_KEY } from 'app/constants/storage-keys'
 import PushNotifications from 'app/notifications'
 
 import { setVisibility } from '../drawers/slice'
@@ -32,11 +38,37 @@ function* getIsMobilePushEnabled() {
   return isMobilePushEnabled
 }
 
+// Re-register at least this often even when nothing changed, in case identity
+// dropped the token on its side.
+const DEVICE_TOKEN_REFRESH_MS = 7 * 24 * 60 * 60 * 1000
+
+type DeviceTokenRegistration = {
+  userId: number
+  token: string
+  timestamp: number
+}
+
+async function getDeviceTokenRegistration(): Promise<DeviceTokenRegistration | null> {
+  try {
+    const value = await AsyncStorage.getItem(DEVICE_TOKEN_REGISTRATION_KEY)
+    return value ? JSON.parse(value) : null
+  } catch {
+    return null
+  }
+}
+
+async function clearDeviceTokenRegistration() {
+  try {
+    await AsyncStorage.removeItem(DEVICE_TOKEN_REGISTRATION_KEY)
+  } catch {}
+}
+
 export function* deregisterPushNotifications() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const sdk = yield* getSDK()
   const { token } = yield* call([PushNotifications, 'getToken'])
   PushNotifications.deregister()
+  yield* call(clearDeviceTokenRegistration)
   yield* call(audiusBackendInstance.deregisterDeviceToken, {
     sdk,
     deviceToken: token
@@ -49,11 +81,25 @@ function* registerDeviceToken() {
 
   const audiusBackend = yield* getContext('audiusBackendInstance')
   const sdk = yield* getSDK()
-  yield* call(audiusBackend.registerDeviceToken, {
+  const result = yield* call(audiusBackend.registerDeviceToken, {
     sdk,
     deviceToken: token,
     deviceType: os
   })
+
+  const userId = yield* call(queryCurrentUserId)
+  if (token && userId && result && !('error' in result)) {
+    const registration: DeviceTokenRegistration = {
+      userId,
+      token,
+      timestamp: Date.now()
+    }
+    yield* call(
+      [AsyncStorage, AsyncStorage.setItem],
+      DEVICE_TOKEN_REGISTRATION_KEY,
+      JSON.stringify(registration)
+    )
+  }
 }
 
 function* reregisterDeviceTokenOnStartup() {
@@ -62,12 +108,26 @@ function* reregisterDeviceTokenOnStartup() {
   if (!isSignedIn) return
 
   const { status } = yield* call(checkNotifications)
+  const isGranted = status === RESULTS.GRANTED || status === RESULTS.LIMITED
+  if (!isGranted) return
+
+  // Skip the settings fetch and signed registration when this user already
+  // registered this token recently. A new install, another user signing in,
+  // or a rotated token all miss the cache and register again.
+  const userId = yield* call(queryCurrentUserId)
+  const registration = yield* call(getDeviceTokenRegistration)
+  if (
+    registration &&
+    registration.userId === userId &&
+    Date.now() - registration.timestamp < DEVICE_TOKEN_REFRESH_MS
+  ) {
+    const deviceToken = yield* call([PushNotifications, 'getToken'])
+    if (deviceToken?.token && deviceToken.token === registration.token) return
+  }
+
   const isMobilePushEnabled = yield* call(getIsMobilePushEnabled)
 
-  if (
-    (status === RESULTS.GRANTED || status === RESULTS.LIMITED) &&
-    isMobilePushEnabled
-  ) {
+  if (isMobilePushEnabled) {
     yield* call(registerDeviceToken)
   }
 }
