@@ -62,7 +62,6 @@ import { HeaderContextConsumer } from 'components/header/mobile/HeaderContextPro
 import Navigator from 'components/nav/Navigator'
 import TopLevelPage from 'components/nav/mobile/TopLevelPage'
 import Notice from 'components/notice/Notice'
-import { NotificationPage } from 'components/notification'
 import PlayBarProvider from 'components/play-bar/PlayBarProvider'
 import { RewardClaimedToast } from 'components/reward-claimed-toast/RewardClaimedToast'
 import { USDCBalanceFetcher } from 'components/usdc-balance-fetcher/USDCBalanceFetcher'
@@ -175,6 +174,11 @@ const LibraryPage = lazy(() => import('pages/library-page/LibraryPage'))
 const NotFoundPage = lazy(() =>
   import('pages/not-found-page/NotFoundPage').then((m) => ({
     default: m.NotFoundPage
+  }))
+)
+const NotificationPage = lazy(() =>
+  import('components/notification/NotificationPage').then((m) => ({
+    default: m.NotificationPage
   }))
 )
 const NotificationUsersPage = lazy(() =>
