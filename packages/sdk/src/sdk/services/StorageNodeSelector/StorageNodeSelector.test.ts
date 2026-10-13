@@ -143,4 +143,40 @@ describe('StorageNodeSelector', () => {
     expect(await storageNodeSelector.getSelectedNode()).toBe(null)
     expect(await storageNodeSelector.triedSelectingAllNodes()).toBe(true)
   })
+
+  it('fetches the node list once, on first selection', async () => {
+    let healthCheckCalls = 0
+    const storageNodeC = {
+      endpoint: 'https://node-c.audius.co',
+      delegateOwnerWallet: '0xc0ffee254729296a45a3885639AC7E10F9d54973'
+    }
+    server.use(
+      rest.get(`${discoveryNode}/health_check`, (_req, res, ctx) => {
+        healthCheckCalls++
+        const data: HealthCheckResponseData = {
+          network: { content_nodes: [storageNodeC] }
+        }
+        return res(ctx.status(200), ctx.json({ data }))
+      }),
+      rest.get(`${storageNodeC.endpoint}/health_check`, (_req, res, ctx) => {
+        return res(ctx.status(200), ctx.json({ data: { diskHasSpace: true } }))
+      })
+    )
+
+    const storageNodeSelector = new StorageNodeSelector({
+      bootstrapNodes: [storageNodeA, storageNodeB],
+      logger,
+      endpoint: discoveryNode
+    })
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(healthCheckCalls).toBe(0)
+
+    const [first, second] = await Promise.all([
+      storageNodeSelector.getSelectedNode(),
+      storageNodeSelector.getSelectedNode()
+    ])
+    expect(first).toEqual(storageNodeC.endpoint)
+    expect(second).toEqual(storageNodeC.endpoint)
+    expect(healthCheckCalls).toBe(1)
+  })
 })
