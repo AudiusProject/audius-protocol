@@ -7,13 +7,14 @@ import {
 } from '@audius/common/api'
 import { walletMessages } from '@audius/common/messages'
 import { convertHexToRGBA } from '@audius/common/utils'
-import { type LayoutChangeEvent, View } from 'react-native'
-import { LineChart } from 'react-native-gifted-charts'
-import type { lineDataItem } from 'react-native-gifted-charts'
+import type { LayoutChangeEvent } from 'react-native'
 
 import { Flex, Paper, Text, useTheme } from '@audius/harmony-native'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useNavigation } from 'app/hooks/useNavigation'
+
+import type { BalanceChartDatum } from './BalanceLineChart'
+import { BalanceLineChart } from './BalanceLineChart'
 
 const messages = walletMessages.balanceHistory
 
@@ -101,47 +102,39 @@ export const UserBalanceHistoryGraph = ({
   const isLoading = isHistoryLoading || isBalanceLoading
   const isError = isHistoryError || isBalanceError
 
-  const chartData = useMemo((): lineDataItem[] => {
+  const chartData = useMemo((): BalanceChartDatum[] => {
     if (!historyData || historyData.length === 0) return []
 
     return historyData.map((point) => ({
       value: point.balanceUsd,
-      timestamp: point.timestamp,
-      dataPointLabelComponent: () => null
+      timestamp: point.timestamp
     }))
   }, [historyData])
 
   const renderTooltip = useCallback(
-    (items: any[]) => {
-      if (!items || items.length === 0) return null
-
-      const item = items[0]
-      const { timestamp, value } = item
-
-      return (
-        <Paper
-          gap='xs'
-          ph='m'
-          pv='s'
-          borderRadius='m'
-          alignItems='center'
-          justifyContent='center'
-          backgroundColor='accent'
-          style={{
-            minWidth: spacing.unit20
-          }}
-        >
-          {timestamp ? (
-            <Text variant='label' size='xs' textAlign='center' color='white'>
-              {formatTooltipDate(timestamp)}
-            </Text>
-          ) : null}
-          <Text variant='heading' size='s' textAlign='center' color='white'>
-            {formatCurrency(value)}
+    ({ timestamp, value }: BalanceChartDatum) => (
+      <Paper
+        gap='xs'
+        ph='m'
+        pv='s'
+        borderRadius='m'
+        alignItems='center'
+        justifyContent='center'
+        backgroundColor='accent'
+        style={{
+          minWidth: spacing.unit20
+        }}
+      >
+        {timestamp ? (
+          <Text variant='label' size='xs' textAlign='center' color='white'>
+            {formatTooltipDate(timestamp)}
           </Text>
-        </Paper>
-      )
-    },
+        ) : null}
+        <Text variant='heading' size='s' textAlign='center' color='white'>
+          {formatCurrency(value)}
+        </Text>
+      </Paper>
+    ),
     [spacing.unit20]
   )
 
@@ -188,102 +181,22 @@ export const UserBalanceHistoryGraph = ({
     )
   }
 
-  const values = chartData.map((d) => d.value as number)
-  // Safe to assert: we know chartData.length > 0 from check above
-  const maxValue = Math.max(...values)
-  const minValue = Math.min(...values)
-  const valueRange = maxValue - minValue
-
-  const chartHorizontalPadding = 48
-  const chartInitialSpacing = 10
-  const chartEndSpacing = 10
-  const chartWidth = Math.max(containerWidth - chartHorizontalPadding, 0)
-  const spacingBetweenPoints =
-    chartData.length > 1
-      ? Math.max(
-          (chartWidth - chartInitialSpacing - chartEndSpacing) /
-            (chartData.length - 1),
-          0
-        )
-      : 0
-
-  // Format Y label - library expects (label: string) => string
-  const formatYLabelWrapper = (label: string): string => {
-    const value = Number.parseFloat(label)
-    if (Number.isNaN(value)) return label
-    return formatShortCurrency(value)
-  }
-
   return (
     <Flex pv='xs' onLayout={handleLayout}>
-      <View>
-        <LineChart
-          data={chartData}
-          width={chartWidth}
-          height={height}
-          curved
-          isAnimated
-          animationDuration={800}
-          // Line styling
-          color={secondary}
-          thickness={2}
-          // Gradient fill
-          areaChart
-          startFillColor={convertHexToRGBA(secondary, 0.15)}
-          endFillColor={convertHexToRGBA(secondary, 0.05)}
-          startOpacity={0.15}
-          endOpacity={0.05}
-          // Data points
-          hideDataPoints
-          // Focus/hover behavior
-          focusEnabled
-          showStripOnFocus
-          showTextOnFocus
-          stripColor={convertHexToRGBA(secondary, 0.3)}
-          stripHeight={height}
-          stripWidth={2}
-          // Axes
-          rulesColor={borderColor}
-          noOfVerticalLines={0}
-          noOfSections={2}
-          yAxisColor='transparent'
-          xAxisColor='transparent'
-          yAxisThickness={0}
-          xAxisThickness={0}
-          yAxisTextStyle={{
-            color: color.neutral.n400,
-            fontSize: 11,
-            fontWeight: '500'
-          }}
-          // Y-axis formatting
-          formatYLabel={formatYLabelWrapper}
-          yAxisOffset={minValue - valueRange * 0.1}
-          // Spacing
-          spacing={spacingBetweenPoints}
-          initialSpacing={chartInitialSpacing}
-          endSpacing={chartEndSpacing}
-          yAxisLabelWidth={spacing.unit12 + spacing.unitHalf}
-          yAxisLabelContainerStyle={{
-            paddingRight: spacing.s
-          }}
-          // Pointer/tooltip config
-          pointerConfig={{
-            pointerStripHeight: height - 20,
-            pointerStripColor: secondary,
-            pointerStripWidth: 2,
-            strokeDashArray: [4, 4],
-            pointerColor: secondary,
-            radius: 6,
-            pointerLabelWidth: 140,
-            pointerLabelHeight: 80,
-            activatePointersOnLongPress: false,
-            autoAdjustPointerLabelPosition: true,
-            pointerLabelComponent: renderTooltip,
-            pointerVanishDelay: 4000,
-            activatePointersDelay: 100
-          }}
-        />
-      </View>
+      <BalanceLineChart
+        data={chartData}
+        containerWidth={containerWidth}
+        plotHeight={height}
+        axisLabelWidth={spacing.unit12 + spacing.unitHalf}
+        axisLabelPaddingRight={spacing.s}
+        lineColor={secondary}
+        startFillColor={convertHexToRGBA(secondary, 0.15)}
+        endFillColor={convertHexToRGBA(secondary, 0.05)}
+        ruleColor={borderColor}
+        axisLabelColor={color.neutral.n400}
+        formatAxisLabel={formatShortCurrency}
+        renderTooltip={renderTooltip}
+      />
     </Flex>
   )
 }
