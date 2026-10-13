@@ -1,5 +1,5 @@
 ---
-'@audius/sdk': minor
+'@audius/sdk': major
 ---
 
 Load @solana/web3.js on first use instead of when the SDK is created. `createSdkWithServices` now creates a lazy `solanaClient` and the Solana relay, `PublicKeySchema` and the program client defaults import @solana/web3.js only when they need it.
