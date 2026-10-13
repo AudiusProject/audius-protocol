@@ -6,6 +6,7 @@ import {
   fork,
   put,
   select,
+  spawn,
   takeEvery,
   takeLatest
 } from 'typed-redux-saga'
@@ -247,8 +248,9 @@ export function* fetchAccountAsync({
   if (user.handle) {
     // guest account don't have handles
     const handle = user.handle
-    // Not needed for the account to be usable, so don't block on identity
-    yield* fork(function* () {
+    // Not needed for the account to be usable, so don't block on identity.
+    // spawn, not fork: callers of fetchAccountAsync shouldn't wait on it.
+    yield* spawn(function* () {
       try {
         yield* call(recordIPIfNotRecent, handle)
       } catch (e) {
@@ -272,7 +274,7 @@ export function* fetchAccountAsync({
   // Fetch user's chat blockee and blocker list after fetching their account.
   // Only chat send checks read these (and failed sends refetch them), so let
   // the first screen load first.
-  yield* fork(function* () {
+  yield* spawn(function* () {
     yield* delay(BLOCK_LIST_FETCH_DELAY_MS)
     yield* put(fetchBlockees())
     yield* put(fetchBlockers())
