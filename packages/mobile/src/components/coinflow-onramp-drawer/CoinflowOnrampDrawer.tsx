@@ -105,6 +105,7 @@ export const CoinflowOnrampDrawer = () => {
   })
   const deviceId = getCoinflowDeviceId()
   const { sessionKey, isError, isFetching, retry } = useCoinflowSessionKey({
+    merchantId: env.COINFLOW_MERCHANT_ID || '',
     wallet: adapter?.wallet.publicKey.toBase58(),
     environment: IS_PRODUCTION ? 'prod' : 'sandbox',
     enabled: isOpen
