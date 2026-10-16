@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import { useWalletAddresses } from '~/api'
 import { useQueryContext } from '~/api/tan-query/utils'
+import { createCoinflowSession } from '~/services/coinflow'
 
 const REFRESH_INTERVAL_MS = 25 * 60 * 1000
 const EXPIRY_BUFFER_MS = 60 * 1000
@@ -12,13 +13,15 @@ const EXPIRY_BUFFER_MS = 60 * 1000
 export const useCoinflowSessionKey = ({
   wallet,
   environment,
+  merchantId,
   enabled
 }: {
   wallet: string | undefined
   environment: 'prod' | 'sandbox'
+  merchantId: string
   enabled: boolean
 }) => {
-  const { identityService, solanaWalletService } = useQueryContext()
+  const { solanaWalletService } = useQueryContext()
   const { data: addresses } = useWalletAddresses()
   const identityWallet = addresses?.web3User ?? addresses?.currentUser
   const [, render] = useReducer((value: number) => value + 1, 0)
@@ -27,13 +30,14 @@ export const useCoinflowSessionKey = ({
   const query = useQuery({
     queryKey: [
       'coinflowSessionKey',
-      identityService.identityServiceEndpoint,
+      merchantId,
       environment,
       addresses?.currentUser,
       identityWallet,
       wallet
     ],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
+      if (!merchantId) throw new Error('Coinflow merchant is unavailable')
       const keypair = await solanaWalletService.getKeypair()
       if (
         !wallet ||
@@ -44,19 +48,13 @@ export const useCoinflowSessionKey = ({
         throw new Error('Coinflow wallet is unavailable')
       }
       const { default: nacl } = await import('tweetnacl')
-      const timestamp = Date.now()
-      const message = `Audius Coinflow session:${identityWallet.toLowerCase()}:${wallet}:${environment}:${timestamp}`
-      const signature = Buffer.from(
-        nacl.sign.detached(
-          new Uint8Array(Buffer.from(message)),
-          keypair.secretKey
-        )
-      ).toString('base64')
-      const session = await identityService.createCoinflowSessionKey({
+      const session = await createCoinflowSession({
         wallet,
-        signature,
-        timestamp,
-        environment
+        merchantId,
+        environment,
+        signal,
+        signMessage: async (message) =>
+          nacl.sign.detached(message, keypair.secretKey)
       })
       if (
         !session.key ||

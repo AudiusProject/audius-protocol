@@ -64,6 +64,7 @@ export const CoinflowOnrampModal = NiceModal.create(() => {
     onFailure: handleClose
   })
   const { sessionKey, isError, isFetching, retry } = useCoinflowSessionKey({
+    merchantId: MERCHANT_ID || '',
     wallet: adapter?.wallet.publicKey.toBase58(),
     environment: IS_PRODUCTION ? 'prod' : 'sandbox',
     enabled: isOpen

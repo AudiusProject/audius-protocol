@@ -22,12 +22,12 @@ vi.mock('~/api', () => ({
 }))
 vi.mock('~/api/tan-query/utils', () => ({
   useQueryContext: () => ({
-    identityService: {
-      identityServiceEndpoint: 'https://identity.example',
-      createCoinflowSessionKey: mocks.createSession
-    },
     solanaWalletService: { getKeypair: mocks.getKeypair }
   })
+}))
+
+vi.mock('~/services/coinflow', () => ({
+  createCoinflowSession: mocks.createSession
 }))
 
 const keys = nacl.sign.keyPair.fromSeed(new Uint8Array(32).fill(1))
@@ -67,11 +67,12 @@ afterEach(() => {
 describe('useCoinflowSessionKey', () => {
   const props = {
     wallet: 'wallet-a',
+    merchantId: 'audius',
     environment: 'sandbox' as const,
     enabled: true
   }
 
-  it('waits until opened, then signs proof for the active identity and wallet', async () => {
+  it("waits until opened, then signs Coinflow's challenge with the active wallet", async () => {
     const { result, rerender } = renderHook(useCoinflowSessionKey, {
       wrapper: Wrapper,
       initialProps: { ...props, enabled: false }
@@ -82,15 +83,17 @@ describe('useCoinflowSessionKey', () => {
     rerender(props)
     await flush()
     expect(result.current.sessionKey).toBe('key-a')
-    const proof = mocks.createSession.mock.calls[0][0]
-    const message = `Audius Coinflow session:0xabc:wallet-a:sandbox:${proof.timestamp}`
-    expect(
-      nacl.sign.detached.verify(
-        new Uint8Array(Buffer.from(message)),
-        new Uint8Array(Buffer.from(proof.signature, 'base64')),
-        keys.publicKey
-      )
-    ).toBe(true)
+    const request = mocks.createSession.mock.calls[0][0]
+    expect(request).toMatchObject({
+      wallet: 'wallet-a',
+      merchantId: 'audius',
+      environment: 'sandbox'
+    })
+    const message = new Uint8Array(Buffer.from('Coinflow challenge'))
+    const signature = await request.signMessage(message)
+    expect(nacl.sign.detached.verify(message, signature, keys.publicKey)).toBe(
+      true
+    )
   })
 
   it('refreshes before expiry and stops using the old key if refresh fails', async () => {
@@ -157,6 +160,34 @@ describe('useCoinflowSessionKey', () => {
     resolveOld(session('key-a'))
     await flush()
     expect(result.current.sessionKey).toBe('key-b')
+  })
+
+  it('does not reuse a session across merchants or environments', async () => {
+    const { result, rerender } = renderHook(useCoinflowSessionKey, {
+      wrapper: Wrapper,
+      initialProps: { ...props, environment: 'sandbox' as 'sandbox' | 'prod' }
+    })
+    await flush()
+    mocks.createSession.mockResolvedValue(session('other-merchant'))
+    rerender({ ...props, merchantId: 'other' })
+    expect(result.current.sessionKey).toBeUndefined()
+    await flush()
+    expect(result.current.sessionKey).toBe('other-merchant')
+    mocks.createSession.mockResolvedValue(session('production'))
+    rerender({ ...props, merchantId: 'other', environment: 'prod' })
+    expect(result.current.sessionKey).toBeUndefined()
+    await flush()
+    expect(result.current.sessionKey).toBe('production')
+  })
+
+  it('fails without a merchant rather than creating an unscoped session', async () => {
+    const { result } = renderHook(useCoinflowSessionKey, {
+      wrapper: Wrapper,
+      initialProps: { ...props, merchantId: '' }
+    })
+    await flush(2000)
+    expect(mocks.createSession).not.toHaveBeenCalled()
+    expect(result.current.isError).toBe(true)
   })
 
   it('rejects an adapter whose wallet no longer matches the signing wallet', async () => {
