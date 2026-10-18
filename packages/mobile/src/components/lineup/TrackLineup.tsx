@@ -20,7 +20,11 @@ import {
   type UID
 } from '@audius/common/models'
 import { playbackActions, playbackSelectors } from '@audius/common/store'
-import type { PlaybackQuerySource, PlaybackTrack } from '@audius/common/store'
+import type {
+  CommonState,
+  PlaybackQuerySource,
+  PlaybackTrack
+} from '@audius/common/store'
 import { makeStableUid } from '@audius/common/utils'
 import { EntityType } from '@audius/sdk'
 import { range } from 'lodash'
@@ -30,7 +34,7 @@ import type {
   ViewStyle
 } from 'react-native'
 import { StyleSheet, View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch, useStore } from 'react-redux'
 
 import { SectionList } from 'app/components/core'
 import { useBottomChinHeight } from 'app/components/core/BottomChin'
@@ -44,7 +48,6 @@ import { make, track } from 'app/services/analytics'
 
 const { makeGetCurrent } = playbackSelectors
 const { getPlaying } = playbackSelectors
-const { getCurrentTrackId: getPlaybackCurrentTrackId } = playbackSelectors
 
 // Threshold for `onEndReachedThreshold` (fraction of viewport length).
 // 1.0 means "fetch when one full viewport of content remains below" so the
@@ -183,12 +186,11 @@ export const TrackLineup = ({
   const dispatch = useDispatch()
   const ref = useRef<RNSectionList>(null)
 
+  // Playback state is read when a tile is pressed rather than subscribed to,
+  // so play/pause/skip don't re-render every tile. Tiles select their own
+  // active/playing state.
+  const store = useStore<CommonState>()
   const getCurrentQueueItem = useMemo(() => makeGetCurrent(), [])
-  const currentLegacy = useSelector(getCurrentQueueItem)
-  const isPlaying = useSelector(getPlaying)
-  // playback slice is the source of truth when present; subscribed here so
-  // tiles re-render when the current track changes.
-  useSelector(getPlaybackCurrentTrackId)
 
   const uidFor = useCallback(
     (id: ID) => makeStableUid(Kind.TRACKS, id, source),
@@ -242,6 +244,9 @@ export const TrackLineup = ({
       source?: PlaybackSource
       collectionId?: ID
     }) => {
+      const state = store.getState()
+      const currentLegacy = getCurrentQueueItem(state)
+      const isPlaying = getPlaying(state)
       const currentTrackId = currentLegacy?.trackId ?? null
       const currentSource = currentLegacy?.source ?? null
       const isSameTile = currentTrackId === id && currentSource === source
@@ -290,10 +295,9 @@ export const TrackLineup = ({
       dispatch,
       tracksForPlayback,
       querySource,
-      currentLegacy?.trackId,
-      currentLegacy?.source,
+      store,
+      getCurrentQueueItem,
       source,
-      isPlaying,
       playbackSource
     ]
   )
@@ -448,6 +452,9 @@ export const TrackLineup = ({
         ListEmptyComponent={LineupEmptyComponent}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={LOAD_MORE_THRESHOLD}
+        // Keep ~5 screens of tiles mounted either side instead of the
+        // default 10, since feed/trending/profile lineups all stay mounted
+        windowSize={11}
         sections={isEmpty ? [] : sections}
         stickySectionHeadersEnabled={false}
         keyExtractor={(item: any, index: number) => {
