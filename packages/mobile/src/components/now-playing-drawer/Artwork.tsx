@@ -45,9 +45,11 @@ const useStyles = makeStyles(({ palette }) => ({
 
 type ArtworkProps = {
   track: Nullable<Track>
+  /** Whether the Now Playing drawer is open, so the artwork is visible */
+  isOpen: boolean
 }
 
-export const Artwork = ({ track }: ArtworkProps) => {
+export const Artwork = ({ track, isOpen }: ArtworkProps) => {
   const styles = useStyles()
 
   const dominantColors = useSelector((state: CommonState) =>
@@ -81,7 +83,11 @@ export const Artwork = ({ track }: ArtworkProps) => {
         key={track?.track_id}
         trackId={track?.track_id}
         style={styles.image}
-        size={SquareSizes.SIZE_1000_BY_1000}
+        // The collapsed drawer hides the artwork, so don't load the full
+        // size for every track until the drawer opens
+        size={
+          isOpen ? SquareSizes.SIZE_1000_BY_1000 : SquareSizes.SIZE_480_BY_480
+        }
       />
       {shouldShowDogEar ? (
         <TrackDogEar trackId={track?.track_id ?? 0} borderOffset={2} />
