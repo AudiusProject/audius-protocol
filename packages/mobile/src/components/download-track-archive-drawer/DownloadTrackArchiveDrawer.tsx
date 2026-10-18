@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import {
+  getStemsArchiveErrorMessage,
   useCancelStemsArchiveJob,
   useDownloadTrackStems,
   useGetStemsArchiveJobStatus,
@@ -29,7 +30,11 @@ import LoadingSpinner from '../loading-spinner'
 const messages = {
   title: 'Downloading...',
   zippingFiles: (count: number) => `Zipping files (${count})`,
-  error: 'Something went wrong. Please check your connection and try again.',
+  // Saving the finished zip to the device failed, which really can be the
+  // connection or device storage. Archive job failures use
+  // getStemsArchiveErrorMessage instead.
+  downloadError:
+    'Something went wrong while saving your download. Please check your connection and storage and try again.',
   tryAgain: 'Try again.'
 }
 
@@ -211,7 +216,15 @@ const DownloadTrackArchiveDrawerContent = ({
                 </TextLink>
               }
             >
-              {messages.error}
+              {downloadError
+                ? messages.downloadError
+                : getStemsArchiveErrorMessage({
+                    initiateFailed: initiateDownloadFailed,
+                    jobState: jobState?.state,
+                    failedReason: jobState?.failedReason,
+                    isStatusError: isJobStatusError,
+                    isTimedOut: isJobTimedOut
+                  })}
             </Hint>
           ) : (
             <LoadingSpinner />
