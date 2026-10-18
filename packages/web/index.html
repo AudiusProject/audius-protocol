@@ -7,6 +7,18 @@
     <link rel="preconnect" href="%API_URL%" crossorigin />
     <link rel="preconnect" href="https://experiments.audius.co" />
 
+    <!-- Avenir is a fallback behind Inter. The woff2 files only download if a
+    page renders it. -->
+    <link
+      rel="stylesheet"
+      href="/fonts.css"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link rel="stylesheet" href="/fonts.css" />
+    </noscript>
+
     <link
       rel="apple-touch-icon"
       sizes="180x180"
