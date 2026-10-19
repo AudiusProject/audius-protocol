@@ -124,7 +124,16 @@ export function getPlatformCreateKey(): CreateKey {
   return createKey
 }
 
+/**
+ * Resolves once `condition` returns true. Checks synchronously first so an
+ * already-satisfied wait (the common case: every SDK request goes through
+ * `hedgehog.waitUntilReady()` inside the request-signature mutex) does not
+ * pay a 100ms poll tick and serialize requests behind it.
+ */
 export function waitUntil(condition: () => boolean) {
+  if (condition()) {
+    return Promise.resolve()
+  }
   return new Promise<void>((resolve) => {
     const interval = setInterval(() => {
       if (!condition()) {

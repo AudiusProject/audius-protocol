@@ -14,7 +14,7 @@ import { recoverMessageAddress } from 'viem'
 import { signMessage } from 'viem/accounts'
 import { describe, expect, it } from 'vitest'
 
-import { hexToBytesLikeBuffer } from './utils'
+import { hexToBytesLikeBuffer, waitUntil } from './utils'
 
 import {
   Authentication,
@@ -599,5 +599,22 @@ describe('Hedgehog flows across old and new implementations', () => {
         await old.WalletManager.createAuthLookupKey(u, p, fakeCreateKey)
       )
     }
+  })
+})
+
+describe('waitUntil', () => {
+  it('resolves without waiting for a poll tick when already satisfied', async () => {
+    const start = performance.now()
+    await waitUntil(() => true)
+    expect(performance.now() - start).toBeLessThan(50)
+  })
+
+  it('polls until the condition holds', async () => {
+    let ready = false
+    setTimeout(() => {
+      ready = true
+    }, 20)
+    await waitUntil(() => ready)
+    expect(ready).toBe(true)
   })
 })
