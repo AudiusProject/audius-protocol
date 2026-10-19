@@ -4,9 +4,10 @@ import type {
   PressableProps,
   StyleProp,
   TextStyle,
-  ViewProps
+  ViewProps,
+  ViewStyle
 } from 'react-native'
-import type { SharedValue } from 'react-native-reanimated'
+import type { AnimatedStyle, SharedValue } from 'react-native-reanimated'
 
 import type { LoadingSpinnerProps } from 'app/components/loading-spinner/LoadingSpinner'
 import type { IconComponent, IconProps } from 'app/harmony-native/icons'
@@ -14,7 +15,7 @@ import type { IconComponent, IconProps } from 'app/harmony-native/icons'
 import type { TextProps } from '../../Text/Text'
 
 type BaseButtonStyles = {
-  text?: StyleProp<TextStyle>
+  text?: StyleProp<AnimatedStyle<TextStyle>>
   icon?: IconProps['style']
 }
 
@@ -96,4 +97,6 @@ export type BaseButtonProps = {
    * When true, apply a medium haptic feedback
    */
   haptics?: boolean
-} & PressableProps
+
+  style?: StyleProp<AnimatedStyle<ViewStyle>>
+} & Omit<PressableProps, 'style'>
