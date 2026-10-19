@@ -21,6 +21,7 @@ import {
   Artwork,
   IconButton,
   IconKebabHorizontal,
+  IconPin,
   Text,
   TrackRow
 } from '@audius/harmony'
@@ -62,6 +63,8 @@ export type TrackRowTileProps = {
   isFeed?: boolean
   onClick?: (trackId: ID) => void
   containerClassName?: string
+  /** Mark the owner's pinned track with an "Artist Pick" line. */
+  showArtistPick?: boolean
 }
 
 /**
@@ -79,7 +82,8 @@ export const TrackRowTile = ({
   hasLoaded,
   isFeed = false,
   onClick,
-  containerClassName
+  containerClassName,
+  showArtistPick = false
 }: TrackRowTileProps) => {
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
@@ -130,6 +134,8 @@ export const TrackRowTile = ({
   const trackPosition = useSelector((state: CommonState) =>
     getTrackPosition(state, { trackId, userId: currentUserId })
   )
+  const isArtistPick =
+    showArtistPick && partialUser?.artist_pick_track_id === trackId
 
   const { isFetchingNFTAccess, hasStreamAccess, isPreviewable } =
     useGatedContentAccess(trackWithFallback)
@@ -319,6 +325,14 @@ export const TrackRowTile = ({
       }
       menu={overflowMenu}
       playLabel={playLabel}
+      context={
+        isArtistPick ? (
+          <>
+            <IconPin size='xs' color='subdued' />
+            {messages.artistPick}
+          </>
+        ) : undefined
+      }
       data-testid='track-row'
     />
   )

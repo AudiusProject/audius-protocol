@@ -17,8 +17,10 @@ import {
   getProfileRepostsQueryKey
 } from '@audius/common/api'
 import { useMuteUser } from '@audius/common/context'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { commentsMessages } from '@audius/common/messages'
 import { Status } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { ProfilePageTabs } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
@@ -89,6 +91,10 @@ const LeftColumnSpacer = () => (
 )
 
 const ProfilePage = ({ containerRef }: ProfilePageProps) => {
+  const { isEnabled: isTrackRowsEnabled } = useFeatureFlag(
+    FeatureFlags.TRACK_ROWS
+  )
+  const tileVariant = isTrackRowsEnabled ? 'row' : 'tile'
   const profileFocusRootRef = useRef<HTMLDivElement>(null)
   usePreventOffscreenFocus(profileFocusRootRef)
 
@@ -303,6 +309,7 @@ const ProfilePage = ({ containerRef }: ProfilePageProps) => {
                 hasNextPage={userRepostsQuery.hasNextPage}
                 loadNextPage={userRepostsQuery.loadNextPage}
                 variant={LineupVariant.CONDENSED}
+                tileVariant={tileVariant}
                 scrollParent={containerRef?.current ?? null}
               />
             )
@@ -337,6 +344,7 @@ const ProfilePage = ({ containerRef }: ProfilePageProps) => {
                 hasNextPage={artistTracksQuery.hasNextPage}
                 loadNextPage={artistTracksQuery.loadNextPage}
                 variant={LineupVariant.GRID}
+                tileVariant={tileVariant}
                 leadingElementId={profile.artist_pick_track_id ?? undefined}
                 showArtistPick
                 scrollParent={containerRef?.current ?? null}
@@ -382,6 +390,7 @@ const ProfilePage = ({ containerRef }: ProfilePageProps) => {
             hasNextPage={userRepostsQuery.hasNextPage}
             loadNextPage={userRepostsQuery.loadNextPage}
             variant={LineupVariant.CONDENSED}
+            tileVariant={tileVariant}
             maxEntries={profile.repost_count}
             scrollParent={containerRef?.current ?? null}
           />

@@ -84,6 +84,7 @@ export const TrackRow = forwardRef<HTMLDivElement, TrackRowProps>(
       onTogglePlay,
       onToggleFavorite,
       menu,
+      context,
       playLabel = isPlaying ? 'Pause' : 'Play',
       favoriteLabel = isFavorited ? 'Unfavorite' : 'Favorite',
       className,
@@ -122,6 +123,16 @@ export const TrackRow = forwardRef<HTMLDivElement, TrackRowProps>(
       },
       [onToggleFavorite]
     )
+
+    // Title column starts after the rank and artwork cells and two gaps.
+    const contextCss = css({
+      display: 'flex',
+      alignItems: 'center',
+      gap: spacing.xs,
+      height: 16,
+      marginTop: spacing.xs,
+      paddingLeft: spacing.s + RANK_SIZE + ART_SIZE + spacing.m * 2
+    })
 
     const rowCss = css({
       display: 'grid',
@@ -189,14 +200,14 @@ export const TrackRow = forwardRef<HTMLDivElement, TrackRowProps>(
     const showEqualizer = isActive && isPlaying
     const PlayIcon = showEqualizer ? IconPause : IconPlay
 
-    return (
+    const row = (
       <div
-        ref={ref}
+        ref={context ? undefined : ref}
         css={rowCss}
-        className={className}
+        className={context ? undefined : className}
         onClick={handleRowClick}
         aria-current={isActive ? 'true' : undefined}
-        {...other}
+        {...(context ? {} : other)}
       >
         <div css={rankCss}>
           {rank != null && !showEqualizer ? (
@@ -295,6 +306,17 @@ export const TrackRow = forwardRef<HTMLDivElement, TrackRowProps>(
         >
           {menu}
         </Flex>
+      </div>
+    )
+
+    if (!context) return row
+
+    return (
+      <div ref={ref} className={className} {...other}>
+        <Text variant='body' size='xs' color='subdued' css={contextCss}>
+          {context}
+        </Text>
+        {row}
       </div>
     )
   }

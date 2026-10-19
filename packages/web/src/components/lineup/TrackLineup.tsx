@@ -287,7 +287,10 @@ export const TrackLineup = ({
   } else if (variant === LineupVariant.GRID) {
     tileSize = TrackTileSize.SMALL
     statSize = 'small'
-    containerClassName = styles.searchTrackTileContainer
+    // Rows are full width; the two-column grid is for small tiles only.
+    containerClassName = isRowLayout
+      ? undefined
+      : styles.searchTrackTileContainer
   } else if (variant === LineupVariant.CONDENSED) {
     tileSize = TrackTileSize.SMALL
   }
