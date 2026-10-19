@@ -12,7 +12,6 @@ import {
 } from 'react-native-reanimated'
 
 import { useTheme } from '@audius/harmony-native'
-import { animatedPropAdapter } from 'app/utils/animation'
 
 import { BaseButton } from '../BaseButton/BaseButton'
 
@@ -89,19 +88,15 @@ export const EntityActionButton = (props: EntityActionButtonProps) => {
     }
   }, [active, type])
 
-  const animatedIconProps = useAnimatedProps(
-    () => {
-      return {
-        fill: interpolateColor(
-          pressed.value,
-          [0, 1],
-          [dynamicStyles.default.icon, dynamicStyles.press.icon]
-        )
-      }
-    },
-    [active, type],
-    animatedPropAdapter
-  )
+  const animatedIconProps = useAnimatedProps(() => {
+    return {
+      fill: interpolateColor(
+        pressed.value,
+        [0, 1],
+        [dynamicStyles.default.icon, dynamicStyles.press.icon]
+      )
+    }
+  }, [active, type])
 
   // Non-animated version for Android
   const staticIconProps = {
