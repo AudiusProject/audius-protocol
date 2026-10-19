@@ -48,9 +48,6 @@ import { useThemeColors } from 'app/utils/theme'
 
 import { FanClubExploreCard } from './FanClubExploreCard'
 
-const COIN_ROW_HEIGHT = 56
-/** FlashList: slightly conservative height avoids mis-recycling tall cards when scrolling. */
-const COIN_CARD_ESTIMATED_HEIGHT = 400
 const EXPLORE_PAGE_SIZE = 12
 
 const COIN_ROW_MESSAGES = walletMessages.fanClubs
@@ -341,7 +338,6 @@ export const FanClubsExploreScreen = () => {
                 data={allCoins}
                 renderItem={renderCoinCard}
                 keyExtractor={keyExtractor}
-                estimatedItemSize={COIN_CARD_ESTIMATED_HEIGHT}
                 onEndReached={handleLoadMore}
                 onEndReachedThreshold={0.8}
                 ListFooterComponent={renderFooter}
@@ -405,7 +401,6 @@ export const FanClubsExploreScreen = () => {
                   data={allCoins}
                   renderItem={renderCoinRow}
                   keyExtractor={keyExtractor}
-                  estimatedItemSize={COIN_ROW_HEIGHT}
                   onEndReached={handleLoadMore}
                   onEndReachedThreshold={0.8}
                   ListFooterComponent={renderFooter}

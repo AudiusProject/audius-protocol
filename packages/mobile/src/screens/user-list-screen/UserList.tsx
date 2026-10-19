@@ -133,7 +133,6 @@ export const UserList = (props: UserListProps) => {
       ItemSeparatorComponent={Divider}
       onEndReached={fetchNextPage}
       onEndReachedThreshold={3}
-      estimatedItemSize={160}
       ListFooterComponent={
         isFetchingNextPage || isPending ? loadingSpinner : footer
       }
