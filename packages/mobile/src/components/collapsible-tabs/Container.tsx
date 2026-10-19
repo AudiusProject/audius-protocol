@@ -2,8 +2,6 @@ import React from 'react'
 import { StyleSheet, useWindowDimensions, View } from 'react-native'
 import PagerView from 'react-native-pager-view'
 import Animated, {
-  runOnJS,
-  runOnUI,
   useAnimatedReaction,
   useAnimatedStyle,
   useDerivedValue,
@@ -12,6 +10,7 @@ import Animated, {
   withTiming,
   useFrameCallback,
 } from 'react-native-reanimated'
+import { runOnUISync, scheduleOnRN } from 'react-native-worklets'
 
 import { Context, TabNameContext } from './Context'
 import { Lazy } from './Lazy'
@@ -145,9 +144,8 @@ export const Container = React.memo(
           return headerHeight !== undefined ? headerHeight - minHeaderHeight : 0
         }, [headerHeight, minHeaderHeight])
 
-      const indexDecimal: ContextType['indexDecimal'] = useSharedValue(
-        index.value
-      )
+      const indexDecimal: ContextType['indexDecimal'] =
+        useSharedValue(initialIndex)
 
       const afterRender = useSharedValue(0)
       React.useEffect(() => {
@@ -231,8 +229,9 @@ export const Container = React.memo(
         syncScrollFrame.setActive(toggle)
       const syncScrollFrame = useFrameCallback(({ timeSinceFirstFrame }) => {
         syncCurrentTabScrollPosition()
-        if (timeSinceFirstFrame > 1500) {
-          runOnJS(toggleSyncScrollFrame)(false)
+        const timeToSync = IS_IOS ? 1500 : 300
+        if (timeSinceFirstFrame > timeToSync) {
+          scheduleOnRN(toggleSyncScrollFrame, false)
         }
       }, false)
 
@@ -246,7 +245,7 @@ export const Container = React.memo(
               scrollY.value[tabNames.value[index.value]] -
               scrollY.value[tabNames.value[i]] +
               offset.value
-            runOnJS(propagateTabChange)({
+            scheduleOnRN(propagateTabChange, {
               prevIndex: index.value,
               index: i,
               prevTabName: tabNames.value[index.value],
@@ -259,7 +258,7 @@ export const Container = React.memo(
               scrollYCurrent.value =
                 scrollY.value[tabNames.value[index.value]] || 0
             }
-            runOnJS(toggleSyncScrollFrame)(true)
+            scheduleOnRN(toggleSyncScrollFrame, true)
           }
         },
         []
@@ -297,7 +296,8 @@ export const Container = React.memo(
 
           if (name === focusedTab.value) {
             const ref = refMap[name]
-            runOnUI(scrollToImpl)(
+            runOnUISync(
+              scrollToImpl,
               ref,
               0,
               headerScrollDistance.value - contentInset,
@@ -315,7 +315,7 @@ export const Container = React.memo(
         () => tabNamesArray.length,
         (tabLength) => {
           if (index.value >= tabLength) {
-            runOnJS(onTabPress)(tabNamesArray[tabLength - 1])
+            scheduleOnRN(onTabPress, tabNamesArray[tabLength - 1])
           }
         }
       )

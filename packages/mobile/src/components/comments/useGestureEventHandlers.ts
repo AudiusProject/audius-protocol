@@ -9,7 +9,6 @@ import {
   GESTURE_SOURCE,
   KEYBOARD_STATUS,
   SCROLLABLE_TYPE,
-  WINDOW_HEIGHT,
   useBottomSheetInternal
 } from '@gorhom/bottom-sheet'
 import { Keyboard, Platform } from 'react-native'
@@ -383,12 +382,13 @@ export const useGestureEventsHandlers: GestureEventsHandlersHookType = () => {
          *
          * because the the keyboard dismiss is interactive in iOS.
          */
+        const { window } = animatedLayoutState.get()
         if (
           !(
             Platform.OS === 'ios' &&
             isScrollable &&
             absoluteY >
-              WINDOW_HEIGHT - animatedKeyboardState.get().heightWithinContainer
+              window.height - animatedKeyboardState.get().heightWithinContainer
           )
         ) {
           runOnJS(dismissKeyboard)()
@@ -449,6 +449,7 @@ export const useGestureEventsHandlers: GestureEventsHandlersHookType = () => {
       animatedScrollableState,
       animatedDetentsState,
       animatedKeyboardState,
+      animatedLayoutState,
       animatedPosition,
       animateToPosition,
       context

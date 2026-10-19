@@ -7,6 +7,9 @@ const resolvePackageDir = (name) =>
 
 module.exports = {
   preset: 'react-native',
+  // Use the JS implementation of Worklets instead of the native one, which
+  // needs the native runtime.
+  resolver: 'react-native-worklets/jest/resolver',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   // A screen's first render loads its whole module tree, which can take
   // longer than the 5s default on CI runners.
@@ -18,7 +21,7 @@ module.exports = {
     )
   },
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|react-native-reanimated)/)'
+    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|react-native-reanimated|react-native-worklets)/)'
   ],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node']
 }
