@@ -1,9 +1,5 @@
 import type { GestureResponderEvent, NativeScrollEvent } from 'react-native'
 import { Animated, Easing } from 'react-native'
-import {
-  createAnimatedPropAdapter,
-  processColor
-} from 'react-native-reanimated'
 
 // The native driver precomputes one frame per 16ms, so a track-length
 // animation would send a huge array to native. Run it as short linear
@@ -99,12 +95,3 @@ export const attachToScroll = (
     useNativeDriver: true,
     ...config
   })
-
-export const animatedPropAdapter = createAnimatedPropAdapter((props) => {
-  if (Object.keys(props).includes('fill')) {
-    props.fill = { type: 0, payload: processColor(props.fill) }
-  }
-  if (Object.keys(props).includes('stroke')) {
-    props.stroke = { type: 0, payload: processColor(props.stroke) }
-  }
-})

@@ -9,8 +9,6 @@ import {
   useSharedValue
 } from 'react-native-reanimated'
 
-import { animatedPropAdapter } from 'app/utils/animation'
-
 import { useTheme } from '../../../foundations/theme'
 import { BaseButton } from '../BaseButton/BaseButton'
 
@@ -107,8 +105,7 @@ export const PlainButton = (props: PlainButtonProps) => {
         [dynamicStyles.default.text, dynamicStyles.press.text]
       )
     }),
-    [variant, typeof type === 'string' ? type : 'default-light'],
-    animatedPropAdapter
+    [variant, typeof type === 'string' ? type : 'default-light']
   )
 
   // Non-animated version for Android

@@ -10,7 +10,6 @@ import {
 } from 'react-native-reanimated'
 
 import type { IconProps } from 'app/harmony-native/icons'
-import { animatedPropAdapter } from 'app/utils/animation'
 
 import { useTheme } from '../../../foundations/theme'
 import { BaseButton } from '../BaseButton/BaseButton'
@@ -260,8 +259,7 @@ export const Button = (props: ButtonProps) => {
               [dynamicStyles.default.icon, dynamicStyles.press.icon]
             )
     }),
-    [variant, isDisabled, type],
-    animatedPropAdapter
+    [variant, isDisabled, type]
   )
 
   // Non-animated version for Android
