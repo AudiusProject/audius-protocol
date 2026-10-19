@@ -291,3 +291,29 @@
 .tableRow .overflowMenu {
   opacity: 0;
 }
+
+/* Dense table (see Table.module.css .dense): 40px art, subdued artist line */
+:global(.dense) .inlineArtworkContainer {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border: 0;
+}
+
+:global(.dense) .trackHeaderArtworkSpacer {
+  width: 48px;
+  min-width: 48px;
+}
+
+:global(.dense) .stackedArtistText {
+  color: var(--harmony-text-subdued);
+}
+
+:global(.dense) .tableRow.disabled,
+:global(.dense) .tableRow.disabled * {
+  background-color: transparent;
+}
+
+:global(.dense) .tableRow.lockedRow {
+  background-color: transparent;
+}
