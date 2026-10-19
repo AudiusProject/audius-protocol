@@ -1,7 +1,7 @@
 /* Semantic Token Definitions */
 :root {
   /* Text */
-  --harmony-text-heading: var(--harmony-gradient);
+  --harmony-text-heading: var(--harmony-neutral);
   --harmony-text-default: var(--harmony-neutral);
   --harmony-text-subdued: var(--harmony-n-400);
   --harmony-text-disabled: var(--harmony-n-150);

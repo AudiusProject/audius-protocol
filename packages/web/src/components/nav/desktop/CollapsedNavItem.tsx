@@ -20,7 +20,7 @@ export const CollapsedNavItem = ({
 }: CollapsedNavItemProps) => {
   const { color, motion } = useTheme()
 
-  const backgroundColor = isSelected ? color.secondary.s400 : undefined
+  const backgroundColor = isSelected ? color.background.surface2 : undefined
   const insetBorderColor = isSelected
     ? 'none'
     : `inset 0 0 0 1px ${color.border.default}`
@@ -61,11 +61,11 @@ export const CollapsedNavItem = ({
         }}
       >
         {hasNotification ? (
-          <NotificationCount size='s' isSelected={isSelected}>
-            <Icon size='l' color={isSelected ? 'white' : 'default'} />
+          <NotificationCount size='s'>
+            <Icon size='l' color='default' />
           </NotificationCount>
         ) : (
-          <Icon size='l' color={isSelected ? 'white' : 'default'} />
+          <Icon size='l' color='default' />
         )}
       </Flex>
     </Flex>

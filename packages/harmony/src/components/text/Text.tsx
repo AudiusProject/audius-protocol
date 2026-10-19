@@ -17,12 +17,7 @@ import type { TextProps } from './types'
 const getColorCss = (color: TextProps['color'], theme: Theme) => {
   if (!color) return {}
   if (color === 'heading') {
-    return {
-      color: theme.color.secondary.secondary,
-      WebkitTextFillColor: 'transparent',
-      backgroundClip: 'text',
-      backgroundImage: theme.color.text.heading
-    }
+    return { color: theme.color.text.heading }
   }
   if (color === 'inherit') {
     return { color: 'inherit' }
@@ -99,8 +94,17 @@ export const Text = forwardRef(
     const variantConfig = variant && variantStylesMap[variant]
     const hasSubscripts = containsSubscripts(children)
 
+    const isDisplayFace = variant === 'display' || variant === 'heading'
+
     const css = {
-      fontFamily: theme.typography.font,
+      fontFamily: isDisplayFace
+        ? theme.typography.fontDisplay
+        : theme.typography.font,
+      // Apps that force `font-family: var(--harmony-font-family)` globally
+      // still get the display face on display and heading text.
+      ...(isDisplayFace && {
+        '--harmony-font-family': theme.typography.fontDisplay
+      }),
       position: 'relative',
       boxSizing: 'border-box',
       ...getColorCss(color, theme),

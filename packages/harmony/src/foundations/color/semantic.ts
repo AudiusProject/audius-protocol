@@ -11,7 +11,7 @@ const createSemanticTheme = (primitives: PrimitiveColors) => ({
     inverse: primitives.neutral.n950,
 
     // Legacy compatibility
-    heading: primitives.special.gradient,
+    heading: primitives.neutral.n800,
     active: primitives.primary.p300,
     white: primitives.special.white,
     staticWhite: primitives.static.staticWhite,
@@ -31,7 +31,7 @@ const createSemanticTheme = (primitives: PrimitiveColors) => ({
     inverse: primitives.static.staticWhite,
 
     // Legacy compatibility
-    heading: primitives.special.gradient,
+    heading: primitives.neutral.n800,
     active: primitives.primary.p300,
     white: primitives.special.white,
     staticWhite: primitives.static.staticWhite,

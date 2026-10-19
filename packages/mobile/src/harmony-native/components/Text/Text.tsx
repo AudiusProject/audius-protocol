@@ -42,11 +42,7 @@ export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
   const parentVariant = contextVariant && !variantProp
   const strength = strengthProp ?? (parentVariant ? undefined : 'default')
   const size = sizeProp ?? (parentVariant ? undefined : 'm')
-  // TODO: make heading a proper gradient
-  const color =
-    colorProp === 'heading'
-      ? theme.color.secondary.secondary
-      : theme.color.text[colorProp]
+  const color = theme.color.text[colorProp]
 
   const variantStyles = variant && variantStylesMap[variant]
   const t = theme.typography

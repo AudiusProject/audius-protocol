@@ -32,9 +32,9 @@ export const NavItem = ({
   const hasLeftIcon = !!LeftIcon
   const hasRightIcon = !!RightIcon
 
-  const backgroundColor = isSelected ? color.secondary.s400 : undefined
+  const backgroundColor = isSelected ? color.background.surface2 : undefined
 
-  const textAndIconColor = isSelected ? 'white' : 'default'
+  const textAndIconColor = 'default'
   const insetBorderColor = isSelected
     ? 'none'
     : `inset 0 0 0 1px ${color.border.default}`
@@ -45,14 +45,10 @@ export const NavItem = ({
     ) : null
 
     if (hasNotification && !!icon) {
-      return (
-        <NotificationCount size='s' isSelected={isSelected}>
-          {icon}
-        </NotificationCount>
-      )
+      return <NotificationCount size='s'>{icon}</NotificationCount>
     }
     return icon
-  }, [hasNotification, hasLeftIcon, LeftIcon, textAndIconColor, isSelected])
+  }, [hasNotification, hasLeftIcon, LeftIcon])
 
   return (
     <Flex

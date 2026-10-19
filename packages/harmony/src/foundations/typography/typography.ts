@@ -1,5 +1,9 @@
 export const typography = {
-  font: "'Avenir Next LT Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+  /** UI text face. Loaded by the app (web: @fontsource-variable/inter). */
+  font: "'Inter Variable', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  /** Display face for page titles and display text. */
+  fontDisplay:
+    "'Bricolage Grotesque Variable', 'Bricolage Grotesque', 'Inter Variable', Inter, sans-serif",
   weight: {
     ultraLight: 100,
     thin: 200,
