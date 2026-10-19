@@ -932,7 +932,7 @@ export const Table = ({
                                 ? totalRowCount
                                 : rows.length
                             }
-                            rowHeight={64}
+                            rowHeight={isDense ? 56 : 64}
                             rowRenderer={renderRow}
                           />
                         )}
