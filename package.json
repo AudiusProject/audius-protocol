@@ -97,6 +97,7 @@
     "prettier": "3.4.2",
     "prettier-config-standard": "7.0.0",
     "standard": "17.0.0",
+    "ts-node": "10.9.2",
     "turbo": "2.5.3",
     "typescript": "5.0.4",
     "vike": "^0.4.247",
