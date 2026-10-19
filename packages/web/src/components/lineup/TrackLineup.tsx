@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
 import { CollectionTile as DesktopCollectionTile } from 'components/track/desktop/CollectionTile'
+import { TrackRowTile } from 'components/track/desktop/TrackRowTile'
 import { TrackTile as TrackTileDesktop } from 'components/track/desktop/TrackTile'
 import { CollectionTile as MobileCollectionTile } from 'components/track/mobile/CollectionTile'
 import { TrackTile as MobileTrackTile } from 'components/track/mobile/TrackTile'
@@ -74,6 +75,9 @@ export type TrackLineupProps = {
   pageSize?: number
   initialPageSize?: number
   variant?: LineupVariant
+  // 'row' renders each track as a dense single-line TrackRow instead of a
+  // tile. Desktop only; narrow and mobile layouts keep the tile.
+  tileVariant?: 'tile' | 'row'
   ordered?: boolean
   isTrending?: boolean
   isFeed?: boolean
@@ -121,6 +125,7 @@ export const TrackLineup = ({
   pageSize = 10,
   initialPageSize,
   variant = LineupVariant.MAIN,
+  tileVariant = 'tile',
   ordered = false,
   isTrending = false,
   isFeed = false,
@@ -153,7 +158,12 @@ export const TrackLineup = ({
   const isSmallTrackTile =
     isMobile || variant === LineupVariant.SECTION || isNarrow
 
-  const TrackTile = isSmallTrackTile ? MobileTrackTile : TrackTileDesktop
+  const isRowLayout = tileVariant === 'row' && !isSmallTrackTile
+  const TrackTile = isSmallTrackTile
+    ? MobileTrackTile
+    : isRowLayout
+      ? TrackRowTile
+      : TrackTileDesktop
   const CollectionTile = isSmallTrackTile
     ? MobileCollectionTile
     : DesktopCollectionTile
@@ -369,7 +379,7 @@ export const TrackLineup = ({
             .map((_, index) => (
               <Flex
                 direction='column'
-                gap='m'
+                gap={isRowLayout ? undefined : 'm'}
                 // Position-based key so a skeleton's React identity matches
                 // its absolute position in the lineup. Without this, the same
                 // DOM node would change its rendered order number every time
@@ -395,7 +405,7 @@ export const TrackLineup = ({
         </>
       )
     },
-    [TrackTile, tileSize, ordered, tileStyles, isSmallTrackTile]
+    [TrackTile, tileSize, ordered, tileStyles, isSmallTrackTile, isRowLayout]
   )
 
   const tiles = useMemo(() => {
@@ -502,7 +512,7 @@ export const TrackLineup = ({
             : tiles.map((tile, index) => (
                 <Flex
                   direction='column'
-                  gap='m'
+                  gap={isRowLayout ? undefined : 'm'}
                   key={`${source}-${index}`}
                   mb={
                     index === 0 && leadingElementId !== undefined

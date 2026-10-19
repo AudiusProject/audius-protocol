@@ -16,7 +16,8 @@ export enum FeatureFlags {
   LAUNCHPAD_VERIFICATION = 'launchpad_verification',
   FAN_CLUB_TEXT_POST_POSTING = 'fan_club_text_post_posting',
   QUEUE_NEW_FEATURE_BADGE = 'queue_new_feature_badge',
-  WEEKLY_ROTATION = 'weekly_rotation'
+  WEEKLY_ROTATION = 'weekly_rotation',
+  TRACK_ROWS = 'track_rows'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -51,5 +52,7 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.QUEUE_NEW_FEATURE_BADGE]: false,
   // Default on so shared links render before the Optimizely datafile loads;
   // the remote flag is the kill switch.
-  [FeatureFlags.WEEKLY_ROTATION]: true
+  [FeatureFlags.WEEKLY_ROTATION]: true,
+  // Dense track rows instead of tiles on Trending. Off until rolled out.
+  [FeatureFlags.TRACK_ROWS]: false
 }
