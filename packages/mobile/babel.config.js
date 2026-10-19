@@ -32,7 +32,7 @@ module.exports = (api) => {
     plugins.push(['transform-remove-console', { exclude: ['error', 'warn'] }])
   }
 
-  plugins.push('react-native-reanimated/plugin')
+  plugins.push('react-native-worklets/plugin')
 
   return {
     presets: [

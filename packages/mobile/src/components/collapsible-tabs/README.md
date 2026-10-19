@@ -14,3 +14,8 @@ The files are kept close to upstream so upstream diffs still apply. They are exc
 - `FlatList.tsx` and `SectionList.tsx`: removed three `@ts-expect-error` comments that no longer have an error to suppress.
 
 None of these change runtime behaviour.
+
+## Reanimated 4 port
+
+- Applied the upstream `9.0.0-rc.0` source diff (PR #483, minus the FlashList files): `runOnJS`/`runOnUI` become `scheduleOnRN`/`scheduleOnUI`/`runOnUISync` from `react-native-worklets`, `Animated.SharedValue`/`Animated.AnimateStyle` become `SharedValue`/`AnimatedStyle`, render-time `.value` reads move into `useLayoutEffect`, and the `onMomentumScrollEnd` workaround is gone.
+- `Container.tsx`: the post-switch scroll sync runs for 300 ms on Android instead of 1500 ms (Artsy's patch). The long window causes jank after tab switches on the new architecture.

@@ -210,11 +210,8 @@ const config = {
         './node_modules',
         'react-native-svg'
       ),
-      'react-native-reanimated': path.resolve(
-        __dirname,
-        './node_modules',
-        'react-native-reanimated'
-      ),
+      'react-native-reanimated': resolveModule('react-native-reanimated'),
+      'react-native-worklets': resolveModule('react-native-worklets'),
       'react-native-gesture-handler': path.resolve(
         __dirname,
         './node_modules',

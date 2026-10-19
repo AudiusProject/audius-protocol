@@ -10,7 +10,7 @@ import {
 } from 'react'
 import { LayoutChangeEvent, StyleSheet, ViewProps } from 'react-native'
 import { PagerViewOnPageScrollEvent } from 'react-native-pager-view'
-import Animated, {
+import {
   cancelAnimation,
   useAnimatedReaction,
   useAnimatedRef,
@@ -19,13 +19,13 @@ import Animated, {
   withDelay,
   withTiming,
   interpolate,
-  runOnJS,
-  runOnUI,
   useEvent,
   useHandler,
   AnimatedRef,
   Extrapolation,
+  SharedValue,
 } from 'react-native-reanimated'
+import { scheduleOnRN, scheduleOnUI } from 'react-native-worklets'
 import { useDeepCompareMemo } from 'use-deep-compare'
 
 import { Context, TabNameContext } from './Context'
@@ -196,7 +196,7 @@ export function useUpdateScrollViewContentSize({ name }: { name: TabName }) {
 
   const scrollContentSizeChange = useCallback(
     (_: number, h: number) => {
-      runOnUI(setContentHeights)(name, h)
+      scheduleOnUI(setContentHeights, name, h)
     },
     [setContentHeights, name]
   )
@@ -281,7 +281,7 @@ export const useScrollHandlerY = (name: TabName) => {
       'worklet'
       enabled.value = toggle
     },
-    [name, refMap, scrollTo]
+    [enabled]
   )
 
   /**
@@ -533,10 +533,11 @@ export function useSharedAnimatedRef<T extends RefComponent>(
     if (!outerRef) {
       return
     }
+    const current = ref.current as T | null
     if (typeof outerRef === 'function') {
-      outerRef(ref.current)
+      outerRef(current)
     } else {
-      outerRef.current = ref.current
+      outerRef.current = current
     }
   })
 
@@ -577,9 +578,7 @@ export function useAfterMountEffect(
   return onLayoutOut
 }
 
-export function useConvertAnimatedToValue<T>(
-  animatedValue: Animated.SharedValue<T>
-) {
+export function useConvertAnimatedToValue<T>(animatedValue: SharedValue<T>) {
   const [value, setValue] = useState<T>(animatedValue.value)
 
   useAnimatedReaction(
@@ -588,7 +587,7 @@ export function useConvertAnimatedToValue<T>(
     },
     (animValue) => {
       if (animValue !== value) {
-        runOnJS(setValue)(animValue)
+        scheduleOnRN(setValue, animValue)
       }
     },
     [value]
@@ -601,7 +600,7 @@ export interface HeaderMeasurements {
   /**
    * Animated value that represents the current Y translation of the header
    */
-  top: Animated.SharedValue<number>
+  top: SharedValue<number>
   /**
    * Animated value that represents the height of the header
    */
@@ -619,7 +618,7 @@ export function useHeaderMeasurements(): HeaderMeasurements {
 /**
  * Returns the vertical scroll position of the current tab as an Animated SharedValue
  */
-export function useCurrentTabScrollY(): Animated.SharedValue<number> {
+export function useCurrentTabScrollY(): SharedValue<number> {
   const { scrollYCurrent } = useTabsContext()
   return scrollYCurrent
 }

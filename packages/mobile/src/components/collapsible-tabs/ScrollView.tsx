@@ -22,7 +22,6 @@ const ScrollViewMemo = React.memo(
     (props, passRef) => {
       return (
         <Animated.ScrollView
-          // @ts-expect-error reanimated types are broken on ref
           ref={passRef}
           {...props}
         />
@@ -125,8 +124,6 @@ export const ScrollView = React.forwardRef<
         contentOffset={memoContentOffset}
         automaticallyAdjustContentInsets={false}
         refreshControl={memoRefreshControl}
-        // workaround for: https://github.com/software-mansion/react-native-reanimated/issues/2735
-        onMomentumScrollEnd={() => {}}
       >
         {children}
       </ScrollViewMemo>

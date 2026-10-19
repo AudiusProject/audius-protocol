@@ -116,7 +116,7 @@ export const PlainButton = (props: PlainButtonProps) => {
     fill: dynamicStyles.default.text
   }
 
-  const textCss: TextStyle = useAnimatedStyle(
+  const textCss = useAnimatedStyle(
     () => ({
       ...(isPressable && {
         color: interpolateColor(
