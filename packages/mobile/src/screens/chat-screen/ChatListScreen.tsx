@@ -39,8 +39,7 @@ const MIN_VISIBLE_CHATS_PER_TAB = 10
 // Stop backfilling after this many pages per tab visit, so a mostly empty tab
 // doesn't page through the whole chat history.
 const MAX_BACKFILL_PAGES = 5
-// Precalculated height for perf optimization
-const CHAT_ITEM_HEIGHT = 88 // Calculated height: pv='l' (32px) + ProfilePicture unit12 (48px) + text/margins (~8px)
+const MVCP_DISABLED = { disabled: true }
 
 const messages = {
   title: 'Messages',
@@ -266,7 +265,8 @@ export const ChatListScreen = () => {
                   }
                   onEndReached={handleLoadMore}
                   onEndReachedThreshold={0.7}
-                  estimatedItemSize={CHAT_ITEM_HEIGHT}
+                  // Chats with new messages move to the top; keep them in view.
+                  maintainVisibleContentPosition={MVCP_DISABLED}
                 />
               </View>
             )}

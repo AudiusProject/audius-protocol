@@ -30,6 +30,7 @@ const isLoadingItem = (item: RenderItem): item is LoadingItem =>
   '_loading' in item
 
 const LIST_PADDING_BOTTOM = spacing(30)
+const MVCP_DISABLED = { disabled: true }
 
 /**
  * Hook to handle tracking visibility for notification items, by index.
@@ -180,7 +181,8 @@ export const NotificationList = () => {
       onEndReached={handleLoadMore}
       scrollEnabled={!gesturesDisabled}
       onViewableItemsChanged={visibilityCallback}
-      estimatedItemSize={190} // size varies - this is an estimated average
+      // New notifications are prepended on refresh; keep them in view.
+      maintainVisibleContentPosition={MVCP_DISABLED}
     />
   )
 }

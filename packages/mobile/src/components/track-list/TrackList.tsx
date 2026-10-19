@@ -183,8 +183,8 @@ export const TrackList = (props: TrackListProps) => {
                 _loading: true
               }))
         }
+        keyExtractor={keyExtractor}
         renderItem={renderSkeletonTrack}
-        estimatedItemSize={60}
       />
     )
   }
@@ -210,7 +210,6 @@ export const TrackList = (props: TrackListProps) => {
       data={data}
       keyExtractor={keyExtractor}
       renderItem={renderTrack}
-      estimatedItemSize={60}
     />
   )
 }
