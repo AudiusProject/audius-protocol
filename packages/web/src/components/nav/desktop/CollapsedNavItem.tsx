@@ -1,4 +1,4 @@
-import { Flex, NotificationCount, useTheme } from '@audius/harmony'
+import { Flex, isNeueTheme, NotificationCount, useTheme } from '@audius/harmony'
 import type { IconComponent } from '@audius/harmony'
 
 type CollapsedNavItemProps = {
@@ -18,9 +18,15 @@ export const CollapsedNavItem = ({
   onClick,
   isFocusVisible = false
 }: CollapsedNavItemProps) => {
-  const { color, motion } = useTheme()
+  const { color, motion, type } = useTheme()
+  const isNeue = isNeueTheme(type)
 
-  const backgroundColor = isSelected ? color.background.surface2 : undefined
+  const backgroundColor = isSelected
+    ? isNeue
+      ? color.background.surface2
+      : color.secondary.s400
+    : undefined
+  const iconColor = isSelected && !isNeue ? 'white' : 'default'
   const insetBorderColor = isSelected
     ? 'none'
     : `inset 0 0 0 1px ${color.border.default}`
@@ -61,11 +67,11 @@ export const CollapsedNavItem = ({
         }}
       >
         {hasNotification ? (
-          <NotificationCount size='s'>
-            <Icon size='l' color='default' />
+          <NotificationCount size='s' isSelected={isSelected && !isNeue}>
+            <Icon size='l' color={iconColor} />
           </NotificationCount>
         ) : (
-          <Icon size='l' color='default' />
+          <Icon size='l' color={iconColor} />
         )}
       </Flex>
     </Flex>

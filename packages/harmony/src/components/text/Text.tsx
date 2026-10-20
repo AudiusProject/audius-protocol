@@ -10,6 +10,8 @@ import {
 import { Theme, useTheme } from '@emotion/react'
 import { Slot } from '@radix-ui/react-slot'
 
+import { isNeueTheme } from '../../foundations/theme/types'
+
 import { bodyLineHeightMap, variantStylesMap, variantTagMap } from './constants'
 import { TextContext } from './textContext'
 import type { TextProps } from './types'
@@ -17,7 +19,13 @@ import type { TextProps } from './types'
 const getColorCss = (color: TextProps['color'], theme: Theme) => {
   if (!color) return {}
   if (color === 'heading') {
-    return { color: theme.color.text.heading }
+    if (isNeueTheme(theme.type)) return { color: theme.color.text.heading }
+    return {
+      color: theme.color.secondary.secondary,
+      WebkitTextFillColor: 'transparent',
+      backgroundClip: 'text',
+      backgroundImage: theme.color.text.heading
+    }
   }
   if (color === 'inherit') {
     return { color: 'inherit' }

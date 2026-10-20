@@ -24,3 +24,11 @@
     transparent
   );
 }
+
+html[data-theme='day'],
+html[data-theme='dark'],
+html[data-theme='classic-light'],
+html[data-theme='classic-dark'],
+html[data-theme='matrix'] {
+  --harmony-text-heading: var(--harmony-gradient);
+}
