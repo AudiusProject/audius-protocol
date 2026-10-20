@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react'
 
 import {
+  getStemsArchiveErrorMessage,
   useCancelStemsArchiveJob,
   useDownloadTrackStems,
   useGetStemsArchiveJobStatus
@@ -28,7 +29,6 @@ import { env } from 'services/env'
 const messages = {
   title: 'Preparing Download',
   zippingFiles: (count: number) => `Zipping files (${count})`,
-  error: 'Something went wrong. Please check your connection and try again.',
   tryAgain: 'Try again.'
 }
 
@@ -138,7 +138,13 @@ const DownloadTrackArchiveModalContent = ({
                 </TextLink>
               }
             >
-              {messages.error}
+              {getStemsArchiveErrorMessage({
+                initiateFailed: initiateDownloadFailed,
+                jobState: jobStatus?.state,
+                failedReason: jobStatus?.failedReason,
+                isStatusError: isJobStatusError,
+                isTimedOut: isJobTimedOut
+              })}
             </Hint>
           ) : (
             <LoadingSpinner size='l' />

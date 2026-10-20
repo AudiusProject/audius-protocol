@@ -92,6 +92,7 @@ export * from './tan-query/search/usePopularGenres'
 // Tracks
 export * from './tan-query/tracks/useDeleteTrack'
 export * from './tan-query/tracks/useDownloadTrackStems'
+export * from './tan-query/tracks/stemsArchiveErrorMessage'
 export * from './tan-query/tracks/useTrackDownloadCounts'
 export * from './tan-query/tracks/useFavoriteTrack'
 export * from './tan-query/tracks/useAcceptTrackCollaboration'
