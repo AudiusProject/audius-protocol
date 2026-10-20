@@ -439,7 +439,9 @@ export const TrackLineup = ({
         playTrack: handlePlayCollectionTrack,
         pauseTrack,
         size: tileSize,
-        containerClassName,
+        containerClassName: cn(containerClassName, {
+          [styles.collectionAmongRows]: isRowLayout
+        }),
         id: item.id,
         isLoading: false,
         hasLoaded: () => {},
@@ -469,7 +471,8 @@ export const TrackLineup = ({
     onClickTile,
     showArtistPick,
     TrackTile,
-    CollectionTile
+    CollectionTile,
+    isRowLayout
   ])
 
   const isInitialLoad = isPending && tiles.length === 0
