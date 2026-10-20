@@ -224,6 +224,8 @@ export type CommentDrawerData = {
 type CommentDrawerProps = {
   bottomSheetModalRef: React.RefObject<BottomSheetModal | null>
   handleClose: (trackId: ID) => void
+  // Called when the sheet has finished dismissing itself.
+  onSheetDismissed: () => void
 } & CommentDrawerData
 
 export const CommentDrawer = (props: CommentDrawerProps) => {
@@ -232,6 +234,7 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
     navigation,
     bottomSheetModalRef,
     handleClose,
+    onSheetDismissed,
     autoFocusInput,
     playbackSource,
     highlightedComment
@@ -352,7 +355,7 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
           />
         )}
         footerComponent={renderFooterComponent}
-        onDismiss={handleCloseDrawer}
+        onDismiss={onSheetDismissed}
         onChange={handleSheetChanges}
         keyboardBlurBehavior='restore'
         android_keyboardInputMode='adjustResize'
