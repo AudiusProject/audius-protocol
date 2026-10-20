@@ -6,6 +6,8 @@ import { FavoriteSource, ID, SquareSizes } from '@audius/common/models'
 import {
   CommonState,
   gatedContentActions,
+  gatedContentSelectors,
+  playbackPositionSelectors,
   playbackSelectors,
   tracksSocialActions
 } from '@audius/common/store'
@@ -32,10 +34,15 @@ import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { fullTrackPage } from 'utils/route'
 
+import { GatedConditionsPill } from '../GatedConditionsPill'
+import { TrackAccessTypeLabel } from '../TrackAccessTypeLabel'
 import { getTrackWithFallback, getUserWithFallback } from '../helpers'
+import { messages } from '../trackTileMessages'
 
 const { saveTrack, unsaveTrack } = tracksSocialActions
 const { setLockedContentId } = gatedContentActions
+const { getGatedContentStatusMap } = gatedContentSelectors
+const { getTrackPosition } = playbackPositionSelectors
 const {
   getTrackId: getPlayingTrackId,
   getPlaying,
@@ -111,11 +118,18 @@ export const TrackRowTile = ({
     permalink,
     duration,
     play_count: playCount,
+    stream_conditions: streamConditions,
     has_current_user_reposted: isReposted,
     has_current_user_saved: isFavorited
   } = trackWithFallback
 
   const isOwner = currentUserId === user_id
+  const gatedStatus = useSelector(
+    (state: CommonState) => getGatedContentStatusMap(state)[trackId]
+  )
+  const trackPosition = useSelector((state: CommonState) =>
+    getTrackPosition(state, { trackId, userId: currentUserId })
+  )
 
   const { isFetchingNFTAccess, hasStreamAccess, isPreviewable } =
     useGatedContentAccess(trackWithFallback)
@@ -218,6 +232,37 @@ export const TrackRowTile = ({
     </Menu>
   )
 
+  const isLocked = !!streamConditions && !hasStreamAccess && !isOwner
+  // Like the tile's stats: a price pill in place of plays when locked, and the
+  // access label ("Premium", "Hidden"...) next to plays otherwise.
+  const status = isLocked ? (
+    <GatedConditionsPill
+      streamConditions={streamConditions}
+      unlocking={gatedStatus === 'UNLOCKING'}
+      onClick={openLockedContentModal}
+      buttonSize='small'
+      showIcon={false}
+      contentId={trackId}
+      contentType='track'
+    />
+  ) : streamConditions || isUnlisted ? (
+    <TrackAccessTypeLabel trackId={trackId} />
+  ) : undefined
+
+  // Podcasts and audiobooks show progress the way the tile does.
+  const isLongForm = isLongFormContent({ genre })
+  const durationLabel = !duration
+    ? undefined
+    : isLongForm && trackPosition?.status === 'IN_PROGRESS'
+      ? `${formatLineupTileDuration(
+          duration - trackPosition.playbackPosition,
+          true,
+          true
+        )} ${messages.timeLeft}`
+      : isLongForm && trackPosition?.status === 'COMPLETED'
+        ? messages.played
+        : formatLineupTileDuration(duration, isLongForm, false)
+
   const playLabel =
     trackId && !hasStreamAccess && !isPreviewable
       ? `Unlock ${title || 'track'}`
@@ -258,21 +303,20 @@ export const TrackRowTile = ({
           popover
         />
       }
-      playCount={isUnlisted ? undefined : formatCount(playCount ?? 0)}
-      duration={
-        duration
-          ? formatLineupTileDuration(
-              duration,
-              isLongFormContent({ genre }),
-              false
-            )
-          : undefined
+      playCount={
+        isUnlisted || isLocked || !playCount
+          ? undefined
+          : formatCount(playCount)
       }
+      status={status}
+      duration={durationLabel}
       isActive={isActive}
       isPlaying={isTrackPlaying}
       isFavorited={!!isFavorited}
       onTogglePlay={onTogglePlay}
-      onToggleFavorite={hasStreamAccess ? onToggleFavorite : undefined}
+      onToggleFavorite={
+        hasStreamAccess && !isOwner ? onToggleFavorite : undefined
+      }
       menu={overflowMenu}
       playLabel={playLabel}
       data-testid='track-row'

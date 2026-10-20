@@ -13,6 +13,8 @@ import type { TrackRowProps } from './types'
 
 const ROW_HEIGHT = 56
 const ART_SIZE = 40
+// Fits a three-digit rank at the smaller size used from 100 up.
+const RANK_SIZE = 32
 
 const REVEAL_CLASS = 'trackRowReveal'
 const HIDE_ON_HOVER_CLASS = 'trackRowHideOnHover'
@@ -72,6 +74,7 @@ export const TrackRow = forwardRef<HTMLDivElement, TrackRowProps>(
       title,
       subtitle,
       playCount,
+      status,
       duration,
       isActive = false,
       isPlaying = false,
@@ -122,7 +125,7 @@ export const TrackRow = forwardRef<HTMLDivElement, TrackRowProps>(
 
     const rowCss = css({
       display: 'grid',
-      gridTemplateColumns: `28px ${ART_SIZE}px minmax(0, 1fr) auto 32px 48px 32px`,
+      gridTemplateColumns: `${RANK_SIZE}px ${ART_SIZE}px minmax(0, 1fr) auto 32px 48px 32px`,
       alignItems: 'center',
       columnGap: spacing.m,
       height: ROW_HEIGHT,
@@ -199,7 +202,7 @@ export const TrackRow = forwardRef<HTMLDivElement, TrackRowProps>(
           {rank != null && !showEqualizer ? (
             <Text
               variant='title'
-              size='l'
+              size={rank >= 100 ? 'm' : 'l'}
               strength='strong'
               color='default'
               className={HIDE_ON_HOVER_CLASS}
@@ -256,9 +259,14 @@ export const TrackRow = forwardRef<HTMLDivElement, TrackRowProps>(
           ) : null}
         </Flex>
 
-        <Text variant='body' size='xs' color='subdued' css={numeralCss}>
-          {playCount ?? ''}
-        </Text>
+        <Flex alignItems='center' justifyContent='flex-end' gap='m'>
+          {status}
+          {playCount ? (
+            <Text variant='body' size='xs' color='subdued' css={numeralCss}>
+              {playCount}
+            </Text>
+          ) : null}
+        </Flex>
 
         <Flex justifyContent='center'>
           {onToggleFavorite ? (

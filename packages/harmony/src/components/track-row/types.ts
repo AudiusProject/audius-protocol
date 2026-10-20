@@ -11,6 +11,11 @@ export type TrackRowProps = {
   subtitle?: ReactNode
   /** Pre-formatted play count, e.g. "6.6K". */
   playCount?: string
+  /**
+   * Shown before the play count, e.g. a price pill on a locked track or an
+   * access label. Buttons inside it don't toggle playback.
+   */
+  status?: ReactNode
   /** Pre-formatted duration, e.g. "2:30". */
   duration?: string
   /** This track is the one loaded in the player. */

@@ -53,6 +53,7 @@ export const flagDefaults: FlagDefaults = {
   // Default on so shared links render before the Optimizely datafile loads;
   // the remote flag is the kill switch.
   [FeatureFlags.WEEKLY_ROTATION]: true,
-  // Dense track rows instead of tiles on Trending. Off until rolled out.
-  [FeatureFlags.TRACK_ROWS]: false
+  // Dense track rows instead of tiles. Default on so pages do not swap from
+  // tiles to rows when the datafile loads; the remote flag is the kill switch.
+  [FeatureFlags.TRACK_ROWS]: true
 }
