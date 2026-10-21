@@ -35,6 +35,7 @@ import { Box, Divider, Flex, Text, useTheme } from '@audius/harmony-native'
 import { ProfilePicture } from 'app/components/core'
 import { UserBadges } from 'app/components/user-badges'
 import { LoadingSpinner } from 'app/harmony-native/components/LoadingSpinner/LoadingSpinner'
+import { useAndroidBackHandler } from 'app/hooks/useAndroidBackHandler'
 
 import { useCommentDrawer } from './CommentDrawerContext'
 import { CommentDrawerForm } from './CommentDrawerForm'
@@ -317,6 +318,8 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
   const handleCloseDrawer = useCallback(() => {
     handleClose(entityId)
   }, [entityId, handleClose])
+
+  useAndroidBackHandler(isDrawerVisible, handleCloseDrawer)
 
   const handleSheetChanges = useCallback(
     (index: number) => {
