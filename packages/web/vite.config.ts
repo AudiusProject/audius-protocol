@@ -91,6 +91,33 @@ const nobleDedupe = (): Plugin => ({
   }
 })
 
+/**
+ * Harmony inlines every Avenir weight as base64 (~240 KB, avenir.css) so other
+ * consumers work without extra setup. Web serves the same fonts as separate
+ * woff2 files from public/fonts.css instead, so drop the inlined copies, both
+ * from the harmony source web aliases to and from dist/harmony.css.
+ */
+const stripHarmonyFonts = (): Plugin => ({
+  name: 'strip-harmony-fonts',
+  enforce: 'pre',
+  transform(code, id) {
+    const file = id.split('?')[0]
+    if (file.endsWith('/harmony/src/foundations/typography/avenir.css')) {
+      return { code: '', map: null }
+    }
+    if (file.endsWith('/harmony/dist/harmony.css')) {
+      return {
+        code: code.replace(
+          /@font-face\s*\{[^}]*Avenir Next LT Pro[^}]*\}/g,
+          ''
+        ),
+        map: null
+      }
+    }
+    return null
+  }
+})
+
 const SOURCEMAP_URL = 'https://s3.us-west-1.amazonaws.com/sourcemaps.audius.co/'
 
 // Matches what mobile's react-native-svg-transformer runs on the same icons,
@@ -239,6 +266,7 @@ export default defineConfig(async ({ mode }) => {
         }
       },
       nobleDedupe(),
+      stripHarmonyFonts(),
       // bip39 bundles every language's wordlist; keys only use English
       {
         name: 'bip39-english-only',
