@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import { useTheme } from '@emotion/react'
 
 import { motion } from '../../foundations/motion'
+import { isNeueTheme } from '../../foundations/theme/types'
 import { Flex } from '../layout/Flex'
 import { NotificationCount } from '../notification-count'
 import { Text } from '../text/Text'
@@ -27,14 +28,19 @@ export const NavItem = ({
   isChild = false,
   ...props
 }: NavItemProps) => {
-  const { color } = useTheme()
+  const { color, type } = useTheme()
+  const isNeue = isNeueTheme(type)
 
   const hasLeftIcon = !!LeftIcon
   const hasRightIcon = !!RightIcon
 
-  const backgroundColor = isSelected ? color.secondary.s400 : undefined
+  const backgroundColor = isSelected
+    ? isNeue
+      ? color.background.surface2
+      : color.secondary.s400
+    : undefined
 
-  const textAndIconColor = isSelected ? 'white' : 'default'
+  const textAndIconColor = isSelected && !isNeue ? 'white' : 'default'
   const insetBorderColor = isSelected
     ? 'none'
     : `inset 0 0 0 1px ${color.border.default}`
@@ -46,13 +52,20 @@ export const NavItem = ({
 
     if (hasNotification && !!icon) {
       return (
-        <NotificationCount size='s' isSelected={isSelected}>
+        <NotificationCount size='s' isSelected={isSelected && !isNeue}>
           {icon}
         </NotificationCount>
       )
     }
     return icon
-  }, [hasNotification, hasLeftIcon, LeftIcon, textAndIconColor, isSelected])
+  }, [
+    hasNotification,
+    hasLeftIcon,
+    LeftIcon,
+    textAndIconColor,
+    isSelected,
+    isNeue
+  ])
 
   return (
     <Flex

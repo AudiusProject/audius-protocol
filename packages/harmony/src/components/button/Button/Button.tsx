@@ -41,6 +41,15 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const isSmallOrXs = size === 'small' || size === 'xs'
 
+    // static.white is dark in Neue dark, but the Neue accent needs light text.
+    // Custom colors (e.g. the light green Buy button) keep dark text.
+    const onAccent =
+      type === 'default-dark'
+        ? themeColors.static.staticWhite
+        : themeColors.static.white
+    const onPrimary = color || hexColor ? themeColors.static.white : onAccent
+    const onPrimaryHover = hoverColor ? themeColors.static.white : onPrimary
+
     // Size Styles
     const smallStyles: CSSObject = {
       gap: spacing.xs,
@@ -91,9 +100,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     // Variant Styles
     const primaryStyles: CSSObject = {
-      '&:hover': { color: themeColors.static.white },
+      '&:hover': { color: onPrimaryHover },
 
-      ...((_isHovered || _isPressed) && { color: themeColors.static.white }),
+      ...((_isHovered || _isPressed) && { color: onPrimaryHover }),
       ...(disabled && {
         background: themeColors.neutral.n150,
         boxShadow: 'none'
@@ -102,7 +111,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const secondaryHoverStyles: CSSObject = {
       background: themeColors.primary.primary,
-      color: themeColors.static.white
+      color: onAccent
     }
     const secondaryStyles: CSSObject = {
       background: 'transparent',
@@ -174,7 +183,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const buttonCss: CSSObject = {
       background: themeColors.primary.primary,
-      color: themeColors.static.white,
+      color: onPrimary,
       boxSizing: 'border-box',
       border: 'none',
       borderRadius: rounded ? cornerRadius['2xl'] : cornerRadius.s,
