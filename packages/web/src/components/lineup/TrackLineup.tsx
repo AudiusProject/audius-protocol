@@ -287,7 +287,10 @@ export const TrackLineup = ({
   } else if (variant === LineupVariant.GRID) {
     tileSize = TrackTileSize.SMALL
     statSize = 'small'
-    containerClassName = styles.searchTrackTileContainer
+    // Rows are full width; the two-column grid is for small tiles only.
+    containerClassName = isRowLayout
+      ? undefined
+      : styles.searchTrackTileContainer
   } else if (variant === LineupVariant.CONDENSED) {
     tileSize = TrackTileSize.SMALL
   }
@@ -436,7 +439,9 @@ export const TrackLineup = ({
         playTrack: handlePlayCollectionTrack,
         pauseTrack,
         size: tileSize,
-        containerClassName,
+        containerClassName: cn(containerClassName, {
+          [styles.collectionAmongRows]: isRowLayout
+        }),
         id: item.id,
         isLoading: false,
         hasLoaded: () => {},
@@ -466,7 +471,8 @@ export const TrackLineup = ({
     onClickTile,
     showArtistPick,
     TrackTile,
-    CollectionTile
+    CollectionTile,
+    isRowLayout
   ])
 
   const isInitialLoad = isPending && tiles.length === 0

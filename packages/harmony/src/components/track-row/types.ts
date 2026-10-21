@@ -32,6 +32,11 @@ export type TrackRowProps = {
   onToggleFavorite?: () => void
   /** Overflow menu trigger. Hidden until hover or focus. */
   menu?: ReactNode
+  /**
+   * One short line above the row, aligned with the title column, for
+   * context such as "Artist Pick". Adds 16px to the row's height.
+   */
+  context?: ReactNode
   /** Accessible name for the play button. */
   playLabel?: string
   /** Accessible name for the favorite button. */
