@@ -88,6 +88,8 @@ const {
 } = chatActions
 const { getHasTrack } = playbackSelectors
 
+const INITIAL_MESSAGES_TO_RENDER = 20
+
 const messages = {
   title: 'Messages',
   beginningReached: 'Beginning of Conversation',
@@ -595,7 +597,12 @@ export const ChatScreen = () => {
                   renderItem={renderItem}
                   onEndReached={handleScrollToTop}
                   inverted
-                  initialNumToRender={chatMessages?.length}
+                  // Enough to show the screen and reach the earliest unread
+                  // message, without rendering the whole cached history
+                  initialNumToRender={Math.max(
+                    INITIAL_MESSAGES_TO_RENDER,
+                    (earliestUnreadIndex ?? 0) + INITIAL_MESSAGES_TO_RENDER
+                  )}
                   ref={flatListRef}
                   onScroll={handleScroll}
                   onScrollToIndexFailed={handleScrollToIndexFailed}

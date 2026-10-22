@@ -5,6 +5,7 @@ import { usePlayTrack, usePauseTrack } from '@audius/common/hooks'
 import { FeedTab, ID, PlaybackSource, Name } from '@audius/common/models'
 import { playbackActions, playbackSelectors } from '@audius/common/store'
 import type {
+  CommonState,
   PlaybackTrack,
   PlaybackQuerySource,
   QueueSource
@@ -12,7 +13,7 @@ import type {
 import { Divider, Flex } from '@audius/harmony'
 import { EntityType } from '@audius/sdk'
 import cn from 'classnames'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch, useStore } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
 import { CollectionTile as DesktopCollectionTile } from 'components/track/desktop/CollectionTile'
@@ -42,7 +43,6 @@ const LOAD_MORE_VIEWPORTS = 2
 
 const { getPlaying: getPlayerPlaying } = playbackSelectors
 const { makeGetCurrent } = playbackSelectors
-const { getCurrentTrackId: getPlaybackCurrentTrackId } = playbackSelectors
 
 export type TrackLineupProps = {
   // Ordered list of track IDs to render. Tiles read full track data from the
@@ -168,16 +168,11 @@ export const TrackLineup = ({
     ? MobileCollectionTile
     : DesktopCollectionTile
 
-  // For tile highlight: prefer new playback slice's current track when
-  // present, else fall back to legacy current (non-trending flows). Also
-  // reads isPlaying/isBuffering from legacy state (the audio service still
-  // drives those via the player slice).
+  // Playback state is read when a tile is clicked rather than subscribed to,
+  // so play/pause/skip don't rebuild every tile. Tiles select their own
+  // active/playing state.
+  const store = useStore<CommonState>()
   const getCurrentQueueItem = useMemo(() => makeGetCurrent(), [])
-  const currentLegacy = useSelector(getCurrentQueueItem)
-  // Subscribe so tiles re-render when the playback slice's current track
-  // changes (even if legacy queue hasn't caught up yet).
-  useSelector(getPlaybackCurrentTrackId)
-  const isPlaying = useSelector(getPlayerPlaying)
 
   // Build a single ordered list of mixed track/collection entries. When the
   // caller passes `lineupItems` (mixed feed) we use it verbatim; otherwise we
@@ -206,6 +201,9 @@ export const TrackLineup = ({
   const togglePlay = useCallback(
     (trackId: ID, clickSource?: PlaybackSource) => {
       const analytics = clickSource || playbackSource
+      const state = store.getState()
+      const currentLegacy = getCurrentQueueItem(state)
+      const isPlaying = getPlayerPlaying(state)
       const currentTrackId = currentLegacy?.trackId ?? null
       const currentSource = currentLegacy?.source ?? null
       const isSameTile = currentTrackId === trackId && currentSource === source
@@ -251,10 +249,9 @@ export const TrackLineup = ({
       tracksForPlayback,
       playbackTrackIds,
       querySource,
-      currentLegacy?.trackId,
-      currentLegacy?.source,
+      store,
+      getCurrentQueueItem,
       source,
-      isPlaying,
       playbackSource,
       feedType
     ]

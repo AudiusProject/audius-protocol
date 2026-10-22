@@ -11,11 +11,11 @@ import {
   playbackSelectors,
   reachabilitySelectors
 } from '@audius/common/store'
-import type { PlaybackTrack } from '@audius/common/store'
+import type { CommonState, PlaybackTrack } from '@audius/common/store'
 import { makeStableUid, type Nullable } from '@audius/common/utils'
 import { debounce } from 'lodash'
 import { View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch, useSelector, useStore } from 'react-redux'
 
 import { BottomChin } from 'app/components/core/BottomChin'
 import { EmptyTileCTA } from 'app/components/empty-tile-cta'
@@ -211,10 +211,9 @@ export const TracksTab = () => {
     fetchNextPage
   ])
 
-  const currentPlaybackTrackId = useSelector(
-    playbackSelectors.getCurrentTrackId
-  )
-  const isPlaying = useSelector(playbackSelectors.getPlaying)
+  // Read playback state at press time so play/pause/skip don't re-render the
+  // whole list
+  const store = useStore<CommonState>()
 
   // Matches legacy `saveTracksLineupActions.prefix` so AudioPlayer's
   // source-based offline-download check keeps working.
@@ -230,6 +229,9 @@ export const TracksTab = () => {
 
   const togglePlay = useCallback(
     (_uid: UID, id: ID) => {
+      const state = store.getState()
+      const currentPlaybackTrackId = playbackSelectors.getCurrentTrackId(state)
+      const isPlaying = playbackSelectors.getPlaying(state)
       if (currentPlaybackTrackId === id && isPlaying) {
         dispatch(playbackActions.togglePlay())
         return
@@ -248,7 +250,7 @@ export const TracksTab = () => {
         })
       )
     },
-    [dispatch, currentPlaybackTrackId, isPlaying, playbackQueue]
+    [dispatch, store, playbackQueue]
   )
 
   const commitFilterValue = useMemo(

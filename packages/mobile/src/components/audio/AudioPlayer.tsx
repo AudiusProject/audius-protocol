@@ -74,6 +74,13 @@ const getArtworkTargetSize = (artwork?: Track['artwork']) =>
   TRACK_ARTWORK_PREFERRED_SIZES.find((size) => artwork?.[size]) ??
   SquareSizes.SIZE_1000_BY_1000
 
+// Checking a track's stream and artwork against their mirrors costs HEAD
+// requests, so a new queue only checks the tracks around the starting one.
+// The rest go in with their primary URLs; if one fails when it plays, the
+// PlaybackError handler re-resolves it against the mirrors.
+const RESOLVE_AHEAD = 2
+const RESOLVE_BEHIND = 1
+
 const { getPlaying, getSeek, getCounter, getPlaybackRate, getTrackId } =
   playbackSelectors
 const { setTrackPosition } = playbackPositionActions
@@ -223,21 +230,34 @@ const useQueueSync = (isAudioSetup: boolean) => {
 
   const offlineAvailabilityByTrackId = useSelector((state) => {
     const offlineTrackStatus = getOfflineTrackStatus(state)
-    return queueTrackIds.reduce((result, id) => {
+    const result: Record<ID, boolean> = {}
+    for (const id of queueTrackIds) {
       if (offlineTrackStatus[id] === OfflineDownloadStatus.SUCCESS) {
-        return { ...result, [id]: true }
+        result[id] = true
       }
-      return result
-    }, {})
+    }
+    return result
   }, isEqual)
 
   const [retries, setRetries] = useState(0)
 
   const makeTrackData = useCallback(
-    async ({ track, playerBehavior }: QueueableTrack, retries?: number) => {
+    async (
+      { track, playerBehavior }: QueueableTrack,
+      retries?: number,
+      {
+        resolveMirrors = true,
+        isUpcoming = false
+      }: {
+        /** Check the stream and artwork URLs against their mirrors */
+        resolveMirrors?: boolean
+        /** Not the track about to play, so leave its retry count alone */
+        isUpcoming?: boolean
+      } = {}
+    ) => {
       try {
         if (!track) return unlistedTrackFallbackTrackData
-        setRetries(retries ?? 0)
+        if (!isUpcoming) setRetries(retries ?? 0)
 
         const trackOwner = queueTrackOwnersMap[track.owner_id]
         const trackId = track.track_id
@@ -251,8 +271,10 @@ const useQueueSync = (isAudioSetup: boolean) => {
           const audioFilePath = getLocalAudioPath(trackId)
           url = `file://${audioFilePath}`
         } else if (streamObj?.url) {
-          url =
-            (await resolveStreamUrl(streamObj, retries ?? 0)) ?? streamObj.url
+          url = resolveMirrors
+            ? ((await resolveStreamUrl(streamObj, retries ?? 0)) ??
+              streamObj.url)
+            : streamObj.url
         } else {
           const sdk = await audiusSdk()
           const nftAccessSignature = nftAccessSignatureMap[trackId]?.mp3 ?? null
@@ -274,13 +296,16 @@ const useQueueSync = (isAudioSetup: boolean) => {
             ? `file://${getLocalTrackCoverArtPath(trackId.toString())}`
             : undefined
 
+        const artworkTargetSize = getArtworkTargetSize(track.artwork)
         const imageUrl =
           localTrackImageSource ??
-          (await resolveImageUrl({
-            artwork: track.artwork,
-            targetSize: getArtworkTargetSize(track.artwork),
-            defaultImage: DEFAULT_IMAGE_URL
-          })) ??
+          (resolveMirrors
+            ? await resolveImageUrl({
+                artwork: track.artwork,
+                targetSize: artworkTargetSize,
+                defaultImage: DEFAULT_IMAGE_URL
+              })
+            : track.artwork?.[artworkTargetSize]) ??
           DEFAULT_IMAGE_URL
 
         return {
@@ -333,10 +358,18 @@ const useQueueSync = (isAudioSetup: boolean) => {
           .filter(({ i }) => i !== startIndex)
 
         const resolved = await Promise.all(
-          remaining.map(async ({ t, i }) => ({
-            data: await makeTrackData(t),
-            i
-          }))
+          remaining.map(async ({ t, i }) => {
+            const resolveMirrors =
+              i >= startIndex - RESOLVE_BEHIND &&
+              i <= startIndex + RESOLVE_AHEAD
+            return {
+              data: await makeTrackData(t, undefined, {
+                resolveMirrors,
+                isUpcoming: true
+              }),
+              i
+            }
+          })
         )
 
         // Sort by original index so RNTP order matches redux order
@@ -358,7 +391,14 @@ const useQueueSync = (isAudioSetup: boolean) => {
   // --- appendToQueue: add new tracks to end ---
   const appendToQueue = useCallback(
     async (newTracks: QueueableTrack[]) => {
-      const resolved = await Promise.all(newTracks.map((t) => makeTrackData(t)))
+      const resolved = await Promise.all(
+        newTracks.map((t) =>
+          makeTrackData(t, undefined, {
+            resolveMirrors: false,
+            isUpcoming: true
+          })
+        )
+      )
       await TrackPlayer.add(resolved)
     },
     [makeTrackData]

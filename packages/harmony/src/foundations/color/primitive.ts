@@ -31,7 +31,7 @@ const defaultLightPrimitives = {
   neutral: {
     n25: '#F5F5F7',
     n50: '#ECECF0',
-    n100: '#D4D4DC',
+    n100: '#E4E4EA',
     n150: '#C4C4CC',
     n200: '#A8A8B2',
     n300: '#6B6B75',
@@ -46,7 +46,7 @@ const defaultLightPrimitives = {
     neutral: '#16161A'
   },
   special: {
-    background: '#FFFFFF',
+    background: '#F7F7F9',
     blue: '#6A52E0',
     darkRed: '#B91C1C',
     glassOverlay: '#FFFFFFC7',
@@ -102,7 +102,7 @@ const defaultDarkPrimitives = {
   neutral: {
     n25: '#141418',
     n50: '#1C1C21',
-    n100: '#34343C',
+    n100: '#2A2A31',
     n150: '#42424B',
     n200: '#55555F',
     n300: '#85858F',

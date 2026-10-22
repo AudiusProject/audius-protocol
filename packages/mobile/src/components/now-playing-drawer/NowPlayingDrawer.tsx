@@ -364,7 +364,7 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
             <TitleBar onClose={onClose} />
           </View>
           <Pressable onPress={handlePressTitle} style={styles.artworkContainer}>
-            <Artwork track={track} />
+            <Artwork track={track} isOpen={isOpen} />
           </Pressable>
           <View style={styles.trackInfoContainer}>
             <TrackInfo
