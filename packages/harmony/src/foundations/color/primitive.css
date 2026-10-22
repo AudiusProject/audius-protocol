@@ -246,7 +246,7 @@ html[data-theme='default-light'] {
   --harmony-neutral: #16161a;
   --harmony-n-25: #f5f5f7;
   --harmony-n-50: #ececf0;
-  --harmony-n-100: #d4d4dc;
+  --harmony-n-100: #e4e4ea;
   --harmony-n-150: #c4c4cc;
   --harmony-n-200: #a8a8b2;
   --harmony-n-300: #6b6b75;
@@ -259,7 +259,7 @@ html[data-theme='default-light'] {
   --harmony-n-950: #0b0b0e;
   /* Special Colors */
   --harmony-white: #ffffff;
-  --harmony-background: #ffffff;
+  --harmony-background: #f7f7f9;
   --harmony-blue: #6a52e0;
   --harmony-orange: #b45309;
   --harmony-red: #dc2626;
@@ -299,7 +299,7 @@ html[data-theme='default-dark'] {
   --harmony-neutral: #f2f2f5;
   --harmony-n-25: #141418;
   --harmony-n-50: #1c1c21;
-  --harmony-n-100: #34343c;
+  --harmony-n-100: #2a2a31;
   --harmony-n-150: #42424b;
   --harmony-n-200: #55555f;
   --harmony-n-300: #85858f;
