@@ -36,10 +36,12 @@ import type {
 import { StyleSheet, View } from 'react-native'
 import { useDispatch, useStore } from 'react-redux'
 
+import { TrackRow } from '@audius/harmony-native'
 import { SectionList } from 'app/components/core'
 import { useBottomChinHeight } from 'app/components/core/BottomChin'
 import {
   TrackTile,
+  TrackRowTile,
   CollectionTile,
   LineupTileSkeleton
 } from 'app/components/lineup-tile'
@@ -72,7 +74,10 @@ type Section = {
 
 const SkeletonTileView = memo(function SkeletonTileView(props: {
   itemStyles?: ViewStyle
+  isRow?: boolean
+  rank?: number
 }) {
+  if (props.isRow) return <TrackRow isLoading rank={props.rank} />
   return (
     <View style={[styles.item, props.itemStyles]}>
       <LineupTileSkeleton />
@@ -113,6 +118,8 @@ export type TrackLineupProps = {
   initialPageSize?: number
   maxEntries?: number
   isTrending?: boolean
+  /** 'row' renders tracks as dense rows; collections stay tiles. */
+  tileVariant?: 'tile' | 'row'
   rankIconCount?: number
   showArtistPick?: boolean
   header?: SectionListProps<unknown>['ListHeaderComponent']
@@ -166,6 +173,7 @@ export const TrackLineup = ({
   initialPageSize,
   maxEntries = Infinity,
   isTrending = false,
+  tileVariant = 'tile',
   rankIconCount = 0,
   showArtistPick = false,
   header,
@@ -358,13 +366,37 @@ export const TrackLineup = ({
     maxEntries
   ])
 
+  const isRow = tileVariant === 'row'
+
   const renderItem = useCallback(
     ({ item, index }: { item: RenderItem; index: number }) => {
       if ((item as LoadingItem)._loading) {
-        return <SkeletonTileView itemStyles={itemStyles} />
+        return (
+          <SkeletonTileView
+            itemStyles={itemStyles}
+            isRow={isRow}
+            rank={isTrending ? index + 1 : undefined}
+          />
+        )
       }
       const entry = item as Entry
       const delineator = delineatorMap?.[index] ?? null
+      if (isRow && entry.kind === 'track') {
+        return (
+          <>
+            <TrackRowTile
+              id={entry.trackId}
+              uid={entry.uid}
+              index={index}
+              isTrending={isTrending}
+              togglePlay={togglePlay}
+              onPress={onPressItem}
+              showArtistPick={showArtistPick}
+            />
+            {delineator}
+          </>
+        )
+      }
       return (
         <>
           <View style={[styles.item, itemStyles]}>
@@ -395,6 +427,7 @@ export const TrackLineup = ({
     },
     [
       itemStyles,
+      isRow,
       isTrending,
       togglePlay,
       onPressItem,
