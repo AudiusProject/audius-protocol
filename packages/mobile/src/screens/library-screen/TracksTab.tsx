@@ -1,8 +1,10 @@
 import React, { useCallback, useMemo, useState } from 'react'
 
 import { useLibraryTracks, useTracks, useUsers } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { Kind, Status } from '@audius/common/models'
 import type { ID, UID, Track, User } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   libraryPageSelectors,
   LibraryCategory,
@@ -24,6 +26,7 @@ import { TrackList } from 'app/components/track-list'
 import { getIsDoneLoadingFromDisk } from 'app/store/offline-downloads/selectors'
 import { makeStyles } from 'app/styles'
 
+import { LibraryTrackRows } from './LibraryTrackRows'
 import { NoTracksPlaceholder } from './NoTracksPlaceholder'
 import { OfflineContentBanner } from './OfflineContentBanner'
 
@@ -42,6 +45,9 @@ const messages = {
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   root: {
+    flex: 1
+  },
+  rows: {
     flex: 1
   },
   rowsContainer: {
@@ -91,6 +97,9 @@ export const TracksTab = () => {
   const dispatch = useDispatch()
   const styles = useStyles()
   const isReachable = useSelector(getIsReachable)
+  const { isEnabled: isTrackRowsEnabled } = useFeatureFlag(
+    FeatureFlags.TRACK_ROWS
+  )
 
   const [filterValue, setFilterValue] = useState('')
   const [debouncedFilterValue, setDebouncedFilterValue] = useState('')
@@ -294,6 +303,26 @@ export const TracksTab = () => {
 
     if (!showTrackSkeletonList && filteredTrackUids.length === 0) {
       return null
+    }
+
+    if (isTrackRowsEnabled) {
+      return (
+        <View style={styles.rows}>
+          <LibraryTrackRows
+            showSkeleton={showTrackSkeletonList}
+            skeletonRowCount={trackSkeletonRowCount}
+            hasNextPage={
+              isFetchingMore && !allTracksFetched && isReachable === true
+            }
+            onEndReached={handleMoreFetchSaves}
+            onEndReachedThreshold={1.5}
+            ListFooterComponent={<BottomChin />}
+            keyboardShouldPersistTaps='handled'
+            togglePlay={togglePlay}
+            uids={showTrackSkeletonList ? undefined : filteredTrackUids}
+          />
+        </View>
+      )
     }
 
     return (
