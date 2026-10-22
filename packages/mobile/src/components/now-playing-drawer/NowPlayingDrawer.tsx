@@ -3,12 +3,14 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState
 } from 'react'
 
 import { useUser } from '@audius/common/api'
-import { useCurrentTrack } from '@audius/common/hooks'
+import { useCurrentTrack, useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import { playbackActions, playbackSelectors } from '@audius/common/store'
 import { Genre } from '@audius/common/utils'
 import { useNavigationState } from '@react-navigation/native'
@@ -48,12 +50,14 @@ import { zIndex } from 'app/utils/zIndex'
 import { ActionsBar } from './ActionsBar'
 import { Artwork } from './Artwork'
 import { AudioControls } from './AudioControls'
+import { CommentBubble } from './CommentBubble'
 import { Logo } from './Logo'
 import { PlayBar } from './PlayBar'
 import { TitleBar } from './TitleBar'
 import { TrackInfo } from './TrackInfo'
 import { PLAY_BAR_HEIGHT } from './constants'
 import { useCurrentTrackDuration } from './useCurrentTrackDuration'
+import { useTimestampedComments } from './useTimestampedComments'
 const { seekTo: seek, reset, next, previous } = playbackActions
 
 const { getPlaying, getTrackId, getCounter, getBuffering } = playbackSelectors
@@ -256,6 +260,23 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
   const { data: user } = useUser(track?.owner_id)
   const [mediaKey, setMediaKey] = useState(0)
 
+  const { isEnabled: isNowPlayingCommentsEnabled } = useFeatureFlag(
+    FeatureFlags.NOW_PLAYING_COMMENTS
+  )
+  const timestampedComments = useTimestampedComments(
+    trackId,
+    isNowPlayingCommentsEnabled && isOpen
+  )
+  const commentMarkers = useMemo(
+    () =>
+      trackDuration > 0 && timestampedComments.length > 0
+        ? timestampedComments.map((comment) =>
+            Math.min(1, comment.trackTimestampS / trackDuration)
+          )
+        : undefined,
+    [timestampedComments, trackDuration]
+  )
+
   useEffect(() => {
     setMediaKey((mediaKey) => mediaKey + 1)
   }, [playCounter, currentTrackId])
@@ -380,8 +401,17 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
               onPressIn={onPressScrubberIn}
               onPressOut={onPressScrubberOut}
               duration={trackDuration}
+              markers={commentMarkers}
             />
           </View>
+          {isNowPlayingCommentsEnabled && trackId ? (
+            <CommentBubble
+              trackId={trackId}
+              comments={timestampedComments}
+              isActive={isOpen && isPlaying && !isBuffering}
+              mediaKey={`${mediaKey}`}
+            />
+          ) : null}
           <View style={styles.controlsContainer}>
             <AudioControls
               onNext={onNext}

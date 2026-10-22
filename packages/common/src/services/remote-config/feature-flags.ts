@@ -17,7 +17,8 @@ export enum FeatureFlags {
   FAN_CLUB_TEXT_POST_POSTING = 'fan_club_text_post_posting',
   QUEUE_NEW_FEATURE_BADGE = 'queue_new_feature_badge',
   WEEKLY_ROTATION = 'weekly_rotation',
-  TRACK_ROWS = 'track_rows'
+  TRACK_ROWS = 'track_rows',
+  NOW_PLAYING_COMMENTS = 'now_playing_comments'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -55,5 +56,8 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.WEEKLY_ROTATION]: true,
   // Dense track rows instead of tiles. Default on so pages do not swap from
   // tiles to rows when the datafile loads; the remote flag is the kill switch.
-  [FeatureFlags.TRACK_ROWS]: true
+  [FeatureFlags.TRACK_ROWS]: true,
+  // Timestamped comments as markers and bubbles on the Now Playing scrubber.
+  // Default on; the remote flag is the kill switch.
+  [FeatureFlags.NOW_PLAYING_COMMENTS]: true
 }
